@@ -146,3 +146,235 @@ abstract class _AdbDevice extends AdbDevice {
   _$$_AdbDeviceCopyWith<_$_AdbDevice> get copyWith =>
       throw _privateConstructorUsedError;
 }
+
+/// @nodoc
+mixin _$AdbFile {
+  String get name => throw _privateConstructorUsedError;
+
+  @JsonKey(ignore: true)
+  $AdbFileCopyWith<AdbFile> get copyWith => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $AdbFileCopyWith<$Res> {
+  factory $AdbFileCopyWith(AdbFile value, $Res Function(AdbFile) then) =
+      _$AdbFileCopyWithImpl<$Res, AdbFile>;
+  @useResult
+  $Res call({String name});
+}
+
+/// @nodoc
+class _$AdbFileCopyWithImpl<$Res, $Val extends AdbFile>
+    implements $AdbFileCopyWith<$Res> {
+  _$AdbFileCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? name = null,
+  }) {
+    return _then(_value.copyWith(
+      name: null == name
+          ? _value.name
+          : name // ignore: cast_nullable_to_non_nullable
+              as String,
+    ) as $Val);
+  }
+}
+
+/// @nodoc
+abstract class _$$_AdbFileCopyWith<$Res> implements $AdbFileCopyWith<$Res> {
+  factory _$$_AdbFileCopyWith(
+          _$_AdbFile value, $Res Function(_$_AdbFile) then) =
+      __$$_AdbFileCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({String name});
+}
+
+/// @nodoc
+class __$$_AdbFileCopyWithImpl<$Res>
+    extends _$AdbFileCopyWithImpl<$Res, _$_AdbFile>
+    implements _$$_AdbFileCopyWith<$Res> {
+  __$$_AdbFileCopyWithImpl(_$_AdbFile _value, $Res Function(_$_AdbFile) _then)
+      : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? name = null,
+  }) {
+    return _then(_$_AdbFile(
+      null == name
+          ? _value.name
+          : name // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$_AdbFile extends _AdbFile {
+  const _$_AdbFile(this.name) : super._();
+
+  @override
+  final String name;
+
+  @override
+  String toString() {
+    return 'AdbFile(name: $name)';
+  }
+
+  @override
+  bool operator ==(dynamic other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$_AdbFile &&
+            (identical(other.name, name) || other.name == name));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, name);
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$_AdbFileCopyWith<_$_AdbFile> get copyWith =>
+      __$$_AdbFileCopyWithImpl<_$_AdbFile>(this, _$identity);
+}
+
+abstract class _AdbFile extends AdbFile {
+  const factory _AdbFile(final String name) = _$_AdbFile;
+  const _AdbFile._() : super._();
+
+  @override
+  String get name;
+  @override
+  @JsonKey(ignore: true)
+  _$$_AdbFileCopyWith<_$_AdbFile> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+mixin _$AdbDirectory {
+  String get name => throw _privateConstructorUsedError;
+
+  @JsonKey(ignore: true)
+  $AdbDirectoryCopyWith<AdbDirectory> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $AdbDirectoryCopyWith<$Res> {
+  factory $AdbDirectoryCopyWith(
+          AdbDirectory value, $Res Function(AdbDirectory) then) =
+      _$AdbDirectoryCopyWithImpl<$Res, AdbDirectory>;
+  @useResult
+  $Res call({String name});
+}
+
+/// @nodoc
+class _$AdbDirectoryCopyWithImpl<$Res, $Val extends AdbDirectory>
+    implements $AdbDirectoryCopyWith<$Res> {
+  _$AdbDirectoryCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? name = null,
+  }) {
+    return _then(_value.copyWith(
+      name: null == name
+          ? _value.name
+          : name // ignore: cast_nullable_to_non_nullable
+              as String,
+    ) as $Val);
+  }
+}
+
+/// @nodoc
+abstract class _$$_AdbDirectoryCopyWith<$Res>
+    implements $AdbDirectoryCopyWith<$Res> {
+  factory _$$_AdbDirectoryCopyWith(
+          _$_AdbDirectory value, $Res Function(_$_AdbDirectory) then) =
+      __$$_AdbDirectoryCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({String name});
+}
+
+/// @nodoc
+class __$$_AdbDirectoryCopyWithImpl<$Res>
+    extends _$AdbDirectoryCopyWithImpl<$Res, _$_AdbDirectory>
+    implements _$$_AdbDirectoryCopyWith<$Res> {
+  __$$_AdbDirectoryCopyWithImpl(
+      _$_AdbDirectory _value, $Res Function(_$_AdbDirectory) _then)
+      : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? name = null,
+  }) {
+    return _then(_$_AdbDirectory(
+      null == name
+          ? _value.name
+          : name // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$_AdbDirectory extends _AdbDirectory {
+  const _$_AdbDirectory(this.name) : super._();
+
+  @override
+  final String name;
+
+  @override
+  String toString() {
+    return 'AdbDirectory(name: $name)';
+  }
+
+  @override
+  bool operator ==(dynamic other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$_AdbDirectory &&
+            (identical(other.name, name) || other.name == name));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, name);
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$_AdbDirectoryCopyWith<_$_AdbDirectory> get copyWith =>
+      __$$_AdbDirectoryCopyWithImpl<_$_AdbDirectory>(this, _$identity);
+}
+
+abstract class _AdbDirectory extends AdbDirectory {
+  const factory _AdbDirectory(final String name) = _$_AdbDirectory;
+  const _AdbDirectory._() : super._();
+
+  @override
+  String get name;
+  @override
+  @JsonKey(ignore: true)
+  _$$_AdbDirectoryCopyWith<_$_AdbDirectory> get copyWith =>
+      throw _privateConstructorUsedError;
+}

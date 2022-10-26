@@ -54,6 +54,10 @@ abstract class AdbService {
   Future<Result> connect(String host, int port);
   Future<Result> disconnect(String id);
   Future<Result> installApk(String id, String path);
+
+  Future<List<AdbFileSystem>> ls(AdbDevice device, String? path);
+
+  Future<Result> pushFile(String id, String file, String destinationPath);
 }
 
 class ProccessAdbServiceImpl implements AdbService {
@@ -63,6 +67,7 @@ class ProccessAdbServiceImpl implements AdbService {
   final terminalOutputsController = StreamController<String>();
 
   Future<Result> run(List<String> arguments, [bool addStdout = true]) async {
+    // logWarning(arguments);
     final process = await io.Process.start('adb', arguments);
     final stdout = process.stdout.asBroadcastStream();
     final stderr = process.stderr.asBroadcastStream();
@@ -155,4 +160,102 @@ class ProccessAdbServiceImpl implements AdbService {
           }),
         );
       });
+
+  @override
+  Future<List<AdbFileSystem>> ls(AdbDevice device, String? path) =>
+      run(['-s', device.id, 'shell', 'ls', '-i', '"${path ?? '/'}"']).then((result) async {
+        final stdErr = await result.stderr;
+        if (stdErr != '') {
+          throw AppException("Failed to list files");
+        }
+
+        return result.stdout.then((output) async {
+          if (output.contains('Permission denied')) {
+            throw PermissionDeniedException();
+          }
+          if (output.contains('No such file or directory')) {
+            throw PermissionDeniedException();
+          }
+          final files = output.split('\n').toList().map((e) => e.trim()).toList();
+          files.forEach(logInfo);
+          final result = <AdbFileSystem>[];
+          for (var element in files) {
+            if (element == '') {
+              continue;
+            }
+            List<String> parts = element.split(' ')..removeWhere((element) => element.isEmpty);
+
+            final inode = parts.first;
+
+            if (inode == '?') {
+              continue;
+            }
+            parts.removeAt(0);
+            final name = parts.join(' ').trim();
+            // result.add(name);
+            AdbFileSystem file;
+            if (name.contains('.')) {
+              file = AdbFile(name);
+            } else {
+              file = AdbDirectory(name);
+            }
+            result.add(file);
+          }
+          //TODO: have to find a better way to remove the unneccery files
+          result.removeWhere(
+            (element) =>
+                element.name == 'metadata' ||
+                element.name == 'oem' ||
+                element.name == 'odm' ||
+                element.name == 'lost+found' ||
+                element.name == 'bugreports' ||
+                element.name == 'data' ||
+                element.name == 'sys' ||
+                element.name == 'system' ||
+                element.name == 'apex' ||
+                element.name == 'vendor' ||
+                element.name == 'bin' ||
+                element.name == 'acct' ||
+                element.name == 'config' ||
+                element.name == 'debug_ramdisk' ||
+                element.name == 'default.prop' ||
+                element.name == 'd' ||
+                element.name == 'cache' ||
+                element.name == 'system_ext',
+          );
+          return result.toList()
+            ..sort((a, b) {
+              if (a is AdbDirectory) {
+                return -1;
+              }
+              return 1;
+            });
+        });
+      });
+
+  @override
+  Future<Result> pushFile(
+    String id,
+    String file,
+    String destinationPath,
+  ) =>
+      run(['-s', id, 'push', file, destinationPath]).then((result) async {
+        return result.copyWith(
+          messege: result.stdout.then((output) {
+            if (output.contains('pushed')) {
+              return 'Pushed $file';
+            }
+            logError('Failed to push $file', error: output);
+            throw AppException('Failed to push');
+          }),
+        );
+      });
+}
+
+class PermissionDeniedException extends AppException {
+  PermissionDeniedException() : super('Permission denied');
+}
+
+class NotDirException extends AppException {
+  NotDirException() : super('Not a directory');
 }

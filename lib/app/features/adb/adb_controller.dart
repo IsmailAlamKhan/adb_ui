@@ -64,6 +64,9 @@ class AdbController with NavigationController {
       return;
     }
     final parts = ip['ip:port']!.split(':');
+    if (parts.isEmpty) {
+      return;
+    }
     final host = parts[0];
     final port = parts[1];
     return run(
@@ -89,4 +92,29 @@ class AdbController with NavigationController {
         },
         'Install apk on ${device.id}',
       );
+
+  Future<void> pushFile(AdbDevice device) async {
+    final destinationPath = await showDialog<String>(
+      pageBuilder: (_) => AdbFileExplorerView(
+        device: device,
+        openReason: AdbFileExplorerOpenReason.pickFolder,
+      ),
+    );
+
+    if (destinationPath == null) {
+      showSnackbar(text: 'No destination path selected');
+      return;
+    }
+
+    final file = await showDialog<String>(pageBuilder: (_) => const FilePickerView());
+    if (file == null) {
+      showSnackbar(text: 'No file selected');
+      return;
+    }
+
+    run(
+      () => service.pushFile(device.id, file, destinationPath),
+      'Push file to ${device.id}',
+    );
+  }
 }

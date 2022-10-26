@@ -26,8 +26,8 @@ class FilePickerView extends HookConsumerWidget {
       content: InkWell(
         onTap: () async {
           final result = await FilePicker.platform.pickFiles(
-            type: FileType.custom,
-            allowedExtensions: ['apk'],
+            type: fileType,
+            allowedExtensions: allowedExtensions,
           );
 
           if (result != null) {

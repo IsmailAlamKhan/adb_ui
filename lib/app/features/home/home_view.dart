@@ -1,34 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../features.dart';
 
-class HomeView extends StatelessWidget {
+class HomeView extends ConsumerWidget {
   const HomeView({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('ADB'),
-        // actions: [
-        //   IconButton(
-        //     onPressed: () {
-        //       Navigator.of(context).pushBuilder((_) => const TerminalOutputsView());
-        //     },
-        //     icon: const Icon(Icons.terminal),
-        //   ),
-        // ],
+      appBar: AppBar(title: const Text('ADB')),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          final adb = ref.read(adbControllerProvider);
+          adb.connect();
+        },
+        tooltip: 'Connect wireless',
+        child: const Icon(Icons.wifi),
       ),
-      body: Row(
-        children: const [
-          SizedBox(
-            width: 200,
-            child: HomeViewSidebar(),
-          ),
-          VerticalDivider(),
-          Expanded(child: HomeViewContent()),
-        ],
-      ),
+      body: const HomeViewContent(),
     );
   }
 }

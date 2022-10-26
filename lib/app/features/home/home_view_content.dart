@@ -14,6 +14,9 @@ class HomeViewContent extends ConsumerWidget {
     return AsyncValueBuilder(
       value: connectedDevices,
       builder: (context, connectedDevices) {
+        if (connectedDevices.isEmpty) {
+          return const Center(child: Text('No connected devices'));
+        }
         return ListView.builder(
           itemCount: connectedDevices.length,
           itemBuilder: (context, index) {

@@ -82,16 +82,11 @@ class AdbDeviceDialog extends ConsumerWidget {
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 400),
         child: AlertDialog(
+          contentPadding: const EdgeInsets.all(0),
+          clipBehavior: Clip.antiAlias,
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              ListTile(
-                title: const Text('Disconnect'),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  controller.disconnect(device);
-                },
-              ),
               ListTile(
                 title: const Text('Copy id'),
                 onTap: () {
@@ -100,12 +95,28 @@ class AdbDeviceDialog extends ConsumerWidget {
                 },
               ),
               ListTile(
-                title: const Text('Install apk'),
+                title: const Text('Disconnect'),
                 onTap: () {
                   Navigator.of(context).pop();
-                  controller.installApk(device);
+                  controller.disconnect(device);
                 },
               ),
+              if (!device.isOffline) ...[
+                ListTile(
+                  title: const Text('Install apk'),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    controller.installApk(device);
+                  },
+                ),
+                ListTile(
+                  title: const Text('Push file'),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    controller.pushFile(device);
+                  },
+                ),
+              ]
             ],
           ),
         ),
