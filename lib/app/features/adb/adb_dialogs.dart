@@ -3,12 +3,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../shared/shared.dart';
 import '../features.dart';
 
 class AdbInputDialog extends HookWidget {
   const AdbInputDialog({
     super.key,
     required this.title,
+    this.info,
     required this.inputs,
   });
 
@@ -16,13 +18,14 @@ class AdbInputDialog extends HookWidget {
     Key? key,
     required String title,
     required String label,
-    required String inputKey,
+    String? info,
   }) {
     return AdbInputDialog(
       key: key,
       title: title,
+      info: info,
       inputs: {
-        inputKey: (controller) => AdbInputDialogInput(
+        'input': (controller) => AdbInputDialogInput(
               controller: controller,
               label: label,
             ),
@@ -30,27 +33,55 @@ class AdbInputDialog extends HookWidget {
     );
   }
   final String title;
+  final String? info;
+
   final Map<String, Widget Function(TextEditingController)> inputs;
   @override
   Widget build(BuildContext context) {
     final inputs = this.inputs.values.toList();
     final tec = inputs.map((_) => useTextEditingController()).toList();
     return AlertDialog(
-      title: Text(title),
+      title: Text.rich(
+        TextSpan(
+          text: title,
+          children: [
+            if (info != null)
+              WidgetSpan(
+                child: Tooltip(
+                  message: info!,
+                  child: const Icon(Icons.info_outline),
+                ),
+              ),
+          ],
+        ),
+      ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
-        children: [for (var i = 0; i < inputs.length; i++) inputs[i](tec[i])],
+        children: [
+          for (var i = 0; i < inputs.length; i++) ...[
+            inputs[i](tec[i]),
+            if (i < inputs.length - 1) const Gap(10),
+          ]
+        ],
       ),
       actions: [
         TextButton(
           onPressed: () {
-            final map = <String, String>{
-              for (var i = 0; i < this.inputs.keys.length; i++)
-                this.inputs.keys.elementAt(i): tec[i].text,
-            };
-            Navigator.of(context).pop(map);
+            if (inputs.length == 1) {
+              Navigator.of(context).pop(tec[0].text);
+            } else {
+              final map = <String, String>{
+                for (var i = 0; i < this.inputs.keys.length; i++)
+                  if (tec[i].text.isNotEmpty) this.inputs.keys.elementAt(i): tec[i].text,
+              };
+              Navigator.of(context).pop(map);
+            }
           },
           child: const Text('OK'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
         ),
       ],
     );
@@ -114,6 +145,20 @@ class AdbDeviceDialog extends ConsumerWidget {
                   onTap: () {
                     Navigator.of(context).pop();
                     controller.pushFile(device);
+                  },
+                ),
+                ListTile(
+                  title: const Text('Pull file'),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    controller.pullFile(device);
+                  },
+                ),
+                ListTile(
+                  title: const Text('Run command'),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    controller.runCommand(device);
                   },
                 ),
               ]

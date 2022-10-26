@@ -8,17 +8,19 @@ class HomeView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    double sidebarSize = 250;
+    if (MediaQuery.of(context).size.width < 500) {
+      sidebarSize = 200;
+    }
     return Scaffold(
       appBar: AppBar(title: const Text('ADB')),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          final adb = ref.read(adbControllerProvider);
-          adb.connect();
-        },
-        tooltip: 'Connect wireless',
-        child: const Icon(Icons.wifi),
+      body: Row(
+        children: [
+          SizedBox(width: sidebarSize, child: const HomeViewSideBar()),
+          const VerticalDivider(),
+          const Expanded(child: HomeViewContent()),
+        ],
       ),
-      body: const HomeViewContent(),
     );
   }
 }

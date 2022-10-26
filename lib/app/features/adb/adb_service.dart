@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io' as io;
 
+import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../utils/utils.dart';
@@ -52,12 +53,17 @@ abstract class AdbService {
 
   /// commands
   Future<Result> connect(String host, int port);
+  Future<Result> pair(String pair, String host, int port);
   Future<Result> disconnect(String id);
   Future<Result> installApk(String id, String path);
 
   Future<List<AdbFileSystem>> ls(AdbDevice device, String? path);
 
   Future<Result> pushFile(String id, String file, String destinationPath);
+
+  Future<Result> pullFile(String id, String file, String destinationPath);
+
+  Future<Result> runCustomCommand(String id, String command);
 }
 
 class ProccessAdbServiceImpl implements AdbService {
@@ -71,7 +77,7 @@ class ProccessAdbServiceImpl implements AdbService {
     final process = await io.Process.start('adb', arguments);
     final stdout = process.stdout.asBroadcastStream();
     final stderr = process.stderr.asBroadcastStream();
-    if (addStdout) {
+    if (addStdout && kDebugMode) {
       io.stdout.addStream(stdout);
       io.stderr.addStream(stderr);
     }
@@ -249,6 +255,42 @@ class ProccessAdbServiceImpl implements AdbService {
             throw AppException('Failed to push');
           }),
         );
+      });
+
+  @override
+  Future<Result> pullFile(String id, String file, String destinationPath) =>
+      run(['-s', id, 'pull', file, destinationPath]).then((result) async {
+        return result.copyWith(
+          messege: result.stdout.then((output) {
+            if (output.contains('pulled')) {
+              return 'Pulled $file';
+            }
+            logError('Failed to pull $file', error: output);
+            throw AppException('Failed to pull');
+          }),
+        );
+      });
+
+  @override
+  Future<Result> pair(String pairCode, String host, int port) =>
+      run(['pair', '$host:$port', pairCode]).then((result) async {
+        return result.copyWith(
+          messege: result
+              .stdout /*.then((output) {
+            if (output.contains('connected to')) {
+              return 'Paired to $host:$port';
+            }
+            logError('Failed to pair to $host:$port', error: output);
+            throw AppException('Failed to pair');
+          })*/
+          ,
+        );
+      });
+
+  @override
+  Future<Result> runCustomCommand(String id, String command) =>
+      run(['-s', id, ...command.split(' ')]).then((result) {
+        return result.copyWith(messege: result.stdout);
       });
 }
 

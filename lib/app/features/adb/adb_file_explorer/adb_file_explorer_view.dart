@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import '../../../shared/shared.dart';
 import '../../../shared/widgets/async_value_builder.dart';
 import '../../../utils/utils.dart';
 import '../../features.dart';
@@ -12,10 +11,12 @@ enum AdbFileExplorerOpenReason { pickFile, pickFolder }
 class AdbFileExplorerView extends HookConsumerWidget {
   const AdbFileExplorerView({
     super.key,
+    this.title = 'File Explorer',
     required this.device,
     this.openReason = AdbFileExplorerOpenReason.pickFile,
   });
   final AdbDevice device;
+  final String title;
   final AdbFileExplorerOpenReason openReason;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -34,18 +35,14 @@ class AdbFileExplorerView extends HookConsumerWidget {
           clipBehavior: Clip.antiAlias,
           child: Scaffold(
             appBar: AppBar(
-              title: const Text('File Explorer'),
+              title: Text(title),
               bottom: PreferredSize(
                 preferredSize: const Size.fromHeight(50),
-                child: Row(
-                  children: [
-                    TextButton(
-                      onPressed: controller.goBack,
-                      child: const Text('Back'),
-                    ),
-                    const Gap(10),
-                    Text('/${controller.history.join('/')}'),
-                  ],
+                child: ListTile(
+                  leading: controller.history.isNotEmpty
+                      ? BackButton(onPressed: controller.goBack)
+                      : null,
+                  title: Text('/${controller.history.join('/')}'),
                 ),
               ),
             ),
@@ -53,18 +50,23 @@ class AdbFileExplorerView extends HookConsumerWidget {
               value: files,
               onTryAgain: () async =>
                   ref.invalidate(adbFilesProvider(device: device, path: controller.currentPath)),
-              builder: (_, files) => ListView.builder(
-                itemCount: files.length,
-                itemBuilder: (context, index) {
-                  final file = files[index];
-                  return ListTile(
-                    title: Text(file.name),
-                    leading: file is AdbFile ? const Icon(Icons.insert_drive_file) : null,
-                    onTap: () => controller.onTap(file),
-                    // onLongPress: () => controller.onLongPress(file),
-                  );
-                },
-              ),
+              builder: (_, files) {
+                if (files.isEmpty) {
+                  return const Center(child: Text('Empty'));
+                }
+                return ListView.builder(
+                  itemCount: files.length,
+                  itemBuilder: (context, index) {
+                    final file = files[index];
+                    return ListTile(
+                      title: Text(file.name),
+                      leading: file is AdbFile ? const Icon(Icons.insert_drive_file) : null,
+                      onTap: () => controller.onTap(file),
+                      // onLongPress: () => controller.onLongPress(file),
+                    );
+                  },
+                );
+              },
             ),
             bottomNavigationBar: openReason == AdbFileExplorerOpenReason.pickFolder
                 ? SizedBox(

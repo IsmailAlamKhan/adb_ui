@@ -104,7 +104,18 @@ class CurrentCommandOutput extends HookConsumerWidget {
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 500, maxHeight: 600),
-        child: AlertDialog(scrollable: true, content: content),
+        child: AlertDialog(
+          scrollable: true,
+          content: SelectionArea(child: content),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Close'),
+            ),
+          ],
+        ),
       ),
     );
   }

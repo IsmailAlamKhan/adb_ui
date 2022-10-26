@@ -15,7 +15,7 @@ class AppSnackbar extends SnackBar {
     super.padding,
     super.onVisible,
     super.shape,
-    super.width,
+    super.width = 400,
   });
 
   factory AppSnackbar.text(
