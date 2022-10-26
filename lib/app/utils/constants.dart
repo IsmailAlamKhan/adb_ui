@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+const appName = 'ADB UI';
+
 Color tintColor({
   required Color color,
   required Color tint,
