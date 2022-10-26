@@ -116,5 +116,5 @@ msix_config:
   display_name: ADB UI
   publisher_display_name: Md Ismail Alam Khan
   identity_name: company.adbui
-  msix_version: 0.0.3
+  msix_version: 0.0.0.3
   logo_path: assets/logo.png
