@@ -13,7 +13,7 @@ There are 2 ways to install this.
  1. Setup installer(recomended way).
      * Find the latest release from https://github.com/IsmailAlamKhan/adb_ui/releases
      * Download the setup.
-     * Follow the setups to install.
+     * Follow the steps to install.
  2. Zip file.
      * Find the latest release from https://github.com/IsmailAlamKhan/adb_ui/releases
      * Download the zip file
