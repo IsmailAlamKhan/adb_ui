@@ -1,15 +1,25 @@
 import 'package:flutter/material.dart';
 
-class DialogWrapper extends StatelessWidget {
-  const DialogWrapper({
+import '../../utils/constants.dart';
+
+class AdaptiveDialog extends StatelessWidget {
+  const AdaptiveDialog({
     super.key,
     required this.child,
   });
   final Widget child;
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 800), child: child),
-    );
+    Widget child = this.child;
+    if (isTabletSize(context)) {
+      child = Center(
+        child: SizedBox(
+          width: 500,
+          height: 500,
+          child: Dialog(clipBehavior: Clip.antiAlias, child: child),
+        ),
+      );
+    }
+    return child;
   }
 }

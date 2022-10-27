@@ -53,7 +53,6 @@ abstract class AdbService {
   Future<List<AdbDevice>> getConnectedDevices();
 
   Stream<List<AdbDevice>> get connectedDevicesStream;
-  Stream<String> get terminalOutputs;
 
   /// commands
   Future<Result> connect(String host, int port);
@@ -81,8 +80,6 @@ class ProccessAdbServiceImpl implements AdbService {
   final Ref ref;
   ProccessAdbServiceImpl(this.ref);
 
-  final terminalOutputsController = StreamController<String>();
-
   Future<Result> run(
     List<String> arguments, {
     AdbDevice? device,
@@ -98,6 +95,8 @@ class ProccessAdbServiceImpl implements AdbService {
     }
     final _stdout = stdout.transform(utf8.decoder);
     final _stderr = stderr.transform(utf8.decoder);
+    _stdout.listen(LogFile.instance.dispatchStdoutLogs);
+    _stderr.listen(LogFile.instance.dispatchStdoutLogs);
 
     final result = Result(
       device: device,
@@ -136,8 +135,6 @@ class ProccessAdbServiceImpl implements AdbService {
     return Stream.periodic(const Duration(seconds: 1)).asyncMap((_) => future());
   }
 
-  @override
-  Stream<String> get terminalOutputs => terminalOutputsController.stream;
   @override
   Future<Result> connect(String host, int port) =>
       run(['connect', '$host:$port']).then((result) async {

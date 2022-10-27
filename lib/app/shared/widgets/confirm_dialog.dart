@@ -53,7 +53,7 @@ class ConfirmDialog extends StatelessWidget {
       style: ElevatedButton.styleFrom(
         foregroundColor: cancelTextColor ?? theme.colorScheme.error,
       ).filled(context),
-      child: Text(confirmText ?? "No"),
+      child: Text(cancelText ?? "No"),
     );
     final actions = layoutBuilder?.call(
           context,

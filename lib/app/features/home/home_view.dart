@@ -24,6 +24,13 @@ class HomeView extends ConsumerWidget {
             icon: const Icon(Icons.list),
             tooltip: 'Command Queue',
           ),
+          IconButton(
+            onPressed: () {
+              Navigator.of(context).adaptivePush((_) => const SettingsView());
+            },
+            icon: const Icon(Icons.settings),
+            tooltip: 'Settings',
+          ),
         ],
       ),
       body: Row(

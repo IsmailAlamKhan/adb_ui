@@ -19,6 +19,8 @@ class Alert extends StatelessWidget {
   final String? messege;
   final AlertType type;
 
+  static const duration = Duration(seconds: 3);
+
   const factory Alert.error({required String title, String? messege}) = _ErrorAlert;
 
   const factory Alert.success({required String title, String? messege}) = _SuccessAlert;
@@ -27,10 +29,7 @@ class Alert extends StatelessWidget {
     required void Function(WidgetBuilder, RouteSettings, Timer) show,
     required VoidCallback hide,
   }) {
-    final timer = Timer(const Duration(seconds: 3), () {
-      logInfo('5 SECONDS');
-      hide();
-    });
+    final timer = Timer(duration, hide);
 
     show((_) => this, const RouteSettings(name: 'confirm'), timer);
   }
@@ -71,7 +70,7 @@ class Alert extends StatelessWidget {
         lottieAsset = 'assets/lottie/success.json';
         break;
     }
-    return Dialog(
+    return AdaptiveDialog(
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(

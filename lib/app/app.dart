@@ -12,43 +12,71 @@ import 'shared/shared.dart';
 import 'utils/utils.dart';
 
 class App {
+  static Future<ProviderContainer> init() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    final container = ProviderContainer();
+    try {
+      runApp(const ProviderScope(child: SplashView()));
+      await windowManager.ensureInitialized();
+
+      WindowOptions windowOptions = const WindowOptions(
+        backgroundColor: Colors.transparent,
+        skipTaskbar: false,
+        titleBarStyle: TitleBarStyle.hidden,
+      );
+      windowManager.waitUntilReadyToShow(windowOptions, () async {
+        await windowManager.show();
+        await windowManager.focus();
+      });
+      await container.read(deviceControllerProvider.notifier).init();
+      await container.read(localStorageProvider).init();
+      await container.read(settingsControllerProvider.notifier).init();
+      return container;
+    } on Exception catch (e, stackTrace) {
+      Exception exception = e;
+      if (e is AppException) {
+        exception = AppInitializationException(e);
+      }
+      throw Error.throwWithStackTrace(exception, stackTrace);
+    }
+  }
+
   static Future<void> run() async {
     NavigatorService.init();
     AppLogger.init();
+    await LogFile.init();
     WidgetsFlutterBinding.ensureInitialized();
+
+    FlutterError.onError = LogFile.instance.dispatchFlutterErrorLogs;
     runZonedGuarded(
       () async {
-        await windowManager.ensureInitialized();
-
-        WindowOptions windowOptions = const WindowOptions(
-          backgroundColor: Colors.transparent,
-          skipTaskbar: false,
-          titleBarStyle: TitleBarStyle.hidden,
-        );
-        windowManager.waitUntilReadyToShow(windowOptions, () async {
-          await windowManager.show();
-          await windowManager.focus();
-        });
-        runApp(const ProviderScope(child: _App()));
+        final container = await init();
+        runApp(UncontrolledProviderScope(
+          container: container,
+          child: const _App(),
+        ));
       },
       (error, stack) {
-        logError('Error on zone', error: error, stackTrace: stack);
+        LogFile.instance.dispath('Error on zone', error: error, stackTrace: stack);
       },
     );
   }
 }
 
-class _App extends StatelessWidget {
+class _App extends ConsumerWidget {
   const _App({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final settings = ref.watch(settingsControllerProvider);
     final virtualWindowFrameBuilder = VirtualWindowFrameInit();
     return DynamicColorBuilder(
       builder: (lightDynamic, darkDynamic) => WindowTitleBar(
         darkDynamic: darkDynamic,
         lightDynamic: lightDynamic,
+        themeMode: settings.themeMode,
         child: MaterialApp(
+          themeMode: settings.themeMode,
           title: appName,
           theme: AppTheme.themeDataFrom(colorScheme: lightDynamic, brightness: Brightness.light),
           darkTheme: AppTheme.themeDataFrom(colorScheme: darkDynamic, brightness: Brightness.dark),
@@ -73,11 +101,18 @@ class _App extends StatelessWidget {
 }
 
 class WindowTitleBar extends StatelessWidget {
-  const WindowTitleBar({super.key, required this.child, this.lightDynamic, this.darkDynamic});
+  const WindowTitleBar({
+    super.key,
+    required this.child,
+    this.lightDynamic,
+    this.darkDynamic,
+    required this.themeMode,
+  });
 
   final Widget child;
   final ColorScheme? lightDynamic;
   final ColorScheme? darkDynamic;
+  final ThemeMode themeMode;
 
   @override
   Widget build(BuildContext context) {
@@ -86,6 +121,7 @@ class WindowTitleBar extends StatelessWidget {
       child: _AppThemeBuilder(
         darkDynamic: darkDynamic,
         lightDynamic: lightDynamic,
+        themeMode: themeMode,
         child: Material(
           child: Column(
             children: [
@@ -136,10 +172,17 @@ class NoScrollBarScrollBehavior extends MaterialScrollBehavior {
 }
 
 class _AppThemeBuilder extends StatefulWidget {
-  const _AppThemeBuilder({super.key, required this.child, this.lightDynamic, this.darkDynamic});
+  const _AppThemeBuilder({
+    super.key,
+    required this.child,
+    this.lightDynamic,
+    this.darkDynamic,
+    required this.themeMode,
+  });
   final Widget child;
   final ColorScheme? lightDynamic;
   final ColorScheme? darkDynamic;
+  final ThemeMode themeMode;
   @override
   State<_AppThemeBuilder> createState() => __AppThemeBuilderState();
 }
@@ -151,8 +194,23 @@ class __AppThemeBuilderState extends State<_AppThemeBuilder> with WidgetsBinding
   void initState() {
     super.initState();
     _binding.addObserver(this);
-    themeMode =
-        _binding.window.platformBrightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light;
+    _updateThemeMode(true);
+  }
+
+  void _updateThemeMode([bool inital = false]) {
+    ThemeMode themeMode = widget.themeMode;
+    if (themeMode == ThemeMode.system) {
+      themeMode = _binding.window.platformBrightness == Brightness.dark //
+          ? ThemeMode.dark
+          : ThemeMode.light;
+    }
+    if (themeMode != this.themeMode) {
+      if (!inital) {
+        setState(() => this.themeMode = themeMode);
+      } else {
+        this.themeMode = themeMode;
+      }
+    }
   }
 
   @override
@@ -163,11 +221,14 @@ class __AppThemeBuilderState extends State<_AppThemeBuilder> with WidgetsBinding
 
   @override
   void didChangePlatformBrightness() {
-    setState(() {
-      themeMode =
-          _binding.window.platformBrightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light;
-    });
+    _updateThemeMode();
     super.didChangePlatformBrightness();
+  }
+
+  @override
+  void didUpdateWidget(covariant _AppThemeBuilder oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _updateThemeMode();
   }
 
   @override

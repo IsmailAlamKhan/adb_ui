@@ -7,6 +7,7 @@ export 'indicators.dart';
 export 'keep_alive.dart';
 export 'logo.dart';
 export 'navigation_event_listener.dart';
+export 'popup_menu.dart';
 export 'run_animation.dart';
 export 'sliver_persistent_header.dart';
 export 'snackbar.dart';

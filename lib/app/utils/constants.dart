@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 
 const appName = 'ADB UI';
 
@@ -26,3 +29,16 @@ typedef FutureCallback<T> = Future<T> Function();
 bool isTabletSize(BuildContext context) {
   return MediaQuery.of(context).size.width > 500;
 }
+
+Future<Directory> getExternalDir() async {
+  Directory directory;
+  if (Platform.isAndroid) {
+    directory = (await getExternalStorageDirectory())!;
+  } else {
+    directory = await getApplicationSupportDirectory();
+  }
+  return directory;
+}
+
+const bugReportUrl =
+    'https://github.com/IsmailAlamKhan/adb_ui/issues/new?assignees=&labels=&template=bug_report.md&title=';
