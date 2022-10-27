@@ -22,3 +22,7 @@ Color surfaceTintColor({
 }
 
 typedef FutureCallback<T> = Future<T> Function();
+
+bool isTabletSize(BuildContext context) {
+  return MediaQuery.of(context).size.width > 500;
+}

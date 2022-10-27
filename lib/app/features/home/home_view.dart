@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../utils/utils.dart';
 import '../features.dart';
 
 class HomeView extends ConsumerWidget {
@@ -13,7 +14,18 @@ class HomeView extends ConsumerWidget {
       sidebarSize = 200;
     }
     return Scaffold(
-      appBar: AppBar(title: const Text('ADB')),
+      appBar: AppBar(
+        title: const Text('ADB'),
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.of(context).adaptivePush((_) => const CommandQueueView());
+            },
+            icon: const Icon(Icons.list),
+            tooltip: 'Command Queue',
+          ),
+        ],
+      ),
       body: Row(
         children: [
           SizedBox(width: sidebarSize, child: const HomeViewSideBar()),

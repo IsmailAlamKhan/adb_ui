@@ -11,36 +11,40 @@ import 'adb_model.dart';
 final adbServiceProvider = Provider<AdbService>(ProccessAdbServiceImpl.new);
 
 class Result {
-  final Stream<String> stoutStream;
-  final Stream<String> sterrStream;
+  final Stream<String> stdoutStream;
+  final Stream<String> stderrStream;
   final Future<int> exitCode;
   final Future<String> stdout;
   final Future<String> stderr;
   final Future<String> messege;
+  final AdbDevice? device;
   Result({
-    required this.stoutStream,
-    required this.sterrStream,
-    required this.stderr,
+    required this.stdoutStream,
+    required this.stderrStream,
     required this.exitCode,
     required this.stdout,
+    required this.stderr,
     required this.messege,
+    required this.device,
   });
 
   Result copyWith({
-    Stream<String>? stoutStream,
-    Stream<String>? sterrStream,
+    Stream<String>? stdoutStream,
+    Stream<String>? stderrStream,
     Future<int>? exitCode,
     Future<String>? stdout,
     Future<String>? stderr,
     Future<String>? messege,
+    AdbDevice? device,
   }) {
     return Result(
-      stoutStream: stoutStream ?? this.stoutStream,
-      sterrStream: sterrStream ?? this.sterrStream,
+      stdoutStream: stdoutStream ?? this.stdoutStream,
+      stderrStream: stderrStream ?? this.stderrStream,
       exitCode: exitCode ?? this.exitCode,
       stdout: stdout ?? this.stdout,
       stderr: stderr ?? this.stderr,
       messege: messege ?? this.messege,
+      device: device ?? this.device,
     );
   }
 }
@@ -54,16 +58,23 @@ abstract class AdbService {
   /// commands
   Future<Result> connect(String host, int port);
   Future<Result> pair(String pair, String host, int port);
-  Future<Result> disconnect(String id);
-  Future<Result> installApk(String id, String path);
+
+  /// connnected device commands
+
+  Future<Result> disconnect(AdbDevice device);
+  Future<Result> installApk(AdbDevice device, String path);
 
   Future<List<AdbFileSystem>> ls(AdbDevice device, String? path);
 
-  Future<Result> pushFile(String id, String file, String destinationPath);
+  Future<Result> pushFile(AdbDevice device, String file, String destinationPath);
 
-  Future<Result> pullFile(String id, String file, String destinationPath);
+  Future<Result> pullFile(AdbDevice device, String file, String destinationPath);
 
-  Future<Result> runCustomCommand(String id, String command);
+  Future<Result> runCustomCommand(AdbDevice device, String command);
+
+  /// -connnected device commands-
+
+  /// -commands-
 }
 
 class ProccessAdbServiceImpl implements AdbService {
@@ -72,7 +83,11 @@ class ProccessAdbServiceImpl implements AdbService {
 
   final terminalOutputsController = StreamController<String>();
 
-  Future<Result> run(List<String> arguments, [bool addStdout = true]) async {
+  Future<Result> run(
+    List<String> arguments, {
+    AdbDevice? device,
+    bool addStdout = true,
+  }) async {
     // logWarning(arguments);
     final process = await io.Process.start('adb', arguments);
     final stdout = process.stdout.asBroadcastStream();
@@ -85,9 +100,10 @@ class ProccessAdbServiceImpl implements AdbService {
     final _stderr = stderr.transform(utf8.decoder);
 
     final result = Result(
+      device: device,
       exitCode: process.exitCode,
-      stoutStream: _stdout,
-      sterrStream: _stderr,
+      stdoutStream: _stdout,
+      stderrStream: _stderr,
       stdout: _stdout.join(),
       stderr: _stderr.join(),
       messege: Future.value(''),
@@ -97,7 +113,7 @@ class ProccessAdbServiceImpl implements AdbService {
 
   @override
   Future<List<AdbDevice>> getConnectedDevices() async {
-    final process = await run(['devices'], false);
+    final process = await run(['devices'], addStdout: false);
     final devices = <AdbDevice>[];
     final output = (await process.stdout).split('\n').toList()
       ..removeWhere((element) =>
@@ -131,48 +147,60 @@ class ProccessAdbServiceImpl implements AdbService {
               return 'Connected to $host:$port';
             }
             logError('Failed to connect to $host:$port', error: output);
-            throw AppException('Failed to connect');
+            throw AppException('Failed to connect cause $output');
           }),
         );
+      });
+  @override
+  Future<Result> pair(String pairCode, String host, int port) =>
+      run(['pair', '$host:$port', pairCode]).then((result) async {
+        return result.copyWith(messege: result.stdout);
       });
 
   @override
-  Future<Result> disconnect(String id) => run(['disconnect', id]).then((result) async {
-        return result.copyWith(
-          messege: result.stdout.then((output) {
-            if (output.contains('disconnected')) {
-              return 'Disconnected from $id';
-            }
-            logError('Failed to disconnect $id', error: output);
-            throw AppException('Failed to disconnect');
-          }),
-        );
-      });
+  Future<Result> disconnect(AdbDevice device) {
+    final id = device.id;
+    return run(['disconnect', id]).then((result) async {
+      return result.copyWith(
+        messege: result.stdout.then((output) {
+          if (output.contains('disconnected')) {
+            return 'Disconnected from $id';
+          }
+          logError('Failed to disconnect $id', error: output);
+          throw AppException('Failed to disconnect cause $output');
+        }),
+      );
+    });
+  }
+
   @override
-  Future<Result> installApk(String id, String path) =>
-      run(['-s', id, 'install', path]).then((result) async {
-        return result.copyWith(
-          messege: Future.wait([result.stdout, result.stderr]).then((output) {
-            final stdout = output.first;
-            final stderr = output.last;
-            if (stderr != '') {
-              throw AppException("Failed to install");
-            }
-            if (stdout.contains('Success')) {
-              return 'Installed $path';
-            }
-            logError('Failed to install $path', error: output);
-            throw AppException('Failed to install');
-          }),
-        );
-      });
+  Future<Result> installApk(AdbDevice device, String path) {
+    final id = device.id;
+
+    return run(['-s', id, 'install', path]).then((result) async {
+      return result.copyWith(
+        messege: Future.wait([result.stdout, result.stderr]).then((output) {
+          final stdout = output.first;
+          final stderr = output.last;
+          if (stderr != '') {
+            throw AppException("Failed to install");
+          }
+          if (stdout.contains('Success')) {
+            return 'Installed $path';
+          }
+          logError('Failed to install $path', error: output);
+          throw AppException('Failed to install cause $output');
+        }),
+      );
+    });
+  }
 
   @override
   Future<List<AdbFileSystem>> ls(AdbDevice device, String? path) =>
       run(['-s', device.id, 'shell', 'ls', '-i', '"${path ?? '/'}"']).then((result) async {
         final stdErr = await result.stderr;
         if (stdErr != '') {
-          throw AppException("Failed to list files");
+          throw AppException("Failed to list files ");
         }
 
         return result.stdout.then((output) async {
@@ -241,57 +269,47 @@ class ProccessAdbServiceImpl implements AdbService {
 
   @override
   Future<Result> pushFile(
-    String id,
+    AdbDevice device,
     String file,
     String destinationPath,
-  ) =>
-      run(['-s', id, 'push', file, destinationPath]).then((result) async {
-        return result.copyWith(
-          messege: result.stdout.then((output) {
-            if (output.contains('pushed')) {
-              return 'Pushed $file';
-            }
-            logError('Failed to push $file', error: output);
-            throw AppException('Failed to push');
-          }),
-        );
-      });
+  ) {
+    final id = device.id;
+    return run(['-s', id, 'push', file, destinationPath]).then((result) async {
+      return result.copyWith(
+        messege: result.stdout.then((output) {
+          if (output.contains('pushed')) {
+            return 'Pushed $file';
+          }
+          logError('Failed to push $file', error: output);
+          throw AppException('Failed to push cause $output');
+        }),
+      );
+    });
+  }
 
   @override
-  Future<Result> pullFile(String id, String file, String destinationPath) =>
-      run(['-s', id, 'pull', file, destinationPath]).then((result) async {
-        return result.copyWith(
-          messege: result.stdout.then((output) {
-            if (output.contains('pulled')) {
-              return 'Pulled $file';
-            }
-            logError('Failed to pull $file', error: output);
-            throw AppException('Failed to pull');
-          }),
-        );
-      });
+  Future<Result> pullFile(AdbDevice device, String file, String destinationPath) {
+    final id = device.id;
+    return run(['-s', id, 'pull', file, destinationPath]).then((result) async {
+      return result.copyWith(
+        messege: result.stdout.then((output) {
+          if (output.contains('pulled')) {
+            return 'Pulled $file';
+          }
+          logError('Failed to pull $file', error: output);
+          throw AppException('Failed to pull cause $output');
+        }),
+      );
+    });
+  }
 
   @override
-  Future<Result> pair(String pairCode, String host, int port) =>
-      run(['pair', '$host:$port', pairCode]).then((result) async {
-        return result.copyWith(
-          messege: result
-              .stdout /*.then((output) {
-            if (output.contains('connected to')) {
-              return 'Paired to $host:$port';
-            }
-            logError('Failed to pair to $host:$port', error: output);
-            throw AppException('Failed to pair');
-          })*/
-          ,
-        );
-      });
-
-  @override
-  Future<Result> runCustomCommand(String id, String command) =>
-      run(['-s', id, ...command.split(' ')]).then((result) {
-        return result.copyWith(messege: result.stdout);
-      });
+  Future<Result> runCustomCommand(AdbDevice device, String command) {
+    final id = device.id;
+    return run(['-s', id, ...command.split(' ')]).then((result) {
+      return result.copyWith(messege: result.stdout);
+    });
+  }
 }
 
 class PermissionDeniedException extends AppException {

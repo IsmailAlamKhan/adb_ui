@@ -1,3 +1,4 @@
+import 'package:adb_ui/app/utils/utils.dart';
 import 'package:animations/animations.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -331,6 +332,19 @@ extension MyNavigatorState on NavigatorState {
         opaque: false,
       ),
     );
+  }
+
+  /// show dialog if screen bigger than 600
+  /// else push page
+  Future<T?> adaptivePush<T extends Object?>(
+    WidgetBuilder page, [
+    RouteSettings? routeSettings,
+  ]) {
+    if (isTabletSize(context)) {
+      return showDialog<T>(pageBuilder: page, routeSettings: routeSettings);
+    } else {
+      return pushBuilder<T>(page, routeSettings);
+    }
   }
 
   void showLoading() => showDialog(

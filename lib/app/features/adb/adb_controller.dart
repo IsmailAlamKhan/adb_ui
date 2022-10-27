@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../shared/shared.dart';
 import '../../utils/utils.dart';
@@ -14,11 +15,13 @@ class AdbController with NavigationController {
   final EventBus eventBus;
   final AdbService service;
   final NetworkInfoService networkInfoService;
+  final CommandQueueController commandQueueController;
 
   AdbController(Ref ref)
       : eventBus = ref.read(eventBusProvider),
         service = ref.read(adbServiceProvider),
-        networkInfoService = ref.read(networkInfoServiceProvider);
+        networkInfoService = ref.read(networkInfoServiceProvider),
+        commandQueueController = ref.read(commandQueueControllerProvider.notifier);
 
   Timer? _commandOutputCloseTimer;
   void closeCurrentCommandOutput() {
@@ -30,16 +33,21 @@ class AdbController with NavigationController {
     required String command,
     bool autoCloseOutput = true,
   }) async {
+    final id = const Uuid().v4();
     _commandOutputCloseTimer?.cancel();
     closeCurrentCommandOutput();
     try {
       return await function().then((value) async {
+        final _command = CommandModel.adding(
+          id: id,
+          command: command,
+          device: value.device,
+          stdout: value.stdoutStream,
+          stderr: value.stderrStream,
+        );
+        commandQueueController.addCommand(_command);
         showDialog(
-          pageBuilder: (context) => CurrentCommandOutput(
-            stderrStream: value.sterrStream,
-            stdoutStream: value.stoutStream,
-            command: command,
-          ),
+          pageBuilder: (context) => CurrentCommandOutput(commandId: id),
           barrierDismissible: false,
           barrierLabel: 'adb',
           routeSettings: CurrentCommandOutput.routeSettings,
@@ -47,7 +55,14 @@ class AdbController with NavigationController {
         try {
           await value.messege;
         } on AppException catch (e) {
-          showSnackbar(text: e.message);
+          commandQueueController.updateCommand(
+            CommandModel.error(
+              id: id,
+              command: command,
+              device: value.device,
+              error: e.message,
+            ),
+          );
         } finally {
           if (autoCloseOutput) {
             _commandOutputCloseTimer = Timer(const Duration(seconds: 2), closeCurrentCommandOutput);
@@ -82,7 +97,7 @@ class AdbController with NavigationController {
 
   Future<void> disconnect(AdbDevice device) async {
     return run(
-      function: () => service.disconnect(device.id),
+      function: () => service.disconnect(device),
       command: 'Disconnect from ${device.id}',
     );
   }
@@ -91,7 +106,7 @@ class AdbController with NavigationController {
         function: () async {
           final apkPath = await showDialog<String>(pageBuilder: (_) => const FilePickerView.apk());
           if (apkPath != null) {
-            return service.installApk(device.id, apkPath);
+            return service.installApk(device, apkPath);
           }
           throw AppException('No apk selected to install');
         },
@@ -119,7 +134,7 @@ class AdbController with NavigationController {
     }
 
     run(
-      function: () => service.pushFile(device.id, file, destinationPath),
+      function: () => service.pushFile(device, file, destinationPath),
       command: 'Push file to ${device.id}',
     );
   }
@@ -143,7 +158,7 @@ class AdbController with NavigationController {
       return;
     }
     run(
-      function: () => service.pullFile(device.id, file, destinationPath),
+      function: () => service.pullFile(device, file, destinationPath),
       command: 'Pull file from ${device.id}',
     );
   }
@@ -190,7 +205,7 @@ class AdbController with NavigationController {
     );
     if (command == null) return;
     return run(
-      function: () => service.runCustomCommand(device.id, command),
+      function: () => service.runCustomCommand(device, command),
       command: 'Run command on ${device.id}',
       autoCloseOutput: false,
     );
