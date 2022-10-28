@@ -10,12 +10,21 @@ class CommandQueueView extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final queue = ref.watch(commandQueueControllerProvider);
+    final controller = ref.watch(commandQueueControllerProvider.notifier);
 
     return AdaptiveDialog(
       child: Scaffold(
         body: CustomScrollView(
           slivers: [
-            const SliverAppBar(title: Text('Command Queue')),
+            SliverAppBar(
+              title: const Text('Command Queue'),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.clear_all),
+                  onPressed: () => controller.clear(),
+                ),
+              ],
+            ),
             if (queue.isEmpty)
               const SliverFillRemaining(
                 hasScrollBody: false,

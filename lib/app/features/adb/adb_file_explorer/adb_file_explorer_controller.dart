@@ -1,18 +1,25 @@
 import 'package:flutter/widgets.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../utils/event_bus.dart';
 import '../../../utils/logger.dart';
 import '../../../utils/navigation.dart';
 import '../../features.dart';
 
+final adbFileExplorerControllerProvider = ChangeNotifierProvider<AdbFileExplorerController>(
+  AdbFileExplorerController.new,
+);
+
 class AdbFileExplorerController extends ChangeNotifier with NavigationController {
-  final AdbFileExplorerOpenReason openReason;
   @override
   final EventBus eventBus;
-  AdbFileExplorerController({
-    required this.openReason,
-    required this.eventBus,
-  });
+  AdbFileExplorerController(Ref ref) : eventBus = ref.read(eventBusProvider);
+  late AdbFileExplorerOpenReason openReason;
+
+  void open(AdbFileExplorerOpenReason openReason) {
+    this.openReason = openReason;
+  }
+
   final List<String> _history = [];
 
   List<String> get history => _history;

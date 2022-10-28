@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io' as io;
 
-import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../utils/utils.dart';
@@ -54,6 +53,8 @@ abstract class AdbService {
 
   Stream<List<AdbDevice>> get connectedDevicesStream;
 
+  Future<void> verifyAdb();
+
   /// commands
   Future<Result> connect(String host, int port);
   Future<Result> pair(String pair, String host, int port);
@@ -89,10 +90,10 @@ class ProccessAdbServiceImpl implements AdbService {
     final process = await io.Process.start('adb', arguments);
     final stdout = process.stdout.asBroadcastStream();
     final stderr = process.stderr.asBroadcastStream();
-    if (addStdout && kDebugMode) {
-      io.stdout.addStream(stdout);
-      io.stderr.addStream(stderr);
-    }
+    // if (addStdout && kDebugMode) {
+    //   io.stdout.addStream(stdout);
+    //   io.stderr.addStream(stderr);
+    // }
     final _stdout = stdout.transform(utf8.decoder);
     final _stderr = stderr.transform(utf8.decoder);
     _stdout.listen(LogFile.instance.dispatchStdoutLogs);
@@ -123,7 +124,12 @@ class ProccessAdbServiceImpl implements AdbService {
       if (parts.isEmpty) {
         break;
       }
-      devices.add(AdbDevice(type: parts.last, id: parts.first));
+      final model = await run(['-s', parts[0], 'shell', 'getprop', 'ro.product.model']);
+      devices.add(AdbDevice(
+        type: parts.last,
+        id: parts.first,
+        model: (await model.stdout).trim(),
+      ));
     }
     return devices;
   }
@@ -307,6 +313,19 @@ class ProccessAdbServiceImpl implements AdbService {
       return result.copyWith(messege: result.stdout);
     });
   }
+
+  @override
+  Future<void> verifyAdb() => run(['version']).then((result) async {
+        final stdErr = await result.stderr;
+        if (stdErr != '') {
+          throw AppException("Failed to verify adb");
+        }
+        final stdOut = await result.stdout;
+        if (stdOut.contains('Android Debug Bridge version')) {
+          return;
+        }
+        throw AppException("Failed to verify adb");
+      });
 }
 
 class PermissionDeniedException extends AppException {

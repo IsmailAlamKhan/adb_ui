@@ -16,6 +16,7 @@ class HomeView extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('ADB'),
+        automaticallyImplyLeading: isMobileSize(context) ? true : false,
         actions: [
           IconButton(
             onPressed: () {
@@ -33,13 +34,16 @@ class HomeView extends ConsumerWidget {
           ),
         ],
       ),
-      body: Row(
-        children: [
-          SizedBox(width: sidebarSize, child: const HomeViewSideBar()),
-          const VerticalDivider(),
-          const Expanded(child: HomeViewContent()),
-        ],
-      ),
+      drawer: const Drawer(child: HomeViewSideBar()),
+      body: !isMobileSize(context)
+          ? Row(
+              children: [
+                SizedBox(width: sidebarSize, child: const HomeViewSideBar()),
+                const VerticalDivider(),
+                const Expanded(child: HomeViewContent()),
+              ],
+            )
+          : const HomeViewContent(),
     );
   }
 }

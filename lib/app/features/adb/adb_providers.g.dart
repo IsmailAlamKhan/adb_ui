@@ -29,10 +29,10 @@ class _SystemHash {
   }
 }
 
-String $adbFilesHash() => r'43a52deb2cdd1cc300478ef9204a9b5519fd6206';
+String $adbFilesHash() => r'd23d3c9e1407a598e4cbfb66e111f121564d0696';
 
 /// See also [adbFiles].
-class AdbFilesProvider extends AutoDisposeFutureProvider<List<AdbFileSystem>> {
+class AdbFilesProvider extends FutureProvider<List<AdbFileSystem>> {
   AdbFilesProvider({
     required this.device,
     this.path,
@@ -70,7 +70,7 @@ class AdbFilesProvider extends AutoDisposeFutureProvider<List<AdbFileSystem>> {
   }
 }
 
-typedef AdbFilesRef = AutoDisposeFutureProviderRef<List<AdbFileSystem>>;
+typedef AdbFilesRef = FutureProviderRef<List<AdbFileSystem>>;
 
 /// See also [adbFiles].
 final adbFilesProvider = AdbFilesFamily();
@@ -89,7 +89,7 @@ class AdbFilesFamily extends Family<AsyncValue<List<AdbFileSystem>>> {
   }
 
   @override
-  AutoDisposeFutureProvider<List<AdbFileSystem>> getProviderOverride(
+  FutureProvider<List<AdbFileSystem>> getProviderOverride(
     covariant AdbFilesProvider provider,
   ) {
     return call(

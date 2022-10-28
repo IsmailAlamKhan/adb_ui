@@ -57,4 +57,8 @@ class SettingsController extends StateNotifier<SettingsModel> with NavigationCon
       showSnackbar(text: e.message);
     }
   }
+
+  void goToGitHub() => launchUrl(Uri.parse(appRepoUrl));
+
+  void goToAuthorGitHub() => launchUrl(Uri.parse(authorGitHubUrl));
 }

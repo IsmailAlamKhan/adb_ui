@@ -11,7 +11,7 @@ class AdaptiveDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Widget child = this.child;
-    if (isTabletSize(context)) {
+    if (isTabletOrLarger(context)) {
       child = Center(
         child: SizedBox(
           width: 500,

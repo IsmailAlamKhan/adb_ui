@@ -35,7 +35,18 @@ class HomeViewContent extends ConsumerWidget {
                 (context, index) {
                   final device = connectedDevices[index];
                   return ListTile(
-                    title: Text(device.type),
+                    title: Text.rich(
+                      TextSpan(
+                        text: device.model,
+                        children: [
+                          if (device.isOffline)
+                            TextSpan(
+                              text: ' (Offline)',
+                              style: Theme.of(context).textTheme.caption,
+                            ),
+                        ],
+                      ),
+                    ),
                     subtitle: Text(device.id),
                     onTap: () => Navigator.of(context).showDialog(
                       pageBuilder: (context) => AdbDeviceDialog(device: device),

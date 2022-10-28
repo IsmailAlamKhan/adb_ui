@@ -26,8 +26,12 @@ Color surfaceTintColor({
 
 typedef FutureCallback<T> = Future<T> Function();
 
-bool isTabletSize(BuildContext context) {
+bool isTabletOrLarger(BuildContext context) {
   return MediaQuery.of(context).size.width > 500;
+}
+
+bool isMobileSize(BuildContext context) {
+  return MediaQuery.of(context).size.width < 500;
 }
 
 Future<Directory> getExternalDir() async {
@@ -42,3 +46,7 @@ Future<Directory> getExternalDir() async {
 
 const bugReportUrl =
     'https://github.com/IsmailAlamKhan/adb_ui/issues/new?assignees=&labels=&template=bug_report.md&title=';
+
+const appRepoUrl = 'https://github.com/IsmailAlamKhan/adb_ui';
+
+const authorGitHubUrl = 'https://github.com/IsmailAlamKhan';

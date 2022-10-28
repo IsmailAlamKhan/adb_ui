@@ -18,6 +18,7 @@ final _privateConstructorUsedError = UnsupportedError(
 mixin _$AdbDevice {
   String get id => throw _privateConstructorUsedError;
   String get type => throw _privateConstructorUsedError;
+  String get model => throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
   $AdbDeviceCopyWith<AdbDevice> get copyWith =>
@@ -29,7 +30,7 @@ abstract class $AdbDeviceCopyWith<$Res> {
   factory $AdbDeviceCopyWith(AdbDevice value, $Res Function(AdbDevice) then) =
       _$AdbDeviceCopyWithImpl<$Res, AdbDevice>;
   @useResult
-  $Res call({String id, String type});
+  $Res call({String id, String type, String model});
 }
 
 /// @nodoc
@@ -47,6 +48,7 @@ class _$AdbDeviceCopyWithImpl<$Res, $Val extends AdbDevice>
   $Res call({
     Object? id = null,
     Object? type = null,
+    Object? model = null,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -56,6 +58,10 @@ class _$AdbDeviceCopyWithImpl<$Res, $Val extends AdbDevice>
       type: null == type
           ? _value.type
           : type // ignore: cast_nullable_to_non_nullable
+              as String,
+      model: null == model
+          ? _value.model
+          : model // ignore: cast_nullable_to_non_nullable
               as String,
     ) as $Val);
   }
@@ -68,7 +74,7 @@ abstract class _$$_AdbDeviceCopyWith<$Res> implements $AdbDeviceCopyWith<$Res> {
       __$$_AdbDeviceCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String id, String type});
+  $Res call({String id, String type, String model});
 }
 
 /// @nodoc
@@ -84,6 +90,7 @@ class __$$_AdbDeviceCopyWithImpl<$Res>
   $Res call({
     Object? id = null,
     Object? type = null,
+    Object? model = null,
   }) {
     return _then(_$_AdbDevice(
       id: null == id
@@ -94,6 +101,10 @@ class __$$_AdbDeviceCopyWithImpl<$Res>
           ? _value.type
           : type // ignore: cast_nullable_to_non_nullable
               as String,
+      model: null == model
+          ? _value.model
+          : model // ignore: cast_nullable_to_non_nullable
+              as String,
     ));
   }
 }
@@ -101,16 +112,20 @@ class __$$_AdbDeviceCopyWithImpl<$Res>
 /// @nodoc
 
 class _$_AdbDevice extends _AdbDevice {
-  const _$_AdbDevice({required this.id, required this.type}) : super._();
+  const _$_AdbDevice(
+      {required this.id, required this.type, required this.model})
+      : super._();
 
   @override
   final String id;
   @override
   final String type;
+  @override
+  final String model;
 
   @override
   String toString() {
-    return 'AdbDevice(id: $id, type: $type)';
+    return 'AdbDevice(id: $id, type: $type, model: $model)';
   }
 
   @override
@@ -119,11 +134,12 @@ class _$_AdbDevice extends _AdbDevice {
         (other.runtimeType == runtimeType &&
             other is _$_AdbDevice &&
             (identical(other.id, id) || other.id == id) &&
-            (identical(other.type, type) || other.type == type));
+            (identical(other.type, type) || other.type == type) &&
+            (identical(other.model, model) || other.model == model));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, id, type);
+  int get hashCode => Object.hash(runtimeType, id, type, model);
 
   @JsonKey(ignore: true)
   @override
@@ -134,13 +150,17 @@ class _$_AdbDevice extends _AdbDevice {
 
 abstract class _AdbDevice extends AdbDevice {
   const factory _AdbDevice(
-      {required final String id, required final String type}) = _$_AdbDevice;
+      {required final String id,
+      required final String type,
+      required final String model}) = _$_AdbDevice;
   const _AdbDevice._() : super._();
 
   @override
   String get id;
   @override
   String get type;
+  @override
+  String get model;
   @override
   @JsonKey(ignore: true)
   _$$_AdbDeviceCopyWith<_$_AdbDevice> get copyWith =>

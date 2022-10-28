@@ -22,9 +22,28 @@ class CommandQueueController extends StateNotifier<List<CommandModel>> {
     state = state.where((element) => element.id != command.id).toList();
   }
 
+  void clear() {
+    state = [];
+    stopAllSubscriptions();
+  }
+
   void updateCommand(CommandModel command) {
     state = state.map((element) => element.id == command.id ? command : element).toList();
     listenAndChangeCommand(command);
+  }
+
+  void stopAllSubscriptions() {
+    outputSubscriptions.forEach((key, value) => value.cancel());
+    outputSubscriptions.clear();
+    outputControllers.forEach((key, value) => value.close());
+    outputControllers.clear();
+  }
+
+  void stopSubscription(String id) {
+    outputSubscriptions[id]?.cancel();
+    outputSubscriptions.remove(id);
+    outputControllers[id]?.close();
+    outputControllers.remove(id);
   }
 
   void listenAndChangeCommand(CommandModel command) {
@@ -69,10 +88,7 @@ class CommandQueueController extends StateNotifier<List<CommandModel>> {
                   output: buffer.toString(),
                 ),
               );
-              outputSubscriptions[id]?.cancel();
-              outputSubscriptions.remove(id);
-              outputControllers[id]?.close();
-              outputControllers.remove(id);
+              stopSubscription(id);
             }
           },
           onError: (error) {
@@ -84,33 +100,19 @@ class CommandQueueController extends StateNotifier<List<CommandModel>> {
                 error: error.toString(),
               ),
             );
-            outputSubscriptions[id]?.cancel();
-            outputSubscriptions.remove(id);
+            stopSubscription(id);
           },
         );
         outputSubscriptions[id] = subscription;
       },
-      error: (id, command, device, error) {
-        outputSubscriptions[id]?.cancel();
-        outputSubscriptions.remove(id);
-        outputControllers[id]?.close();
-        outputControllers.remove(id);
-      },
-      done: (id, command, device, output) {
-        outputSubscriptions[id]?.cancel();
-        outputSubscriptions.remove(id);
-        outputControllers[id]?.close();
-        outputControllers.remove(id);
-      },
+      error: (id, command, device, error) => stopSubscription(id),
+      done: (id, command, device, output) => stopSubscription(id),
     );
   }
 
   @override
   void dispose() {
-    for (var element in outputSubscriptions.values) {
-      element.cancel();
-    }
-    outputSubscriptions.clear();
+    stopAllSubscriptions();
     super.dispose();
   }
 }

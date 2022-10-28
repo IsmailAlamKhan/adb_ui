@@ -114,21 +114,23 @@ class _AppExceptionIndicatorCompactState extends State<AppExceptionIndicatorComp
     with _TryAgain<AppExceptionIndicatorCompact> {
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(widget.message!, maxLines: 3),
-        const Gap(4),
-        if (widget.onTryAgain != null)
-          Card(
-            margin: EdgeInsets.zero,
-            shape: const CircleBorder(),
-            child: effectiveIsLoading
-                ? const SizedBox(
-                    height: 30, width: 30, child: CircularProgressIndicator(strokeWidth: 2))
-                : IconButton(icon: const Icon(Icons.refresh), onPressed: tryAgain()),
-          ),
-      ],
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(widget.message!, maxLines: 3),
+          const Gap(4),
+          if (widget.onTryAgain != null)
+            Card(
+              margin: EdgeInsets.zero,
+              shape: const CircleBorder(),
+              child: effectiveIsLoading
+                  ? const SizedBox(
+                      height: 30, width: 30, child: CircularProgressIndicator(strokeWidth: 2))
+                  : IconButton(icon: const Icon(Icons.refresh), onPressed: tryAgain()),
+            ),
+        ],
+      ),
     );
   }
 }
@@ -164,43 +166,45 @@ class _AppExceptionIndicatorState extends State<AppExceptionIndicator>
   @override
   Widget build(BuildContext context) {
     final message = widget.message;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          DefaultTextStyle(
-            style: Theme.of(context).textTheme.headlineSmall!,
-            child: widget.titleWidget ??
-                Text(
-                  widget.title ?? "Something went wrong",
-                  textAlign: TextAlign.center,
-                ),
-          ),
-          if (message != null || widget.messageWidget != null) ...[
-            const Gap(16),
-            widget.messageWidget ?? Text(message!, textAlign: TextAlign.center),
-          ],
-          if (widget.extraAction != null) ...[const Gap(16), widget.extraAction!],
-          if (widget.onTryAgain != null) ...[
-            const Gap(48),
-            SizedBox(
-              height: 50,
-              child: ElevatedButton(
-                onPressed: tryAgain(),
-                // buttonType: !effectiveIsLoading ? ButtonType.filled : ButtonType.elevated,
-                style: ElevatedButton.styleFrom(
-                  shape: !effectiveIsLoading ? null : const CircleBorder(),
-                  minimumSize: const Size(150, 50),
-                ).filled(context),
-                child: effectiveIsLoading
-                    ? const CircularProgressIndicator()
-                    : const Text("Try again", style: TextStyle(fontSize: 16)),
-              ),
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            DefaultTextStyle(
+              style: Theme.of(context).textTheme.headlineSmall!,
+              child: widget.titleWidget ??
+                  Text(
+                    widget.title ?? "Something went wrong",
+                    textAlign: TextAlign.center,
+                  ),
             ),
-          ]
-        ],
+            if (message != null || widget.messageWidget != null) ...[
+              const Gap(16),
+              widget.messageWidget ?? Text(message!, textAlign: TextAlign.center),
+            ],
+            if (widget.extraAction != null) ...[const Gap(16), widget.extraAction!],
+            if (widget.onTryAgain != null) ...[
+              const Gap(48),
+              SizedBox(
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: tryAgain(),
+                  // buttonType: !effectiveIsLoading ? ButtonType.filled : ButtonType.elevated,
+                  style: ElevatedButton.styleFrom(
+                    shape: !effectiveIsLoading ? null : const CircleBorder(),
+                    minimumSize: const Size(150, 50),
+                  ).filled(context),
+                  child: effectiveIsLoading
+                      ? const CircularProgressIndicator()
+                      : const Text("Try again", style: TextStyle(fontSize: 16)),
+                ),
+              ),
+            ]
+          ],
+        ),
       ),
     );
   }

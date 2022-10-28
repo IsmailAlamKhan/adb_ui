@@ -20,13 +20,12 @@ class AdbFileExplorerView extends HookConsumerWidget {
   final AdbFileExplorerOpenReason openReason;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final controller = useMemoized(() => AdbFileExplorerController(
-          openReason: openReason,
-          eventBus: ref.watch(eventBusProvider),
-        ));
-    useListenable(controller);
+    final controller = ref.watch(adbFileExplorerControllerProvider);
 
     final files = ref.watch(adbFilesProvider(device: device, path: controller.currentPath));
+    useEffect(() {
+      controller.open(openReason);
+    }, [openReason]);
     return Center(
       child: SizedBox(
         height: 700,

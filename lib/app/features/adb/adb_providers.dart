@@ -12,7 +12,7 @@ final connectedDevicesProvider = StreamProvider.autoDispose<List<AdbDevice>>(
   },
 );
 
-@riverpod
+@Riverpod(keepAlive: true)
 Future<List<AdbFileSystem>> adbFiles(
   AdbFilesRef ref, {
   required AdbDevice device,

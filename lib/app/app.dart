@@ -28,6 +28,7 @@ class App {
         await windowManager.show();
         await windowManager.focus();
       });
+      await container.read(adbServiceProvider).verifyAdb();
       await container.read(deviceControllerProvider.notifier).init();
       await container.read(localStorageProvider).init();
       await container.read(settingsControllerProvider.notifier).init();

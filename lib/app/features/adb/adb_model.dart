@@ -8,6 +8,7 @@ class AdbDevice with _$AdbDevice {
   const factory AdbDevice({
     required String id,
     required String type,
+    required String model,
   }) = _AdbDevice;
 
   bool get isOffline => type.trim().toLowerCase() == 'offline';

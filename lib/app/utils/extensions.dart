@@ -1,4 +1,3 @@
-import 'package:adb_ui/app/utils/utils.dart';
 import 'package:animations/animations.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -6,7 +5,7 @@ import 'package:intl/intl.dart' as intl;
 import 'package:validators/validators.dart';
 
 import '../shared/shared.dart';
-import 'theme.dart';
+import 'utils.dart';
 
 extension ExtendedNum on num {
   bool between(num begin, num end) => this >= begin && this < end;
@@ -340,7 +339,7 @@ extension MyNavigatorState on NavigatorState {
     WidgetBuilder page, [
     RouteSettings? routeSettings,
   ]) {
-    if (isTabletSize(context)) {
+    if (isTabletOrLarger(context)) {
       return showDialog<T>(pageBuilder: page, routeSettings: routeSettings);
     } else {
       return pushBuilder<T>(page, routeSettings);

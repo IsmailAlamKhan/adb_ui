@@ -34,7 +34,7 @@ class DeviceController extends StateNotifier<Device?> {
     bool isPerAppLangSupported = false;
     if (deviceInfo is AndroidDeviceInfo) {
       final sdkInt = deviceInfo.version.sdkInt;
-      isPerAppLangSupported = sdkInt != null && sdkInt >= 33;
+      isPerAppLangSupported = sdkInt >= 33;
     }
     if (deviceInfo is IosDeviceInfo) {
       final sdkInt = deviceInfo.systemVersion?.toInt();
