@@ -47,7 +47,7 @@ class CommandQueueView extends HookConsumerWidget {
                           child: CircularProgressIndicator(strokeWidth: 2),
                         ),
                       ),
-                      subtitle: command.device != null ? Text(command.device!.id) : null,
+                      subtitle: command.device != null ? Text(command.device!.model) : null,
                       trailing: IconButton(
                         icon: const Icon(Icons.cancel),
                         onPressed: () => ref

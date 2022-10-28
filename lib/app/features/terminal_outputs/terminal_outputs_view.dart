@@ -31,7 +31,18 @@ class CurrentCommandOutput extends HookConsumerWidget {
         constraints: const BoxConstraints(maxWidth: 500, maxHeight: 600),
         child: AlertDialog(
           scrollable: true,
-          title: Text(command.command),
+          title: Text.rich(
+            TextSpan(
+              text: command.command,
+              children: [
+                if (command.device != null)
+                  TextSpan(
+                    text: ' on ${command.device!.model}',
+                    style: Theme.of(context).textTheme.caption,
+                  ),
+              ],
+            ),
+          ),
           content: SelectionArea(child: content),
           actions: [
             TextButton(

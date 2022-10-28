@@ -12,38 +12,32 @@ class FilePickerView extends HookConsumerWidget {
     super.key,
     this.fileType = FileType.any,
     this.allowedExtensions,
+    this.allowMultiple = true,
   });
 
   const factory FilePickerView.apk() = _FilePickerViewApk;
   final FileType fileType;
   final List<String>? allowedExtensions;
+  final bool allowMultiple;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDragging = useState(false);
-    final pickedFile = useState<XFile?>(null);
+    final pickedFiles = useState<List<XFile>>([]);
     final errorMsg = useState<String?>(null);
     return AlertDialog(
-      content: InkWell(
-        onTap: () async {
-          final result = await FilePicker.platform.pickFiles(
-            type: fileType,
-            allowedExtensions: allowedExtensions,
-          );
-
-          if (result != null) {
-            pickedFile.value = XFile(result.files.single.path!);
-            errorMsg.value = null;
+      content: DropTarget(
+        onDragDone: (details) {
+          errorMsg.value = null;
+          if (!allowMultiple) {
+            pickedFiles.value = [];
           }
-        },
-        child: DropTarget(
-          onDragDone: (details) {
-            errorMsg.value = null;
-            if (details.files.length > 1) {
-              errorMsg.value = 'You can only drop one file at a time';
-              return;
-            }
+          if (!allowMultiple && details.files.length > 1) {
+            errorMsg.value = 'Only one file can be selected';
+            return;
+          }
+          final files = <XFile>[];
 
-            final file = details.files.first;
+          for (var file in details.files) {
             bool validFile = false;
             final fileExtension = file.name.split('.').last;
             switch (fileType) {
@@ -68,32 +62,60 @@ class FilePickerView extends HookConsumerWidget {
                 break;
             }
             if (validFile) {
-              pickedFile.value = details.files.first;
+              // pickedFiles.value = details.files.first;
+              files.add(file);
             } else {
               errorMsg.value = 'Invalid file type';
             }
+          }
+          pickedFiles.value = [...pickedFiles.value, ...files];
+        },
+        onDragEntered: (details) {
+          isDragging.value = true;
+          errorMsg.value = null;
+        },
+        onDragExited: (details) {
+          isDragging.value = false;
+          errorMsg.value = null;
+        },
+        child: _FilePicker(
+          isDragging: isDragging.value,
+          files: pickedFiles.value,
+          errorMsg: errorMsg.value,
+          onFileSelected: () async {
+            final result = await FilePicker.platform.pickFiles(
+              type: fileType,
+              allowedExtensions: allowedExtensions,
+              allowMultiple: allowMultiple,
+            );
+
+            if (result != null) {
+              pickedFiles.value = [
+                ...pickedFiles.value,
+                ...result.files.map((e) => XFile(e.path!))
+              ];
+
+              errorMsg.value = null;
+            }
           },
-          onDragEntered: (details) {
-            isDragging.value = true;
-            errorMsg.value = null;
-          },
-          onDragExited: (details) {
-            isDragging.value = false;
-            errorMsg.value = null;
-          },
-          child: _FilePicker(
-            isDragging: isDragging.value,
-            file: pickedFile.value,
-            errorMsg: errorMsg.value,
-          ),
         ),
       ),
       actions: [
-        if (pickedFile.value != null)
+        if (pickedFiles.value.isNotEmpty)
           TextButton(
-            onPressed: () => Navigator.of(context).pop(pickedFile.value!.path),
+            onPressed: () {
+              if (allowMultiple) {
+                Navigator.of(context).pop(pickedFiles.value.map((e) => e.path).toList());
+              } else {
+                Navigator.of(context).pop(pickedFiles.value.first.path);
+              }
+            },
             child: const Text('OK'),
           ),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
       ],
     );
   }
@@ -102,13 +124,15 @@ class FilePickerView extends HookConsumerWidget {
 class _FilePicker extends StatelessWidget {
   const _FilePicker({
     super.key,
-    this.file,
+    required this.files,
     required this.isDragging,
     required this.errorMsg,
+    required this.onFileSelected,
   });
-  final XFile? file;
+  final List<XFile> files;
   final bool isDragging;
   final String? errorMsg;
+  final VoidCallback onFileSelected;
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -132,31 +156,37 @@ class _FilePicker extends StatelessWidget {
         width: 300,
         child: Material(
           borderRadius: BorderRadius.circular(10),
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Center(
-              child: Builder(
-                builder: (context) {
-                  Widget child;
-                  if (file == null) {
-                    child = Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.add, size: 50),
-                          if (errorMsg != null)
-                            Text(errorMsg!)
-                          else
-                            const Text('Drag and drop a file here or click to pick one'),
-                        ],
-                      ),
-                    );
-                  } else {
-                    child = Center(child: Text(file!.name));
-                  }
-                  return child;
-                },
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onFileSelected,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Center(
+                child: Builder(
+                  builder: (context) {
+                    Widget child;
+                    if (files.isEmpty) {
+                      child = Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.add, size: 50),
+                            if (errorMsg != null)
+                              Text(errorMsg!)
+                            else
+                              const Text('Drag and drop a file here or click to pick one'),
+                          ],
+                        ),
+                      );
+                    } else {
+                      child = Center(
+                        child: _FilePicked(files: files),
+                      );
+                    }
+                    return child;
+                  },
+                ),
               ),
             ),
           ),
@@ -166,7 +196,33 @@ class _FilePicker extends StatelessWidget {
   }
 }
 
+class _FilePicked extends StatelessWidget {
+  const _FilePicked({
+    super.key,
+    required this.files,
+  });
+
+  final List<XFile> files;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(Icons.check_circle, size: 50),
+        const SizedBox(height: 10),
+        if (files.length == 1) Text(files.first.name) else Text('${files.length} files selected'),
+      ],
+    );
+  }
+}
+
 class _FilePickerViewApk extends FilePickerView {
   const _FilePickerViewApk({super.key})
-      : super(allowedExtensions: const ['apk'], fileType: FileType.custom);
+      : super(
+          allowedExtensions: const ['apk'],
+          fileType: FileType.custom,
+          allowMultiple: false,
+        );
 }

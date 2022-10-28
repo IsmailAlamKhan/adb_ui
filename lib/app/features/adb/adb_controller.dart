@@ -24,6 +24,7 @@ class AdbController with NavigationController {
         commandQueueController = ref.read(commandQueueControllerProvider.notifier);
 
   Timer? _commandOutputCloseTimer;
+  static const _commandOutputCloseTimerDuration = Duration(seconds: 2);
   void closeCurrentCommandOutput() {
     popUntil((route) => route.settings != CurrentCommandOutput.routeSettings);
   }
@@ -65,7 +66,8 @@ class AdbController with NavigationController {
           );
         } finally {
           if (autoCloseOutput) {
-            _commandOutputCloseTimer = Timer(const Duration(seconds: 2), closeCurrentCommandOutput);
+            _commandOutputCloseTimer =
+                Timer(_commandOutputCloseTimerDuration, closeCurrentCommandOutput);
           }
         }
       });
@@ -98,7 +100,7 @@ class AdbController with NavigationController {
   Future<void> disconnect(AdbDevice device) async {
     return run(
       function: () => service.disconnect(device),
-      command: 'Disconnect from ${device.id}',
+      command: 'Disconnect',
     );
   }
 
@@ -110,7 +112,7 @@ class AdbController with NavigationController {
           }
           throw AppException('No apk selected to install');
         },
-        command: 'Install apk on ${device.id}',
+        command: 'Install apk',
       );
 
   Future<void> pushFile(AdbDevice device) async {
@@ -127,40 +129,59 @@ class AdbController with NavigationController {
       return;
     }
 
-    final file = await showDialog<String>(pageBuilder: (_) => const FilePickerView());
-    if (file == null) {
+    final files = await showDialog<List<String>>(pageBuilder: (_) => const FilePickerView());
+    if (files == null) {
       showSnackbar(text: 'No file selected');
       return;
     }
-
-    run(
-      function: () => service.pushFile(device, file, destinationPath),
-      command: 'Push file to ${device.id}',
-    );
+    for (var file in files) {
+      await run(
+        function: () => service.pushFile(device, file, destinationPath),
+        command: 'Push file',
+      );
+      if (_commandOutputCloseTimer != null) {
+        await Future.delayed(_commandOutputCloseTimerDuration);
+      }
+    }
   }
 
   Future<void> pullFile(AdbDevice device) async {
-    final file = await showDialog<String>(
-      pageBuilder: (_) => AdbFileExplorerView(
-        device: device,
-        title: 'Select file to pull',
-      ),
+    final files = await showDialog<List<String>>(
+      pageBuilder: (_) => AdbFileExplorerView(device: device, title: 'Select files to pull'),
     );
-    if (file == null) {
+    if (files == null) {
       return;
     }
-    final destinationPath = await FilePicker.platform.saveFile(
-      dialogTitle: 'Pick a folder to save the file',
-      fileName: file.split('/').last,
-    );
+    String? fileName;
+    if (files.length == 1) {
+      fileName = files.first.split('/').last;
+    }
+
+    String? destinationPath;
+    if (fileName != null) {
+      destinationPath = await FilePicker.platform.saveFile(
+        dialogTitle: 'Pick a folder to save the file',
+        fileName: fileName,
+      );
+    } else {
+      destinationPath = await FilePicker.platform.getDirectoryPath(
+        dialogTitle: 'Pick a folder to save the files',
+      );
+    }
     if (destinationPath == null) {
       showSnackbar(text: 'No destination path selected');
       return;
     }
-    run(
-      function: () => service.pullFile(device, file, destinationPath),
-      command: 'Pull file from ${device.id}',
-    );
+    final _files = files.toList();
+    for (var file in _files) {
+      await run(
+        function: () => service.pullFile(device, file, destinationPath!),
+        command: 'Pull file',
+      );
+      if (_commandOutputCloseTimer != null) {
+        await Future.delayed(_commandOutputCloseTimerDuration);
+      }
+    }
   }
 
   Future<void> pair() async {
@@ -206,7 +227,7 @@ class AdbController with NavigationController {
     if (command == null) return;
     return run(
       function: () => service.runCustomCommand(device, command),
-      command: 'Run command on ${device.id}',
+      command: 'Run command',
       autoCloseOutput: false,
     );
   }

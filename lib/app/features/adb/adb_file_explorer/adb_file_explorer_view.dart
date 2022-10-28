@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -26,6 +27,9 @@ class AdbFileExplorerView extends HookConsumerWidget {
     useEffect(() {
       controller.open(openReason);
     }, [openReason]);
+    useEffect(() {
+      return controller.clearSelectedFiles;
+    }, []);
     return Center(
       child: SizedBox(
         height: 700,
@@ -44,6 +48,13 @@ class AdbFileExplorerView extends HookConsumerWidget {
                   title: Text('/${controller.history.join('/')}'),
                 ),
               ),
+              actions: [
+                if (openReason == AdbFileExplorerOpenReason.pickFile)
+                  IconButton(
+                    icon: Text('Selected (${controller.selectedFiles.length})'),
+                    onPressed: null,
+                  ),
+              ],
             ),
             body: AsyncValueBuilder(
               value: files,
@@ -57,8 +68,13 @@ class AdbFileExplorerView extends HookConsumerWidget {
                   itemCount: files.length,
                   itemBuilder: (context, index) {
                     final file = files[index];
+                    final fileSelected = controller.selectedFiles.firstWhereOrNull(
+                          (element) => element.endsWith(file.name),
+                        ) !=
+                        null;
                     return ListTile(
                       title: Text(file.name),
+                      selected: fileSelected,
                       leading: file is AdbFile ? const Icon(Icons.insert_drive_file) : null,
                       onTap: () => controller.onTap(file),
                       // onLongPress: () => controller.onLongPress(file),
@@ -67,21 +83,19 @@ class AdbFileExplorerView extends HookConsumerWidget {
                 );
               },
             ),
-            bottomNavigationBar: openReason == AdbFileExplorerOpenReason.pickFolder
-                ? SizedBox(
-                    height: 50,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Center(
-                        child: ElevatedButton(
-                          onPressed: controller.selectPath,
-                          style: ElevatedButton.styleFrom().filled(context),
-                          child: const Text('Select'),
-                        ),
-                      ),
-                    ),
-                  )
-                : null,
+            bottomNavigationBar: SizedBox(
+              height: 50,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Center(
+                  child: ElevatedButton(
+                    onPressed: controller.selectPath(),
+                    style: ElevatedButton.styleFrom().filled(context),
+                    child: const Text('Select'),
+                  ),
+                ),
+              ),
+            ),
           ),
         ),
       ),

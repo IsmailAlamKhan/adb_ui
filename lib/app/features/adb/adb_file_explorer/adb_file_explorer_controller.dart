@@ -27,6 +27,8 @@ class AdbFileExplorerController extends ChangeNotifier with NavigationController
   String? _currentPath;
   String? get currentPath => _currentPath;
 
+  final List<String> selectedFiles = [];
+
   void goBack() {
     logInfo(_history);
     if (_history.length == 1) {
@@ -47,7 +49,13 @@ class AdbFileExplorerController extends ChangeNotifier with NavigationController
 
     if (isFile) {
       if (openReason == AdbFileExplorerOpenReason.pickFile) {
-        pop(path);
+        // pop(path);
+        if (!selectedFiles.contains(path)) {
+          selectedFiles.add(path);
+        } else {
+          selectedFiles.remove(path);
+        }
+        notifyListeners();
       }
       return;
     }
@@ -57,9 +65,17 @@ class AdbFileExplorerController extends ChangeNotifier with NavigationController
     notifyListeners();
   }
 
-  void selectPath() {
+  VoidCallback? selectPath() {
     if (openReason == AdbFileExplorerOpenReason.pickFolder) {
-      pop(_history.join('/'));
+      return () => pop(_history.join('/'));
+    } else {
+      if (selectedFiles.isNotEmpty) {
+        return () => pop(selectedFiles);
+      }
     }
+  }
+
+  void clearSelectedFiles() {
+    selectedFiles.clear();
   }
 }

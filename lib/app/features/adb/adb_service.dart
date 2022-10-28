@@ -163,7 +163,10 @@ class ProccessAdbServiceImpl implements AdbService {
   @override
   Future<Result> disconnect(AdbDevice device) {
     final id = device.id;
-    return run(['disconnect', id]).then((result) async {
+    return run(
+      ['disconnect', id],
+      device: device,
+    ).then((result) async {
       return result.copyWith(
         messege: result.stdout.then((output) {
           if (output.contains('disconnected')) {
@@ -180,7 +183,10 @@ class ProccessAdbServiceImpl implements AdbService {
   Future<Result> installApk(AdbDevice device, String path) {
     final id = device.id;
 
-    return run(['-s', id, 'install', path]).then((result) async {
+    return run(
+      ['-s', id, 'install', path],
+      device: device,
+    ).then((result) async {
       return result.copyWith(
         messege: Future.wait([result.stdout, result.stderr]).then((output) {
           final stdout = output.first;
@@ -199,8 +205,10 @@ class ProccessAdbServiceImpl implements AdbService {
   }
 
   @override
-  Future<List<AdbFileSystem>> ls(AdbDevice device, String? path) =>
-      run(['-s', device.id, 'shell', 'ls', '-i', '"${path ?? '/'}"']).then((result) async {
+  Future<List<AdbFileSystem>> ls(AdbDevice device, String? path) => run(
+        ['-s', device.id, 'shell', 'ls', '-i', '"${path ?? '/'}"'],
+        device: device,
+      ).then((result) async {
         final stdErr = await result.stderr;
         if (stdErr != '') {
           throw AppException("Failed to list files ");
@@ -277,7 +285,10 @@ class ProccessAdbServiceImpl implements AdbService {
     String destinationPath,
   ) {
     final id = device.id;
-    return run(['-s', id, 'push', file, destinationPath]).then((result) async {
+    return run(
+      ['-s', id, 'push', file, destinationPath],
+      device: device,
+    ).then((result) async {
       return result.copyWith(
         messege: result.stdout.then((output) {
           if (output.contains('pushed')) {
@@ -293,7 +304,10 @@ class ProccessAdbServiceImpl implements AdbService {
   @override
   Future<Result> pullFile(AdbDevice device, String file, String destinationPath) {
     final id = device.id;
-    return run(['-s', id, 'pull', file, destinationPath]).then((result) async {
+    return run(
+      ['-s', id, 'pull', file, destinationPath],
+      device: device,
+    ).then((result) async {
       return result.copyWith(
         messege: result.stdout.then((output) {
           if (output.contains('pulled')) {
@@ -309,7 +323,10 @@ class ProccessAdbServiceImpl implements AdbService {
   @override
   Future<Result> runCustomCommand(AdbDevice device, String command) {
     final id = device.id;
-    return run(['-s', id, ...command.split(' ')]).then((result) {
+    return run(
+      ['-s', id, ...command.split(' ')],
+      device: device,
+    ).then((result) {
       return result.copyWith(messege: result.stdout);
     });
   }
