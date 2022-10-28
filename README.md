@@ -5,8 +5,10 @@ This is a very simple app to easily run adb commands with a simple ui made with 
 Currently working features:
   * Wifi connect/ disconnect.
   * Install apk
-  * Push file.
+  * Push/Pull files.
   * Command queue
+  * Open scrcpy.
+  * Rerun command from command quque.
 
 ## Instalation
 There are 2 ways to install this.
