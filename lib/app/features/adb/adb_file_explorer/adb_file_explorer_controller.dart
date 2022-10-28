@@ -78,4 +78,12 @@ class AdbFileExplorerController extends ChangeNotifier with NavigationController
   void clearSelectedFiles() {
     selectedFiles.clear();
   }
+
+  void goToPath(String value) {
+    final path = value.split('/').skip(1).toList();
+    _history.clear();
+    _history.addAll(path);
+    _currentPath = value;
+    notifyListeners();
+  }
 }

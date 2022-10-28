@@ -13,14 +13,14 @@ class HomeViewSideBar extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ListTile(
-          onTap: adb.pair,
-          title: const Text('Pair'),
-          leading: const Icon(Icons.wifi_find),
-        ),
-        ListTile(
           onTap: adb.connect,
           title: const Text('Connect wireless'),
           leading: const Icon(Icons.wifi),
+        ),
+        ListTile(
+          onTap: adb.pair,
+          title: const Text('Pair'),
+          leading: const Icon(Icons.wifi_find),
         ),
       ],
     );

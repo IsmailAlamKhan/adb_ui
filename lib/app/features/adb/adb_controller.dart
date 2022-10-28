@@ -34,6 +34,7 @@ class AdbController with NavigationController {
     required String command,
     bool autoCloseOutput = true,
     bool isRerun = false,
+    bool showOutput = true,
   }) async {
     String id = const Uuid().v4();
     if (isRerun) {
@@ -53,12 +54,14 @@ class AdbController with NavigationController {
           arguments: value.arguments,
         );
         commandQueueController.addCommand(_command);
-        showDialog(
-          pageBuilder: (context) => CurrentCommandOutput(commandId: id),
-          barrierDismissible: false,
-          barrierLabel: 'adb',
-          routeSettings: CurrentCommandOutput.routeSettings,
-        );
+        if (showOutput) {
+          showDialog(
+            pageBuilder: (context) => CurrentCommandOutput(commandId: id),
+            barrierDismissible: false,
+            barrierLabel: 'adb',
+            routeSettings: CurrentCommandOutput.routeSettings,
+          );
+        }
         try {
           final msg = await value.messege;
           logWarning(msg);
@@ -74,7 +77,7 @@ class AdbController with NavigationController {
             ),
           );
         } finally {
-          if (autoCloseOutput) {
+          if (autoCloseOutput && showOutput) {
             _commandOutputCloseTimer =
                 Timer(_commandOutputCloseTimerDuration, closeCurrentCommandOutput);
           }
@@ -146,10 +149,12 @@ class AdbController with NavigationController {
       showSnackbar(text: 'No file selected');
       return;
     }
+    showSnackbar(text: 'Your files are being pushed check the command queue');
     for (var file in files) {
       await run(
         function: () => service.pushFile(device, file, destinationPath),
         command: 'Push file',
+        showOutput: false,
       );
       if (_commandOutputCloseTimer != null) {
         await Future.delayed(_commandOutputCloseTimerDuration);
@@ -184,11 +189,13 @@ class AdbController with NavigationController {
       showSnackbar(text: 'No destination path selected');
       return;
     }
+    showSnackbar(text: 'Your files are being pulled check the command queue');
     final _files = files.toList();
     for (var file in _files) {
       await run(
         function: () => service.pullFile(device, file, destinationPath!),
         command: 'Pull file',
+        showOutput: false,
       );
       if (_commandOutputCloseTimer != null) {
         await Future.delayed(_commandOutputCloseTimerDuration);

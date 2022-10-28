@@ -26,7 +26,7 @@ class AdbFileExplorerView extends HookConsumerWidget {
     final files = ref.watch(adbFilesProvider(device: device, path: controller.currentPath));
     useEffect(() {
       controller.open(openReason);
-    }, [openReason]);
+    }, [openReason, device]);
     useEffect(() {
       return controller.clearSelectedFiles;
     }, []);
@@ -45,7 +45,10 @@ class AdbFileExplorerView extends HookConsumerWidget {
                   leading: controller.history.isNotEmpty
                       ? BackButton(onPressed: controller.goBack)
                       : null,
-                  title: Text('/${controller.history.join('/')}'),
+                  title: _DirTextField(
+                    value: '/${controller.history.join('/')}',
+                    onSubmit: controller.goToPath,
+                  ),
                 ),
               ),
               actions: [
@@ -75,9 +78,21 @@ class AdbFileExplorerView extends HookConsumerWidget {
                     return ListTile(
                       title: Text(file.name),
                       selected: fileSelected,
-                      leading: file is AdbFile ? const Icon(Icons.insert_drive_file) : null,
+                      leading: SizedBox(
+                        width: 30,
+                        child: AnimatedSwitcher(
+                          duration: AppTheme.defaultDuration,
+                          child: Icon(
+                            fileSelected
+                                ? Icons.check_box
+                                : file is AdbFile
+                                    ? Icons.insert_drive_file
+                                    : Icons.folder,
+                            key: ValueKey(fileSelected),
+                          ),
+                        ),
+                      ),
                       onTap: () => controller.onTap(file),
-                      // onLongPress: () => controller.onLongPress(file),
                     );
                   },
                 );
@@ -98,6 +113,42 @@ class AdbFileExplorerView extends HookConsumerWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _DirTextField extends HookConsumerWidget {
+  const _DirTextField({
+    super.key,
+    required this.value,
+    required this.onSubmit,
+  });
+  final String value;
+  final ValueChanged<String> onSubmit;
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final tec = useTextEditingController(text: value);
+    useEffect(() {
+      tec.text = value;
+    }, [value]);
+    return AnimatedTheme(
+      data: Theme.of(context).copyWith(
+        inputDecorationTheme: Theme.of(context).inputDecorationTheme.copyWith(
+              border: InputBorder.none,
+              disabledBorder: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              focusedBorder: InputBorder.none,
+              focusedErrorBorder: InputBorder.none,
+              errorBorder: InputBorder.none,
+            ),
+      ),
+      child: TextField(
+        controller: tec,
+        decoration: const InputDecoration.collapsed(
+          hintText: 'Enter directory',
+        ),
+        onSubmitted: onSubmit,
       ),
     );
   }
