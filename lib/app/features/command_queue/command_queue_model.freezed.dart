@@ -19,51 +19,71 @@ mixin _$CommandModel {
   String get id => throw _privateConstructorUsedError;
   String get command => throw _privateConstructorUsedError;
   AdbDevice? get device => throw _privateConstructorUsedError;
+  String get rawCommand => throw _privateConstructorUsedError;
+  List<String> get arguments => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String id, String command, AdbDevice? device,
-            Stream<String> stdout, Stream<String> stderr)
+    required TResult Function(
+            String id,
+            String command,
+            AdbDevice? device,
+            Stream<String> stdout,
+            Stream<String> stderr,
+            String rawCommand,
+            List<String> arguments)
         adding,
-    required TResult Function(
-            String id, String command, AdbDevice? device, Stream<String> output)
+    required TResult Function(String id, String command, AdbDevice? device,
+            Stream<String> output, String rawCommand, List<String> arguments)
         running,
-    required TResult Function(
-            String id, String command, AdbDevice? device, String output)
+    required TResult Function(String id, String command, AdbDevice? device,
+            String output, String rawCommand, List<String> arguments)
         done,
-    required TResult Function(
-            String id, String command, AdbDevice? device, String error)
+    required TResult Function(String id, String command, AdbDevice? device,
+            String error, String rawCommand, List<String> arguments)
         error,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String id, String command, AdbDevice? device,
-            Stream<String> stdout, Stream<String> stderr)?
+    TResult? Function(
+            String id,
+            String command,
+            AdbDevice? device,
+            Stream<String> stdout,
+            Stream<String> stderr,
+            String rawCommand,
+            List<String> arguments)?
         adding,
     TResult? Function(String id, String command, AdbDevice? device,
-            Stream<String> output)?
+            Stream<String> output, String rawCommand, List<String> arguments)?
         running,
-    TResult? Function(
-            String id, String command, AdbDevice? device, String output)?
+    TResult? Function(String id, String command, AdbDevice? device,
+            String output, String rawCommand, List<String> arguments)?
         done,
-    TResult? Function(
-            String id, String command, AdbDevice? device, String error)?
+    TResult? Function(String id, String command, AdbDevice? device,
+            String error, String rawCommand, List<String> arguments)?
         error,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String id, String command, AdbDevice? device,
-            Stream<String> stdout, Stream<String> stderr)?
+    TResult Function(
+            String id,
+            String command,
+            AdbDevice? device,
+            Stream<String> stdout,
+            Stream<String> stderr,
+            String rawCommand,
+            List<String> arguments)?
         adding,
     TResult Function(String id, String command, AdbDevice? device,
-            Stream<String> output)?
+            Stream<String> output, String rawCommand, List<String> arguments)?
         running,
-    TResult Function(
-            String id, String command, AdbDevice? device, String output)?
+    TResult Function(String id, String command, AdbDevice? device,
+            String output, String rawCommand, List<String> arguments)?
         done,
-    TResult Function(
-            String id, String command, AdbDevice? device, String error)?
+    TResult Function(String id, String command, AdbDevice? device, String error,
+            String rawCommand, List<String> arguments)?
         error,
     required TResult orElse(),
   }) =>
@@ -105,7 +125,12 @@ abstract class $CommandModelCopyWith<$Res> {
           CommandModel value, $Res Function(CommandModel) then) =
       _$CommandModelCopyWithImpl<$Res, CommandModel>;
   @useResult
-  $Res call({String id, String command, AdbDevice? device});
+  $Res call(
+      {String id,
+      String command,
+      AdbDevice? device,
+      String rawCommand,
+      List<String> arguments});
 
   $AdbDeviceCopyWith<$Res>? get device;
 }
@@ -126,6 +151,8 @@ class _$CommandModelCopyWithImpl<$Res, $Val extends CommandModel>
     Object? id = null,
     Object? command = null,
     Object? device = freezed,
+    Object? rawCommand = null,
+    Object? arguments = null,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -140,6 +167,14 @@ class _$CommandModelCopyWithImpl<$Res, $Val extends CommandModel>
           ? _value.device
           : device // ignore: cast_nullable_to_non_nullable
               as AdbDevice?,
+      rawCommand: null == rawCommand
+          ? _value.rawCommand
+          : rawCommand // ignore: cast_nullable_to_non_nullable
+              as String,
+      arguments: null == arguments
+          ? _value.arguments
+          : arguments // ignore: cast_nullable_to_non_nullable
+              as List<String>,
     ) as $Val);
   }
 
@@ -167,7 +202,9 @@ abstract class _$$_AddingCopyWith<$Res> implements $CommandModelCopyWith<$Res> {
       String command,
       AdbDevice? device,
       Stream<String> stdout,
-      Stream<String> stderr});
+      Stream<String> stderr,
+      String rawCommand,
+      List<String> arguments});
 
   @override
   $AdbDeviceCopyWith<$Res>? get device;
@@ -188,6 +225,8 @@ class __$$_AddingCopyWithImpl<$Res>
     Object? device = freezed,
     Object? stdout = null,
     Object? stderr = null,
+    Object? rawCommand = null,
+    Object? arguments = null,
   }) {
     return _then(_$_Adding(
       id: null == id
@@ -210,19 +249,31 @@ class __$$_AddingCopyWithImpl<$Res>
           ? _value.stderr
           : stderr // ignore: cast_nullable_to_non_nullable
               as Stream<String>,
+      rawCommand: null == rawCommand
+          ? _value.rawCommand
+          : rawCommand // ignore: cast_nullable_to_non_nullable
+              as String,
+      arguments: null == arguments
+          ? _value._arguments
+          : arguments // ignore: cast_nullable_to_non_nullable
+              as List<String>,
     ));
   }
 }
 
 /// @nodoc
 
-class _$_Adding implements _Adding {
+class _$_Adding extends _Adding {
   const _$_Adding(
       {required this.id,
       required this.command,
       required this.device,
       required this.stdout,
-      required this.stderr});
+      required this.stderr,
+      required this.rawCommand,
+      required final List<String> arguments})
+      : _arguments = arguments,
+        super._();
 
   @override
   final String id;
@@ -234,10 +285,18 @@ class _$_Adding implements _Adding {
   final Stream<String> stdout;
   @override
   final Stream<String> stderr;
+  @override
+  final String rawCommand;
+  final List<String> _arguments;
+  @override
+  List<String> get arguments {
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_arguments);
+  }
 
   @override
   String toString() {
-    return 'CommandModel.adding(id: $id, command: $command, device: $device, stdout: $stdout, stderr: $stderr)';
+    return 'CommandModel.adding(id: $id, command: $command, device: $device, stdout: $stdout, stderr: $stderr, rawCommand: $rawCommand, arguments: $arguments)';
   }
 
   @override
@@ -249,12 +308,16 @@ class _$_Adding implements _Adding {
             (identical(other.command, command) || other.command == command) &&
             (identical(other.device, device) || other.device == device) &&
             (identical(other.stdout, stdout) || other.stdout == stdout) &&
-            (identical(other.stderr, stderr) || other.stderr == stderr));
+            (identical(other.stderr, stderr) || other.stderr == stderr) &&
+            (identical(other.rawCommand, rawCommand) ||
+                other.rawCommand == rawCommand) &&
+            const DeepCollectionEquality()
+                .equals(other._arguments, _arguments));
   }
 
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, id, command, device, stdout, stderr);
+  int get hashCode => Object.hash(runtimeType, id, command, device, stdout,
+      stderr, rawCommand, const DeepCollectionEquality().hash(_arguments));
 
   @JsonKey(ignore: true)
   @override
@@ -265,60 +328,79 @@ class _$_Adding implements _Adding {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String id, String command, AdbDevice? device,
-            Stream<String> stdout, Stream<String> stderr)
+    required TResult Function(
+            String id,
+            String command,
+            AdbDevice? device,
+            Stream<String> stdout,
+            Stream<String> stderr,
+            String rawCommand,
+            List<String> arguments)
         adding,
-    required TResult Function(
-            String id, String command, AdbDevice? device, Stream<String> output)
+    required TResult Function(String id, String command, AdbDevice? device,
+            Stream<String> output, String rawCommand, List<String> arguments)
         running,
-    required TResult Function(
-            String id, String command, AdbDevice? device, String output)
+    required TResult Function(String id, String command, AdbDevice? device,
+            String output, String rawCommand, List<String> arguments)
         done,
-    required TResult Function(
-            String id, String command, AdbDevice? device, String error)
+    required TResult Function(String id, String command, AdbDevice? device,
+            String error, String rawCommand, List<String> arguments)
         error,
   }) {
-    return adding(id, command, device, stdout, stderr);
+    return adding(id, command, device, stdout, stderr, rawCommand, arguments);
   }
 
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String id, String command, AdbDevice? device,
-            Stream<String> stdout, Stream<String> stderr)?
+    TResult? Function(
+            String id,
+            String command,
+            AdbDevice? device,
+            Stream<String> stdout,
+            Stream<String> stderr,
+            String rawCommand,
+            List<String> arguments)?
         adding,
     TResult? Function(String id, String command, AdbDevice? device,
-            Stream<String> output)?
+            Stream<String> output, String rawCommand, List<String> arguments)?
         running,
-    TResult? Function(
-            String id, String command, AdbDevice? device, String output)?
+    TResult? Function(String id, String command, AdbDevice? device,
+            String output, String rawCommand, List<String> arguments)?
         done,
-    TResult? Function(
-            String id, String command, AdbDevice? device, String error)?
+    TResult? Function(String id, String command, AdbDevice? device,
+            String error, String rawCommand, List<String> arguments)?
         error,
   }) {
-    return adding?.call(id, command, device, stdout, stderr);
+    return adding?.call(
+        id, command, device, stdout, stderr, rawCommand, arguments);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String id, String command, AdbDevice? device,
-            Stream<String> stdout, Stream<String> stderr)?
+    TResult Function(
+            String id,
+            String command,
+            AdbDevice? device,
+            Stream<String> stdout,
+            Stream<String> stderr,
+            String rawCommand,
+            List<String> arguments)?
         adding,
     TResult Function(String id, String command, AdbDevice? device,
-            Stream<String> output)?
+            Stream<String> output, String rawCommand, List<String> arguments)?
         running,
-    TResult Function(
-            String id, String command, AdbDevice? device, String output)?
+    TResult Function(String id, String command, AdbDevice? device,
+            String output, String rawCommand, List<String> arguments)?
         done,
-    TResult Function(
-            String id, String command, AdbDevice? device, String error)?
+    TResult Function(String id, String command, AdbDevice? device, String error,
+            String rawCommand, List<String> arguments)?
         error,
     required TResult orElse(),
   }) {
     if (adding != null) {
-      return adding(id, command, device, stdout, stderr);
+      return adding(id, command, device, stdout, stderr, rawCommand, arguments);
     }
     return orElse();
   }
@@ -361,13 +443,16 @@ class _$_Adding implements _Adding {
   }
 }
 
-abstract class _Adding implements CommandModel {
+abstract class _Adding extends CommandModel {
   const factory _Adding(
       {required final String id,
       required final String command,
       required final AdbDevice? device,
       required final Stream<String> stdout,
-      required final Stream<String> stderr}) = _$_Adding;
+      required final Stream<String> stderr,
+      required final String rawCommand,
+      required final List<String> arguments}) = _$_Adding;
+  const _Adding._() : super._();
 
   @override
   String get id;
@@ -377,6 +462,10 @@ abstract class _Adding implements CommandModel {
   AdbDevice? get device;
   Stream<String> get stdout;
   Stream<String> get stderr;
+  @override
+  String get rawCommand;
+  @override
+  List<String> get arguments;
   @override
   @JsonKey(ignore: true)
   _$$_AddingCopyWith<_$_Adding> get copyWith =>
@@ -392,7 +481,12 @@ abstract class _$$_RunningCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {String id, String command, AdbDevice? device, Stream<String> output});
+      {String id,
+      String command,
+      AdbDevice? device,
+      Stream<String> output,
+      String rawCommand,
+      List<String> arguments});
 
   @override
   $AdbDeviceCopyWith<$Res>? get device;
@@ -412,6 +506,8 @@ class __$$_RunningCopyWithImpl<$Res>
     Object? command = null,
     Object? device = freezed,
     Object? output = null,
+    Object? rawCommand = null,
+    Object? arguments = null,
   }) {
     return _then(_$_Running(
       id: null == id
@@ -430,18 +526,30 @@ class __$$_RunningCopyWithImpl<$Res>
           ? _value.output
           : output // ignore: cast_nullable_to_non_nullable
               as Stream<String>,
+      rawCommand: null == rawCommand
+          ? _value.rawCommand
+          : rawCommand // ignore: cast_nullable_to_non_nullable
+              as String,
+      arguments: null == arguments
+          ? _value._arguments
+          : arguments // ignore: cast_nullable_to_non_nullable
+              as List<String>,
     ));
   }
 }
 
 /// @nodoc
 
-class _$_Running implements _Running {
+class _$_Running extends _Running {
   const _$_Running(
       {required this.id,
       required this.command,
       required this.device,
-      required this.output});
+      required this.output,
+      required this.rawCommand,
+      required final List<String> arguments})
+      : _arguments = arguments,
+        super._();
 
   @override
   final String id;
@@ -451,10 +559,18 @@ class _$_Running implements _Running {
   final AdbDevice? device;
   @override
   final Stream<String> output;
+  @override
+  final String rawCommand;
+  final List<String> _arguments;
+  @override
+  List<String> get arguments {
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_arguments);
+  }
 
   @override
   String toString() {
-    return 'CommandModel.running(id: $id, command: $command, device: $device, output: $output)';
+    return 'CommandModel.running(id: $id, command: $command, device: $device, output: $output, rawCommand: $rawCommand, arguments: $arguments)';
   }
 
   @override
@@ -465,11 +581,16 @@ class _$_Running implements _Running {
             (identical(other.id, id) || other.id == id) &&
             (identical(other.command, command) || other.command == command) &&
             (identical(other.device, device) || other.device == device) &&
-            (identical(other.output, output) || other.output == output));
+            (identical(other.output, output) || other.output == output) &&
+            (identical(other.rawCommand, rawCommand) ||
+                other.rawCommand == rawCommand) &&
+            const DeepCollectionEquality()
+                .equals(other._arguments, _arguments));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, id, command, device, output);
+  int get hashCode => Object.hash(runtimeType, id, command, device, output,
+      rawCommand, const DeepCollectionEquality().hash(_arguments));
 
   @JsonKey(ignore: true)
   @override
@@ -480,60 +601,78 @@ class _$_Running implements _Running {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String id, String command, AdbDevice? device,
-            Stream<String> stdout, Stream<String> stderr)
+    required TResult Function(
+            String id,
+            String command,
+            AdbDevice? device,
+            Stream<String> stdout,
+            Stream<String> stderr,
+            String rawCommand,
+            List<String> arguments)
         adding,
-    required TResult Function(
-            String id, String command, AdbDevice? device, Stream<String> output)
+    required TResult Function(String id, String command, AdbDevice? device,
+            Stream<String> output, String rawCommand, List<String> arguments)
         running,
-    required TResult Function(
-            String id, String command, AdbDevice? device, String output)
+    required TResult Function(String id, String command, AdbDevice? device,
+            String output, String rawCommand, List<String> arguments)
         done,
-    required TResult Function(
-            String id, String command, AdbDevice? device, String error)
+    required TResult Function(String id, String command, AdbDevice? device,
+            String error, String rawCommand, List<String> arguments)
         error,
   }) {
-    return running(id, command, device, output);
+    return running(id, command, device, output, rawCommand, arguments);
   }
 
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String id, String command, AdbDevice? device,
-            Stream<String> stdout, Stream<String> stderr)?
+    TResult? Function(
+            String id,
+            String command,
+            AdbDevice? device,
+            Stream<String> stdout,
+            Stream<String> stderr,
+            String rawCommand,
+            List<String> arguments)?
         adding,
     TResult? Function(String id, String command, AdbDevice? device,
-            Stream<String> output)?
+            Stream<String> output, String rawCommand, List<String> arguments)?
         running,
-    TResult? Function(
-            String id, String command, AdbDevice? device, String output)?
+    TResult? Function(String id, String command, AdbDevice? device,
+            String output, String rawCommand, List<String> arguments)?
         done,
-    TResult? Function(
-            String id, String command, AdbDevice? device, String error)?
+    TResult? Function(String id, String command, AdbDevice? device,
+            String error, String rawCommand, List<String> arguments)?
         error,
   }) {
-    return running?.call(id, command, device, output);
+    return running?.call(id, command, device, output, rawCommand, arguments);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String id, String command, AdbDevice? device,
-            Stream<String> stdout, Stream<String> stderr)?
+    TResult Function(
+            String id,
+            String command,
+            AdbDevice? device,
+            Stream<String> stdout,
+            Stream<String> stderr,
+            String rawCommand,
+            List<String> arguments)?
         adding,
     TResult Function(String id, String command, AdbDevice? device,
-            Stream<String> output)?
+            Stream<String> output, String rawCommand, List<String> arguments)?
         running,
-    TResult Function(
-            String id, String command, AdbDevice? device, String output)?
+    TResult Function(String id, String command, AdbDevice? device,
+            String output, String rawCommand, List<String> arguments)?
         done,
-    TResult Function(
-            String id, String command, AdbDevice? device, String error)?
+    TResult Function(String id, String command, AdbDevice? device, String error,
+            String rawCommand, List<String> arguments)?
         error,
     required TResult orElse(),
   }) {
     if (running != null) {
-      return running(id, command, device, output);
+      return running(id, command, device, output, rawCommand, arguments);
     }
     return orElse();
   }
@@ -576,12 +715,15 @@ class _$_Running implements _Running {
   }
 }
 
-abstract class _Running implements CommandModel {
+abstract class _Running extends CommandModel {
   const factory _Running(
       {required final String id,
       required final String command,
       required final AdbDevice? device,
-      required final Stream<String> output}) = _$_Running;
+      required final Stream<String> output,
+      required final String rawCommand,
+      required final List<String> arguments}) = _$_Running;
+  const _Running._() : super._();
 
   @override
   String get id;
@@ -590,6 +732,10 @@ abstract class _Running implements CommandModel {
   @override
   AdbDevice? get device;
   Stream<String> get output;
+  @override
+  String get rawCommand;
+  @override
+  List<String> get arguments;
   @override
   @JsonKey(ignore: true)
   _$$_RunningCopyWith<_$_Running> get copyWith =>
@@ -602,7 +748,13 @@ abstract class _$$_DoneCopyWith<$Res> implements $CommandModelCopyWith<$Res> {
       __$$_DoneCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String id, String command, AdbDevice? device, String output});
+  $Res call(
+      {String id,
+      String command,
+      AdbDevice? device,
+      String output,
+      String rawCommand,
+      List<String> arguments});
 
   @override
   $AdbDeviceCopyWith<$Res>? get device;
@@ -622,6 +774,8 @@ class __$$_DoneCopyWithImpl<$Res>
     Object? command = null,
     Object? device = freezed,
     Object? output = null,
+    Object? rawCommand = null,
+    Object? arguments = null,
   }) {
     return _then(_$_Done(
       id: null == id
@@ -640,18 +794,30 @@ class __$$_DoneCopyWithImpl<$Res>
           ? _value.output
           : output // ignore: cast_nullable_to_non_nullable
               as String,
+      rawCommand: null == rawCommand
+          ? _value.rawCommand
+          : rawCommand // ignore: cast_nullable_to_non_nullable
+              as String,
+      arguments: null == arguments
+          ? _value._arguments
+          : arguments // ignore: cast_nullable_to_non_nullable
+              as List<String>,
     ));
   }
 }
 
 /// @nodoc
 
-class _$_Done implements _Done {
+class _$_Done extends _Done {
   const _$_Done(
       {required this.id,
       required this.command,
       required this.device,
-      required this.output});
+      required this.output,
+      required this.rawCommand,
+      required final List<String> arguments})
+      : _arguments = arguments,
+        super._();
 
   @override
   final String id;
@@ -661,10 +827,18 @@ class _$_Done implements _Done {
   final AdbDevice? device;
   @override
   final String output;
+  @override
+  final String rawCommand;
+  final List<String> _arguments;
+  @override
+  List<String> get arguments {
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_arguments);
+  }
 
   @override
   String toString() {
-    return 'CommandModel.done(id: $id, command: $command, device: $device, output: $output)';
+    return 'CommandModel.done(id: $id, command: $command, device: $device, output: $output, rawCommand: $rawCommand, arguments: $arguments)';
   }
 
   @override
@@ -675,11 +849,16 @@ class _$_Done implements _Done {
             (identical(other.id, id) || other.id == id) &&
             (identical(other.command, command) || other.command == command) &&
             (identical(other.device, device) || other.device == device) &&
-            (identical(other.output, output) || other.output == output));
+            (identical(other.output, output) || other.output == output) &&
+            (identical(other.rawCommand, rawCommand) ||
+                other.rawCommand == rawCommand) &&
+            const DeepCollectionEquality()
+                .equals(other._arguments, _arguments));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, id, command, device, output);
+  int get hashCode => Object.hash(runtimeType, id, command, device, output,
+      rawCommand, const DeepCollectionEquality().hash(_arguments));
 
   @JsonKey(ignore: true)
   @override
@@ -690,60 +869,78 @@ class _$_Done implements _Done {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String id, String command, AdbDevice? device,
-            Stream<String> stdout, Stream<String> stderr)
+    required TResult Function(
+            String id,
+            String command,
+            AdbDevice? device,
+            Stream<String> stdout,
+            Stream<String> stderr,
+            String rawCommand,
+            List<String> arguments)
         adding,
-    required TResult Function(
-            String id, String command, AdbDevice? device, Stream<String> output)
+    required TResult Function(String id, String command, AdbDevice? device,
+            Stream<String> output, String rawCommand, List<String> arguments)
         running,
-    required TResult Function(
-            String id, String command, AdbDevice? device, String output)
+    required TResult Function(String id, String command, AdbDevice? device,
+            String output, String rawCommand, List<String> arguments)
         done,
-    required TResult Function(
-            String id, String command, AdbDevice? device, String error)
+    required TResult Function(String id, String command, AdbDevice? device,
+            String error, String rawCommand, List<String> arguments)
         error,
   }) {
-    return done(id, command, device, output);
+    return done(id, command, device, output, rawCommand, arguments);
   }
 
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String id, String command, AdbDevice? device,
-            Stream<String> stdout, Stream<String> stderr)?
+    TResult? Function(
+            String id,
+            String command,
+            AdbDevice? device,
+            Stream<String> stdout,
+            Stream<String> stderr,
+            String rawCommand,
+            List<String> arguments)?
         adding,
     TResult? Function(String id, String command, AdbDevice? device,
-            Stream<String> output)?
+            Stream<String> output, String rawCommand, List<String> arguments)?
         running,
-    TResult? Function(
-            String id, String command, AdbDevice? device, String output)?
+    TResult? Function(String id, String command, AdbDevice? device,
+            String output, String rawCommand, List<String> arguments)?
         done,
-    TResult? Function(
-            String id, String command, AdbDevice? device, String error)?
+    TResult? Function(String id, String command, AdbDevice? device,
+            String error, String rawCommand, List<String> arguments)?
         error,
   }) {
-    return done?.call(id, command, device, output);
+    return done?.call(id, command, device, output, rawCommand, arguments);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String id, String command, AdbDevice? device,
-            Stream<String> stdout, Stream<String> stderr)?
+    TResult Function(
+            String id,
+            String command,
+            AdbDevice? device,
+            Stream<String> stdout,
+            Stream<String> stderr,
+            String rawCommand,
+            List<String> arguments)?
         adding,
     TResult Function(String id, String command, AdbDevice? device,
-            Stream<String> output)?
+            Stream<String> output, String rawCommand, List<String> arguments)?
         running,
-    TResult Function(
-            String id, String command, AdbDevice? device, String output)?
+    TResult Function(String id, String command, AdbDevice? device,
+            String output, String rawCommand, List<String> arguments)?
         done,
-    TResult Function(
-            String id, String command, AdbDevice? device, String error)?
+    TResult Function(String id, String command, AdbDevice? device, String error,
+            String rawCommand, List<String> arguments)?
         error,
     required TResult orElse(),
   }) {
     if (done != null) {
-      return done(id, command, device, output);
+      return done(id, command, device, output, rawCommand, arguments);
     }
     return orElse();
   }
@@ -786,12 +983,15 @@ class _$_Done implements _Done {
   }
 }
 
-abstract class _Done implements CommandModel {
+abstract class _Done extends CommandModel {
   const factory _Done(
       {required final String id,
       required final String command,
       required final AdbDevice? device,
-      required final String output}) = _$_Done;
+      required final String output,
+      required final String rawCommand,
+      required final List<String> arguments}) = _$_Done;
+  const _Done._() : super._();
 
   @override
   String get id;
@@ -800,6 +1000,10 @@ abstract class _Done implements CommandModel {
   @override
   AdbDevice? get device;
   String get output;
+  @override
+  String get rawCommand;
+  @override
+  List<String> get arguments;
   @override
   @JsonKey(ignore: true)
   _$$_DoneCopyWith<_$_Done> get copyWith => throw _privateConstructorUsedError;
@@ -811,7 +1015,13 @@ abstract class _$$_ErrorCopyWith<$Res> implements $CommandModelCopyWith<$Res> {
       __$$_ErrorCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String id, String command, AdbDevice? device, String error});
+  $Res call(
+      {String id,
+      String command,
+      AdbDevice? device,
+      String error,
+      String rawCommand,
+      List<String> arguments});
 
   @override
   $AdbDeviceCopyWith<$Res>? get device;
@@ -831,6 +1041,8 @@ class __$$_ErrorCopyWithImpl<$Res>
     Object? command = null,
     Object? device = freezed,
     Object? error = null,
+    Object? rawCommand = null,
+    Object? arguments = null,
   }) {
     return _then(_$_Error(
       id: null == id
@@ -849,18 +1061,30 @@ class __$$_ErrorCopyWithImpl<$Res>
           ? _value.error
           : error // ignore: cast_nullable_to_non_nullable
               as String,
+      rawCommand: null == rawCommand
+          ? _value.rawCommand
+          : rawCommand // ignore: cast_nullable_to_non_nullable
+              as String,
+      arguments: null == arguments
+          ? _value._arguments
+          : arguments // ignore: cast_nullable_to_non_nullable
+              as List<String>,
     ));
   }
 }
 
 /// @nodoc
 
-class _$_Error implements _Error {
+class _$_Error extends _Error {
   const _$_Error(
       {required this.id,
       required this.command,
       required this.device,
-      required this.error});
+      required this.error,
+      required this.rawCommand,
+      required final List<String> arguments})
+      : _arguments = arguments,
+        super._();
 
   @override
   final String id;
@@ -870,10 +1094,18 @@ class _$_Error implements _Error {
   final AdbDevice? device;
   @override
   final String error;
+  @override
+  final String rawCommand;
+  final List<String> _arguments;
+  @override
+  List<String> get arguments {
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_arguments);
+  }
 
   @override
   String toString() {
-    return 'CommandModel.error(id: $id, command: $command, device: $device, error: $error)';
+    return 'CommandModel.error(id: $id, command: $command, device: $device, error: $error, rawCommand: $rawCommand, arguments: $arguments)';
   }
 
   @override
@@ -884,11 +1116,16 @@ class _$_Error implements _Error {
             (identical(other.id, id) || other.id == id) &&
             (identical(other.command, command) || other.command == command) &&
             (identical(other.device, device) || other.device == device) &&
-            (identical(other.error, error) || other.error == error));
+            (identical(other.error, error) || other.error == error) &&
+            (identical(other.rawCommand, rawCommand) ||
+                other.rawCommand == rawCommand) &&
+            const DeepCollectionEquality()
+                .equals(other._arguments, _arguments));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, id, command, device, error);
+  int get hashCode => Object.hash(runtimeType, id, command, device, error,
+      rawCommand, const DeepCollectionEquality().hash(_arguments));
 
   @JsonKey(ignore: true)
   @override
@@ -899,60 +1136,78 @@ class _$_Error implements _Error {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String id, String command, AdbDevice? device,
-            Stream<String> stdout, Stream<String> stderr)
+    required TResult Function(
+            String id,
+            String command,
+            AdbDevice? device,
+            Stream<String> stdout,
+            Stream<String> stderr,
+            String rawCommand,
+            List<String> arguments)
         adding,
-    required TResult Function(
-            String id, String command, AdbDevice? device, Stream<String> output)
+    required TResult Function(String id, String command, AdbDevice? device,
+            Stream<String> output, String rawCommand, List<String> arguments)
         running,
-    required TResult Function(
-            String id, String command, AdbDevice? device, String output)
+    required TResult Function(String id, String command, AdbDevice? device,
+            String output, String rawCommand, List<String> arguments)
         done,
-    required TResult Function(
-            String id, String command, AdbDevice? device, String error)
+    required TResult Function(String id, String command, AdbDevice? device,
+            String error, String rawCommand, List<String> arguments)
         error,
   }) {
-    return error(id, command, device, this.error);
+    return error(id, command, device, this.error, rawCommand, arguments);
   }
 
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String id, String command, AdbDevice? device,
-            Stream<String> stdout, Stream<String> stderr)?
+    TResult? Function(
+            String id,
+            String command,
+            AdbDevice? device,
+            Stream<String> stdout,
+            Stream<String> stderr,
+            String rawCommand,
+            List<String> arguments)?
         adding,
     TResult? Function(String id, String command, AdbDevice? device,
-            Stream<String> output)?
+            Stream<String> output, String rawCommand, List<String> arguments)?
         running,
-    TResult? Function(
-            String id, String command, AdbDevice? device, String output)?
+    TResult? Function(String id, String command, AdbDevice? device,
+            String output, String rawCommand, List<String> arguments)?
         done,
-    TResult? Function(
-            String id, String command, AdbDevice? device, String error)?
+    TResult? Function(String id, String command, AdbDevice? device,
+            String error, String rawCommand, List<String> arguments)?
         error,
   }) {
-    return error?.call(id, command, device, this.error);
+    return error?.call(id, command, device, this.error, rawCommand, arguments);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String id, String command, AdbDevice? device,
-            Stream<String> stdout, Stream<String> stderr)?
+    TResult Function(
+            String id,
+            String command,
+            AdbDevice? device,
+            Stream<String> stdout,
+            Stream<String> stderr,
+            String rawCommand,
+            List<String> arguments)?
         adding,
     TResult Function(String id, String command, AdbDevice? device,
-            Stream<String> output)?
+            Stream<String> output, String rawCommand, List<String> arguments)?
         running,
-    TResult Function(
-            String id, String command, AdbDevice? device, String output)?
+    TResult Function(String id, String command, AdbDevice? device,
+            String output, String rawCommand, List<String> arguments)?
         done,
-    TResult Function(
-            String id, String command, AdbDevice? device, String error)?
+    TResult Function(String id, String command, AdbDevice? device, String error,
+            String rawCommand, List<String> arguments)?
         error,
     required TResult orElse(),
   }) {
     if (error != null) {
-      return error(id, command, device, this.error);
+      return error(id, command, device, this.error, rawCommand, arguments);
     }
     return orElse();
   }
@@ -995,12 +1250,15 @@ class _$_Error implements _Error {
   }
 }
 
-abstract class _Error implements CommandModel {
+abstract class _Error extends CommandModel {
   const factory _Error(
       {required final String id,
       required final String command,
       required final AdbDevice? device,
-      required final String error}) = _$_Error;
+      required final String error,
+      required final String rawCommand,
+      required final List<String> arguments}) = _$_Error;
+  const _Error._() : super._();
 
   @override
   String get id;
@@ -1009,6 +1267,10 @@ abstract class _Error implements CommandModel {
   @override
   AdbDevice? get device;
   String get error;
+  @override
+  String get rawCommand;
+  @override
+  List<String> get arguments;
   @override
   @JsonKey(ignore: true)
   _$$_ErrorCopyWith<_$_Error> get copyWith =>

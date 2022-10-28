@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Adb ui"
-#define MyAppVersion "0.0.6"
+#define MyAppVersion "0.0.7"
 #define MyAppPublisher "Md Ismail Alam Khan"
 #define MyAppURL "https://www.example.com/"
 #define MyAppExeName "adb_ui.exe"

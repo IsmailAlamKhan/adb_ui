@@ -1,4 +1,5 @@
 export 'adb/adb.dart';
+export 'app_init_error/app_init_error.dart';
 export 'command_queue/command_queue.dart';
 export 'device/device.dart';
 export 'file_picker/file_picker.dart';

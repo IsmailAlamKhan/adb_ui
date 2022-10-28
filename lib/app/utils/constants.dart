@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 const appName = 'ADB UI';
 
@@ -50,3 +51,5 @@ const bugReportUrl =
 const appRepoUrl = 'https://github.com/IsmailAlamKhan/adb_ui';
 
 const authorGitHubUrl = 'https://github.com/IsmailAlamKhan';
+
+const riverpodKeepAlive = Riverpod(keepAlive: true);

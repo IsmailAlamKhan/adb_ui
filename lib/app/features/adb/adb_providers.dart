@@ -1,6 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../utils/utils.dart';
 import '../features.dart';
 
 part 'adb_providers.g.dart';
@@ -12,7 +12,7 @@ final connectedDevicesProvider = StreamProvider.autoDispose<List<AdbDevice>>(
   },
 );
 
-@Riverpod(keepAlive: true)
+@riverpodKeepAlive
 Future<List<AdbFileSystem>> adbFiles(
   AdbFilesRef ref, {
   required AdbDevice device,
@@ -22,3 +22,7 @@ Future<List<AdbFileSystem>> adbFiles(
   final files = await adb.ls(device, path);
   return files;
 }
+
+@riverpodKeepAlive
+Future<bool> scrcpyAvailable(ScrcpyAvailableRef ref) =>
+    ref.read(adbServiceProvider).scrcpyAvailable();

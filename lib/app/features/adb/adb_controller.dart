@@ -33,8 +33,12 @@ class AdbController with NavigationController {
     required Future<Result> Function() function,
     required String command,
     bool autoCloseOutput = true,
+    bool isRerun = false,
   }) async {
-    final id = const Uuid().v4();
+    String id = const Uuid().v4();
+    if (isRerun) {
+      id = 'rerun-$id';
+    }
     _commandOutputCloseTimer?.cancel();
     closeCurrentCommandOutput();
     try {
@@ -45,6 +49,8 @@ class AdbController with NavigationController {
           device: value.device,
           stdout: value.stdoutStream,
           stderr: value.stderrStream,
+          rawCommand: value.command,
+          arguments: value.arguments,
         );
         commandQueueController.addCommand(_command);
         showDialog(
@@ -54,7 +60,8 @@ class AdbController with NavigationController {
           routeSettings: CurrentCommandOutput.routeSettings,
         );
         try {
-          await value.messege;
+          final msg = await value.messege;
+          logWarning(msg);
         } on AppException catch (e) {
           commandQueueController.updateCommand(
             CommandModel.error(
@@ -62,6 +69,8 @@ class AdbController with NavigationController {
               command: command,
               device: value.device,
               error: e.message,
+              rawCommand: value.command,
+              arguments: value.arguments,
             ),
           );
         } finally {
@@ -88,6 +97,9 @@ class AdbController with NavigationController {
     final parts = ip.split(':');
     if (parts.isEmpty) {
       return;
+    }
+    if (parts.length == 1) {
+      parts.add('5555');
     }
     final host = parts[0];
     final port = parts[1];
@@ -229,6 +241,20 @@ class AdbController with NavigationController {
       function: () => service.runCustomCommand(device, command),
       command: 'Run command',
       autoCloseOutput: false,
+    );
+  }
+
+  Future<void> runScrcpy(AdbDevice device) => run(
+        function: () => service.scrcpy(device),
+        command: 'Run scrcpy',
+      );
+
+  Future<void> rerunCommand(CommandModel command) {
+    return run(
+      function: () => service.rerunCommand(command.rawCommand, command.device, command.arguments),
+      command: command.command,
+      autoCloseOutput: false,
+      isRerun: true,
     );
   }
 }

@@ -109,6 +109,10 @@ class AdbDeviceDialog extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = ref.watch(adbControllerProvider);
+    final scrcpyAvailable = ref.watch(scrcpyAvailableProvider).whenOrNull<bool>(
+              data: (value) => value,
+            ) ??
+        false;
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 400),
@@ -159,6 +163,19 @@ class AdbDeviceDialog extends ConsumerWidget {
                   onTap: () {
                     Navigator.of(context).pop();
                     controller.runCommand(device);
+                  },
+                ),
+                ListTile(
+                  title: const Text('Scrcpy'),
+                  enabled: scrcpyAvailable,
+                  subtitle: ref.watch(scrcpyAvailableProvider).when(
+                        data: (available) => available ? null : const Text('Not available'),
+                        loading: () => const Text('Loading...'),
+                        error: (e, s) => Text('Error: $e'),
+                      ),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    controller.runScrcpy(device);
                   },
                 ),
               ]

@@ -48,7 +48,7 @@ class CommandQueueController extends StateNotifier<List<CommandModel>> {
 
   void listenAndChangeCommand(CommandModel command) {
     command.whenOrNull(
-      adding: (id, command, device, stdout, stderr) {
+      adding: (id, _command, __, stdout, stderr, ___, ____) {
         final streamController = StreamController<String>.broadcast();
 
         final stdoutSubscription = stdout.listen(
@@ -65,48 +65,30 @@ class CommandQueueController extends StateNotifier<List<CommandModel>> {
           stderrSubscription.cancel();
         };
         outputControllers[id] = streamController;
-        updateCommand(CommandModel.running(
-          id: id,
-          command: command,
-          device: device,
-          output: streamController.stream,
-        ));
-        streamController.add('Running: $command');
+        updateCommand(command.toRunning(streamController.stream));
+        streamController.add('Running: $_command');
       },
-      running: (id, _command, device, output) {
+      running: (id, _command, device, output, _, __) {
         final buffer = StringBuffer();
         final subscription = output.listen(
           (event) {
             buffer.writeln(event);
 
             if (event.contains('Done')) {
-              updateCommand(
-                CommandModel.done(
-                  id: id,
-                  command: _command,
-                  device: device,
-                  output: buffer.toString(),
-                ),
-              );
+              updateCommand(command.toDone(buffer.toString()));
               stopSubscription(id);
             }
           },
           onError: (error) {
-            updateCommand(
-              CommandModel.error(
-                id: id,
-                command: _command,
-                device: device,
-                error: error.toString(),
-              ),
-            );
+            buffer.writeln(error);
+            updateCommand(command.toError(buffer.toString()));
             stopSubscription(id);
           },
         );
         outputSubscriptions[id] = subscription;
       },
-      error: (id, command, device, error) => stopSubscription(id),
-      done: (id, command, device, output) => stopSubscription(id),
+      error: (id, _, __, ___, ____, _____) => stopSubscription(id),
+      done: (id, _, __, ___, ____, _____) => stopSubscription(id),
     );
   }
 

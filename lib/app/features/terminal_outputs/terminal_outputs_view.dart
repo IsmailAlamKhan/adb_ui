@@ -20,9 +20,10 @@ class CurrentCommandOutput extends HookConsumerWidget {
     ));
 
     final content = command.maybeWhen<Widget>(
-      running: _CommandRunning.new,
-      error: _CommandError.new,
-      done: _CommandDone.new,
+      running: (id, command, device, output, rawCommand, executable) =>
+          _CommandRunning(output: output),
+      error: (id, command, device, error, rawCommand, executable) => _CommandError(error: error),
+      done: (id, command, device, output, rawCommand, executable) => _CommandDone(output: output),
       orElse: () => const Center(child: CircularProgressIndicator()),
     );
 
@@ -59,10 +60,11 @@ class CurrentCommandOutput extends HookConsumerWidget {
 }
 
 class _CommandRunning extends HookConsumerWidget {
-  const _CommandRunning(this.id, this.command, this.device, this.output, {super.key});
-  final String id;
-  final String command;
-  final AdbDevice? device;
+  const _CommandRunning({
+    super.key,
+    required this.output,
+  });
+
   final Stream<String> output;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -78,10 +80,10 @@ class _CommandRunning extends HookConsumerWidget {
 }
 
 class _CommandError extends HookConsumerWidget {
-  const _CommandError(this.id, this.command, this.device, this.error, {super.key});
-  final String id;
-  final String command;
-  final AdbDevice? device;
+  const _CommandError({
+    super.key,
+    required this.error,
+  });
   final Object error;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -90,10 +92,11 @@ class _CommandError extends HookConsumerWidget {
 }
 
 class _CommandDone extends HookConsumerWidget {
-  const _CommandDone(this.id, this.command, this.device, this.output, {super.key});
-  final String id;
-  final String command;
-  final AdbDevice? device;
+  const _CommandDone({
+    super.key,
+    required this.output,
+  });
+
   final String output;
   @override
   Widget build(BuildContext context, WidgetRef ref) {

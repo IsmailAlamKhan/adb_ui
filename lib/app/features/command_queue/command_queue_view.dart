@@ -37,22 +37,46 @@ class CommandQueueView extends HookConsumerWidget {
                   (context, index) {
                     final command = queue[index];
                     return ListTile(
-                      title: Text(command.command),
+                      title: Text.rich(
+                        TextSpan(
+                          text: command.command,
+                          children: [
+                            if (command.isRerun)
+                              TextSpan(
+                                text: ' (rerun)',
+                                style: Theme.of(context).textTheme.caption,
+                              ),
+                          ],
+                        ),
+                      ),
                       leading: command.whenOrNull(
-                        done: (_, __, ___, ____) => const Icon(Icons.check),
-                        error: (_, __, ___, ____) => const Icon(Icons.error),
-                        running: (_, __, ___, ____) => const SizedBox(
+                        done: (_, __, ___, ____, _____, ______) => const Icon(Icons.check),
+                        error: (_, __, ___, ____, _____, ______) => const Icon(Icons.error),
+                        running: (_, __, ___, ____, _____, ______) => const SizedBox(
                           width: 24,
                           height: 24,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         ),
                       ),
                       subtitle: command.device != null ? Text(command.device!.model) : null,
-                      trailing: IconButton(
-                        icon: const Icon(Icons.cancel),
-                        onPressed: () => ref
-                            .read(commandQueueControllerProvider.notifier)
-                            .removeCommand(command),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.cancel),
+                            onPressed: () => ref
+                                .read(commandQueueControllerProvider.notifier)
+                                .removeCommand(command),
+                          ),
+                          if (command.isDone)
+                            IconButton(
+                              tooltip: 'Re-run',
+                              icon: const Icon(Icons.replay),
+                              onPressed: () => ref
+                                  .read(adbControllerProvider) //
+                                  .rerunCommand(command),
+                            ),
+                        ],
                       ),
                       onTap: () {
                         Navigator.of(context).adaptivePush(

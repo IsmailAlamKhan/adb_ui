@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:dynamic_color/dynamic_color.dart';
@@ -12,9 +13,9 @@ import 'shared/shared.dart';
 import 'utils/utils.dart';
 
 class App {
-  static Future<ProviderContainer> init() async {
+  static Future<void> init(ProviderContainer container) async {
     WidgetsFlutterBinding.ensureInitialized();
-    final container = ProviderContainer();
+
     try {
       runApp(const ProviderScope(child: SplashView()));
       await windowManager.ensureInitialized();
@@ -22,6 +23,7 @@ class App {
       WindowOptions windowOptions = const WindowOptions(
         backgroundColor: Colors.transparent,
         skipTaskbar: false,
+        minimumSize: Size(400, 600),
         titleBarStyle: TitleBarStyle.hidden,
       );
       windowManager.waitUntilReadyToShow(windowOptions, () async {
@@ -33,11 +35,12 @@ class App {
       await container.read(localStorageProvider).init();
       await container.read(settingsControllerProvider.notifier).init();
       await container.read(packageInfoControllerProvider.notifier).init();
-      return container;
     } on Exception catch (e, stackTrace) {
       Exception exception = e;
       if (e is AppException) {
         exception = AppInitializationException(e);
+      } else if (e is ProcessException) {
+        exception = AppInitializationException(AppException(e.message, e.errorCode.toString()));
       }
       throw Error.throwWithStackTrace(exception, stackTrace);
     }
@@ -50,24 +53,37 @@ class App {
     WidgetsFlutterBinding.ensureInitialized();
 
     FlutterError.onError = LogFile.instance.dispatchFlutterErrorLogs;
+    final container = ProviderContainer();
     runZonedGuarded(
       () async {
-        final container = await init();
+        await init(container);
         runApp(UncontrolledProviderScope(
           container: container,
           child: const _App(),
         ));
       },
       (error, stack) {
+        if (error is AppInitializationException) {
+          runApp(UncontrolledProviderScope(
+            container: container,
+            child: AppInitErrorView(exception: error),
+          ));
+        }
         LogFile.instance.dispath('Error on zone', error: error, stackTrace: stack);
       },
     );
   }
 }
 
-class _App extends ConsumerWidget {
-  const _App({super.key});
-
+class AppWrapper extends ConsumerWidget {
+  const AppWrapper({super.key, required this.builder});
+  final Widget Function(
+    BuildContext context,
+    ThemeMode themeMode,
+    ThemeData light,
+    ThemeData dark,
+    TransitionBuilder builder,
+  ) builder;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(settingsControllerProvider);
@@ -77,26 +93,42 @@ class _App extends ConsumerWidget {
         darkDynamic: darkDynamic,
         lightDynamic: lightDynamic,
         themeMode: settings.themeMode,
-        child: MaterialApp(
-          themeMode: settings.themeMode,
-          title: appName,
-          theme: AppTheme.themeDataFrom(colorScheme: lightDynamic, brightness: Brightness.light),
-          darkTheme: AppTheme.themeDataFrom(colorScheme: darkDynamic, brightness: Brightness.dark),
-          navigatorKey: NavigatorService.instance.navigatorKey(false),
-          builder: (context, child) {
-            child = virtualWindowFrameBuilder(context, child);
-            return GestureDetector(
-              onTap: () {
-                FocusManager.instance.primaryFocus?.unfocus();
-              },
-              child: NavigationEventListener(
-                navigator: NavigatorService.instance.navigatorKey(false),
-                child: child,
-              ),
-            );
-          },
-          home: const HomeView(),
-        ),
+        child: builder(
+            context,
+            settings.themeMode,
+            AppTheme.themeDataFrom(colorScheme: lightDynamic, brightness: Brightness.light),
+            AppTheme.themeDataFrom(colorScheme: darkDynamic, brightness: Brightness.dark),
+            (context, child) {
+          child = virtualWindowFrameBuilder(context, child);
+          return GestureDetector(
+            onTap: () {
+              FocusManager.instance.primaryFocus?.unfocus();
+            },
+            child: NavigationEventListener(
+              navigator: NavigatorService.instance.navigatorKey(false),
+              child: child,
+            ),
+          );
+        }),
+      ),
+    );
+  }
+}
+
+class _App extends ConsumerWidget {
+  const _App({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return AppWrapper(
+      builder: (context, themeMode, light, dark, builder) => MaterialApp(
+        themeMode: themeMode,
+        title: appName,
+        darkTheme: dark,
+        theme: light,
+        navigatorKey: NavigatorService.instance.navigatorKey(false),
+        builder: builder,
+        home: const HomeView(),
       ),
     );
   }

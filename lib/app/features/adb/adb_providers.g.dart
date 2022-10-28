@@ -29,7 +29,7 @@ class _SystemHash {
   }
 }
 
-String $adbFilesHash() => r'd23d3c9e1407a598e4cbfb66e111f121564d0696';
+String $adbFilesHash() => r'c1269368458395b89840d4f648669d21f7c79fc0';
 
 /// See also [adbFiles].
 class AdbFilesProvider extends FutureProvider<List<AdbFileSystem>> {
@@ -107,3 +107,15 @@ class AdbFilesFamily extends Family<AsyncValue<List<AdbFileSystem>>> {
   @override
   String? get name => r'adbFilesProvider';
 }
+
+String $scrcpyAvailableHash() => r'9ed2aa5791e831a567493a4d615e8c355580edab';
+
+/// See also [scrcpyAvailable].
+final scrcpyAvailableProvider = FutureProvider<bool>(
+  scrcpyAvailable,
+  name: r'scrcpyAvailableProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : $scrcpyAvailableHash,
+);
+typedef ScrcpyAvailableRef = FutureProviderRef<bool>;

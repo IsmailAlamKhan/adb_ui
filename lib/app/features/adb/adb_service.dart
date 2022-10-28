@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io' as io;
+import 'dart:io';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -17,6 +18,8 @@ class Result {
   final Future<String> stderr;
   final Future<String> messege;
   final AdbDevice? device;
+  final String command;
+  final List<String> arguments;
   Result({
     required this.stdoutStream,
     required this.stderrStream,
@@ -25,6 +28,8 @@ class Result {
     required this.stderr,
     required this.messege,
     required this.device,
+    required this.command,
+    required this.arguments,
   });
 
   Result copyWith({
@@ -35,6 +40,8 @@ class Result {
     Future<String>? stderr,
     Future<String>? messege,
     AdbDevice? device,
+    String? command,
+    List<String>? arguments,
   }) {
     return Result(
       stdoutStream: stdoutStream ?? this.stdoutStream,
@@ -44,6 +51,8 @@ class Result {
       stderr: stderr ?? this.stderr,
       messege: messege ?? this.messege,
       device: device ?? this.device,
+      command: command ?? this.command,
+      arguments: arguments ?? this.arguments,
     );
   }
 }
@@ -55,14 +64,24 @@ abstract class AdbService {
 
   Future<void> verifyAdb();
 
+  Future<bool> scrcpyAvailable();
+
   /// commands
   Future<Result> connect(String host, int port);
   Future<Result> pair(String pair, String host, int port);
+
+  Future<Result> rerunCommand(
+    String command,
+    AdbDevice? device,
+    List<String> arguments, {
+    String executable = 'adb',
+  });
 
   /// connnected device commands
 
   Future<Result> disconnect(AdbDevice device);
   Future<Result> installApk(AdbDevice device, String path);
+  Future<Result> scrcpy(AdbDevice device);
 
   Future<List<AdbFileSystem>> ls(AdbDevice device, String? path);
 
@@ -70,7 +89,7 @@ abstract class AdbService {
 
   Future<Result> pullFile(AdbDevice device, String file, String destinationPath);
 
-  Future<Result> runCustomCommand(AdbDevice device, String command);
+  Future<Result> runCustomCommand(AdbDevice device, String command, {String executable = 'adb'});
 
   /// -connnected device commands-
 
@@ -82,20 +101,42 @@ class ProccessAdbServiceImpl implements AdbService {
   ProccessAdbServiceImpl(this.ref);
 
   Future<Result> run(
-    List<String> arguments, {
+    String command, {
+    bool shell = false,
+    List<String> arguments = const [],
+    String executable = 'adb',
     AdbDevice? device,
     bool addStdout = true,
   }) async {
     // logWarning(arguments);
-    final process = await io.Process.start('adb', arguments);
+    Process process;
+    final _command = [
+      if (device != null) ...['-s', device.id],
+      if (shell) 'shell',
+      if (command != '') command,
+      ...arguments,
+    ];
+    try {
+      process = await io.Process.start(executable, _command);
+    } on ProcessException catch (e) {
+      if (e.message == 'No such file or directory') {
+        if (executable == 'adb') {
+          throw AdbNotFoundException();
+        } else {
+          throw ScrcpyNotFoundException();
+        }
+      }
+      throw AppException(
+        'ProcessException: ${e.message} while running: $executable ${e.arguments.join(' ')}',
+        e.errorCode.toString(),
+      );
+    }
     final stdout = process.stdout.asBroadcastStream();
     final stderr = process.stderr.asBroadcastStream();
-    // if (addStdout && kDebugMode) {
-    //   io.stdout.addStream(stdout);
-    //   io.stderr.addStream(stderr);
-    // }
+
     final _stdout = stdout.transform(utf8.decoder);
     final _stderr = stderr.transform(utf8.decoder);
+
     _stdout.listen(LogFile.instance.dispatchStdoutLogs);
     _stderr.listen(LogFile.instance.dispatchStdoutLogs);
 
@@ -107,13 +148,15 @@ class ProccessAdbServiceImpl implements AdbService {
       stdout: _stdout.join(),
       stderr: _stderr.join(),
       messege: Future.value(''),
+      command: command,
+      arguments: arguments,
     );
     return result;
   }
 
   @override
   Future<List<AdbDevice>> getConnectedDevices() async {
-    final process = await run(['devices'], addStdout: false);
+    final process = await run('devices', addStdout: false);
     final devices = <AdbDevice>[];
     final output = (await process.stdout).split('\n').toList()
       ..removeWhere((element) =>
@@ -124,12 +167,19 @@ class ProccessAdbServiceImpl implements AdbService {
       if (parts.isEmpty) {
         break;
       }
-      final model = await run(['-s', parts[0], 'shell', 'getprop', 'ro.product.model']);
-      devices.add(AdbDevice(
+      var device = AdbDevice(
         type: parts.last,
         id: parts.first,
-        model: (await model.stdout).trim(),
-      ));
+        model: '',
+      );
+      final model = await (await run(
+        'getprop',
+        arguments: ['ro.product.model'],
+        device: device,
+        shell: true,
+      ))
+          .stdout;
+      devices.add(device.copyWith(model: model.trim()));
     }
     return devices;
   }
@@ -142,8 +192,10 @@ class ProccessAdbServiceImpl implements AdbService {
   }
 
   @override
-  Future<Result> connect(String host, int port) =>
-      run(['connect', '$host:$port']).then((result) async {
+  Future<Result> connect(String host, int port) => run(
+        'connect',
+        arguments: ['$host:$port'],
+      ).then((result) async {
         return result.copyWith(
           messege: result.stdout.then((output) {
             if (output.contains('connected to')) {
@@ -155,8 +207,10 @@ class ProccessAdbServiceImpl implements AdbService {
         );
       });
   @override
-  Future<Result> pair(String pairCode, String host, int port) =>
-      run(['pair', '$host:$port', pairCode]).then((result) async {
+  Future<Result> pair(String pairCode, String host, int port) => run(
+        'pair',
+        arguments: ['$host:$port', pairCode],
+      ).then((result) async {
         return result.copyWith(messege: result.stdout);
       });
 
@@ -164,7 +218,8 @@ class ProccessAdbServiceImpl implements AdbService {
   Future<Result> disconnect(AdbDevice device) {
     final id = device.id;
     return run(
-      ['disconnect', id],
+      'disconnect',
+      arguments: [id],
       device: device,
     ).then((result) async {
       return result.copyWith(
@@ -181,10 +236,9 @@ class ProccessAdbServiceImpl implements AdbService {
 
   @override
   Future<Result> installApk(AdbDevice device, String path) {
-    final id = device.id;
-
     return run(
-      ['-s', id, 'install', path],
+      'install',
+      arguments: [path],
       device: device,
     ).then((result) async {
       return result.copyWith(
@@ -206,7 +260,9 @@ class ProccessAdbServiceImpl implements AdbService {
 
   @override
   Future<List<AdbFileSystem>> ls(AdbDevice device, String? path) => run(
-        ['-s', device.id, 'shell', 'ls', '-i', '"${path ?? '/'}"'],
+        'ls',
+        shell: true,
+        arguments: ['-i', '"${path ?? '/'}"'],
         device: device,
       ).then((result) async {
         final stdErr = await result.stderr;
@@ -284,9 +340,9 @@ class ProccessAdbServiceImpl implements AdbService {
     String file,
     String destinationPath,
   ) {
-    final id = device.id;
     return run(
-      ['-s', id, 'push', file, destinationPath],
+      'push',
+      arguments: [file, destinationPath],
       device: device,
     ).then((result) async {
       return result.copyWith(
@@ -303,9 +359,9 @@ class ProccessAdbServiceImpl implements AdbService {
 
   @override
   Future<Result> pullFile(AdbDevice device, String file, String destinationPath) {
-    final id = device.id;
     return run(
-      ['-s', id, 'pull', file, destinationPath],
+      'pull',
+      arguments: [file, destinationPath],
       device: device,
     ).then((result) async {
       return result.copyWith(
@@ -321,28 +377,96 @@ class ProccessAdbServiceImpl implements AdbService {
   }
 
   @override
-  Future<Result> runCustomCommand(AdbDevice device, String command) {
-    final id = device.id;
+  Future<Result> runCustomCommand(AdbDevice device, String command, {String executable = 'adb'}) {
     return run(
-      ['-s', id, ...command.split(' ')],
+      '',
+      arguments: [...command.split(' ')],
       device: device,
+      executable: executable,
     ).then((result) {
       return result.copyWith(messege: result.stdout);
     });
   }
 
   @override
-  Future<void> verifyAdb() => run(['version']).then((result) async {
-        final stdErr = await result.stderr;
-        if (stdErr != '') {
-          throw AppException("Failed to verify adb");
+  Future<void> verifyAdb() {
+    return run('version').then((result) async {
+      final stdErr = await result.stderr;
+      if (stdErr != '') {
+        throw AppException(stdErr);
+      }
+      final stdOut = await result.stdout;
+      if (stdOut.contains('Android Debug Bridge version')) {
+        return;
+      }
+      throw AdbNotFoundException();
+    });
+  }
+
+  @override
+  Future<bool> scrcpyAvailable() async {
+    try {
+      return await run('', arguments: ['--version'], executable: 'scrcpy').then((result) async {
+        final exitCode = await result.exitCode;
+        if (exitCode == 0) {
+          return true;
         }
-        final stdOut = await result.stdout;
-        if (stdOut.contains('Android Debug Bridge version')) {
-          return;
-        }
-        throw AppException("Failed to verify adb");
+        return false;
       });
+    } on AppException catch (e) {
+      LogFile.instance.dispath('Scrcpy not found', error: e);
+      return Future.value(false);
+    }
+  }
+
+  @override
+  Future<Result> scrcpy(AdbDevice device) =>
+      run('', device: device, executable: 'scrcpy').then((result) async {
+        return result.copyWith(
+          messege: result.stdout.then((output) {
+            if (output.contains('INFO: Device')) {
+              return 'Scrcpy started';
+            }
+            logError('Failed to start scrcpy', error: output);
+            throw AppException('Failed to start scrcpy cause $output');
+          }),
+        );
+      });
+
+  @override
+  Future<Result> rerunCommand(
+    String command,
+    AdbDevice? device,
+    List<String> arguments, {
+    String executable = 'adb',
+  }) {
+    switch (command) {
+      case 'connect':
+        final ip = arguments.first.split(':');
+        final host = ip.first;
+        final port = ip.last.toInt()!;
+        return connect(host, port);
+      case 'disconnect':
+        assert(device != null, 'Device cannot be null');
+        return disconnect(device!);
+      case 'install':
+        assert(device != null, 'Device cannot be null');
+        return installApk(device!, arguments.first);
+      case 'push':
+        assert(device != null, 'Device cannot be null');
+        return pushFile(device!, arguments.first, arguments.last);
+      case 'pull':
+        assert(device != null, 'Device cannot be null');
+        return pullFile(device!, arguments.first, arguments.last);
+      case 'scrcpy':
+        assert(device != null, 'Device cannot be null');
+        return scrcpy(device!);
+      case '':
+        return runCustomCommand(device!, arguments.join(' '), executable: executable);
+      default:
+        throw AppException('Command not found');
+    }
+  }
 }
 
 class PermissionDeniedException extends AppException {
@@ -351,4 +475,12 @@ class PermissionDeniedException extends AppException {
 
 class NotDirException extends AppException {
   NotDirException() : super('Not a directory');
+}
+
+class AdbNotFoundException extends AppException {
+  AdbNotFoundException() : super('Adb not found');
+}
+
+class ScrcpyNotFoundException extends AppException {
+  ScrcpyNotFoundException() : super('Scrcpy not found');
 }

@@ -14,8 +14,8 @@ class AdaptiveDialog extends StatelessWidget {
     if (isTabletOrLarger(context)) {
       child = Center(
         child: SizedBox(
-          width: 500,
-          height: 500,
+          width: 800,
+          height: 600,
           child: Dialog(clipBehavior: Clip.antiAlias, child: child),
         ),
       );
