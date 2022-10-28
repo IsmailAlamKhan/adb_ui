@@ -34,23 +34,27 @@ class SettingsView extends ConsumerWidget {
             ),
             ListTile(
               title: const Text('About app'),
-              onTap: () => showAboutDialog(
-                context: context,
-                applicationIcon: const AppLogo(size: 60),
-                applicationName: 'ADB UI',
-                children: [
-                  ListTile(
-                    title: const Text('GitHub'),
-                    subtitle: const Text('Please star the project if you like it'),
-                    onTap: () => controller.goToGitHub(),
-                  ),
-                  ListTile(
-                    title: const Text('Author'),
-                    subtitle: const Text('GitHub'),
-                    onTap: () => controller.goToAuthorGitHub(),
-                  ),
-                ],
-              ),
+              onTap: () {
+                final packageInfo = ref.read(packageInfoControllerProvider);
+                showAboutDialog(
+                  context: context,
+                  applicationIcon: const AppLogo(size: 60),
+                  applicationName: appName,
+                  applicationVersion: packageInfo!.version,
+                  children: [
+                    ListTile(
+                      title: const Text('GitHub'),
+                      subtitle: const Text('Please star the project if you like it'),
+                      onTap: () => controller.goToGitHub(),
+                    ),
+                    ListTile(
+                      title: const Text('Author'),
+                      subtitle: const Text('GitHub'),
+                      onTap: () => controller.goToAuthorGitHub(),
+                    ),
+                  ],
+                );
+              },
             ),
           ],
         ),

@@ -32,6 +32,7 @@ class App {
       await container.read(deviceControllerProvider.notifier).init();
       await container.read(localStorageProvider).init();
       await container.read(settingsControllerProvider.notifier).init();
+      await container.read(packageInfoControllerProvider.notifier).init();
       return container;
     } on Exception catch (e, stackTrace) {
       Exception exception = e;

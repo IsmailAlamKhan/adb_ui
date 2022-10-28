@@ -3,6 +3,7 @@ export 'command_queue/command_queue.dart';
 export 'device/device.dart';
 export 'file_picker/file_picker.dart';
 export 'home/home.dart';
+export 'package_info/package_info.dart';
 export 'settings/settings.dart';
 export 'splash/splash.dart';
 export 'terminal_outputs/terminal_outputs.dart';
