@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../utils/utils.dart';
+import 'widgets.dart';
 
 typedef ConfirmDialogLayoutBuilder = List<Widget> Function(
   BuildContext context,
@@ -71,17 +72,19 @@ class ConfirmDialog extends StatelessWidget {
     } else {
       throw Exception('text must be a String or a String Function(BuildContext)');
     }
-    return WillPopScope(
-      onWillPop: () => Future.value(false),
-      child: AlertDialog(
-        title: Center(
-          child: Text(title ?? "Confirm"),
+    return ConstrainedDialog(
+      child: WillPopScope(
+        onWillPop: () => Future.value(false),
+        child: AlertDialog(
+          title: Center(
+            child: Text(title ?? "Confirm"),
+          ),
+          content: Text(
+            text,
+            style: Theme.of(context).textTheme.bodyText2,
+          ),
+          actions: actions,
         ),
-        content: Text(
-          text,
-          style: Theme.of(context).textTheme.bodyText2,
-        ),
-        actions: actions,
       ),
     );
   }

@@ -68,6 +68,7 @@ abstract class AdbService {
 
   /// commands
   Future<Result> connect(String host, int port);
+  Future<Result> tcpip();
   Future<Result> pair(String pair, String host, int port);
 
   Future<Result> rerunCommand(
@@ -91,6 +92,8 @@ abstract class AdbService {
 
   Future<Result> runCustomCommand(AdbDevice device, String command, {String executable = 'adb'});
 
+  Future<Result> inputText(AdbDevice device, String text);
+
   /// -connnected device commands-
 
   /// -commands-
@@ -106,7 +109,7 @@ class ProccessAdbServiceImpl implements AdbService {
     List<String> arguments = const [],
     String executable = 'adb',
     AdbDevice? device,
-    bool addStdout = true,
+    bool addToLogs = true,
   }) async {
     // logWarning(arguments);
     Process process;
@@ -136,9 +139,10 @@ class ProccessAdbServiceImpl implements AdbService {
 
     final _stdout = stdout.transform(utf8.decoder);
     final _stderr = stderr.transform(utf8.decoder);
-
-    _stdout.listen(LogFile.instance.dispatchStdoutLogs);
-    _stderr.listen(LogFile.instance.dispatchStdoutLogs);
+    if (addToLogs) {
+      _stdout.listen(LogFile.instance.dispatchStdoutLogs);
+      _stderr.listen(LogFile.instance.dispatchStdoutLogs);
+    }
 
     final result = Result(
       device: device,
@@ -148,7 +152,7 @@ class ProccessAdbServiceImpl implements AdbService {
       stdout: _stdout.join(),
       stderr: _stderr.join(),
       messege: Future.value(''),
-      command: command,
+      command: executable != 'adb' ? executable : command,
       arguments: arguments,
     );
     return result;
@@ -156,7 +160,7 @@ class ProccessAdbServiceImpl implements AdbService {
 
   @override
   Future<List<AdbDevice>> getConnectedDevices() async {
-    final process = await run('devices', addStdout: false);
+    final process = await run('devices', addToLogs: false);
     final devices = <AdbDevice>[];
     final output = (await process.stdout).split('\n').toList()
       ..removeWhere((element) =>
@@ -192,20 +196,23 @@ class ProccessAdbServiceImpl implements AdbService {
   }
 
   @override
-  Future<Result> connect(String host, int port) => run(
-        'connect',
-        arguments: ['$host:$port'],
-      ).then((result) async {
-        return result.copyWith(
-          messege: result.stdout.then((output) {
-            if (output.contains('connected to')) {
-              return 'Connected to $host:$port';
-            }
-            logError('Failed to connect to $host:$port', error: output);
-            throw AppException('Failed to connect cause $output');
-          }),
-        );
-      });
+  Future<Result> connect(String host, int port) async {
+    return run(
+      'connect',
+      arguments: ['$host:$port'],
+    ).then((result) async {
+      return result.copyWith(
+        messege: result.stdout.then((output) {
+          if (output.contains('connected to')) {
+            return 'Connected to $host:$port';
+          }
+          logError('Failed to connect to $host:$port', error: output);
+          throw AppException('Failed to connect cause $output');
+        }),
+      );
+    });
+  }
+
   @override
   Future<Result> pair(String pairCode, String host, int port) => run(
         'pair',
@@ -467,6 +474,32 @@ class ProccessAdbServiceImpl implements AdbService {
         throw AppException('Command not found');
     }
   }
+
+  @override
+  Future<Result> tcpip() => run('tcpip', arguments: ['5555']).then((value) {
+        return value.copyWith(
+          messege: value.stdout.then((output) {
+            if (output.contains('restarting in TCP mode port: 5555')) {
+              return 'Restarted in TCP mode';
+            }
+            logError('Failed to restart in TCP mode', error: output);
+            throw AppException('Failed to restart in TCP mode cause $output');
+          }),
+        );
+      });
+
+  @override
+  Future<Result> inputText(AdbDevice device, String text) =>
+      run('shell', device: device, arguments: ['input', 'text', text])
+          .then((value) => value.copyWith(
+                messege: value.stdout.then((value) {
+                  if (value.isEmpty) {
+                    return 'Text sent';
+                  }
+                  logError('Failed to send text', error: value);
+                  throw AppException('Failed to send text cause $value');
+                }),
+              ));
 }
 
 class PermissionDeniedException extends AppException {

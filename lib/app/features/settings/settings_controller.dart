@@ -46,8 +46,9 @@ class SettingsController extends StateNotifier<SettingsModel> with NavigationCon
       hideLoading();
       showAlert(
         const Alert.success(
-          title:
-              'Logs are successfully generated please attact that file to the issue on the page that will be opened after this alert closes',
+          title: 'Logs are successfully generated.',
+          messege:
+              'Please attact that file to the issue on the page that will be opened after this alert closes',
         ),
       );
       await Future.delayed(Alert.duration);

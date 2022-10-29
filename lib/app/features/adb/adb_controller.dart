@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
@@ -63,18 +65,30 @@ class AdbController with NavigationController {
           );
         }
         try {
-          final msg = await value.messege;
-          logWarning(msg);
-        } on AppException catch (e) {
+          await value.messege;
+        } catch (e, s) {
+          String msg = 'An unknown error occurred';
+          if (e is AppException) {
+            msg = e.message;
+          } else if (e is ProcessException) {
+            msg = e.message;
+          } else if (kDebugMode) {
+            msg = e.toString();
+          }
           commandQueueController.updateCommand(
             CommandModel.error(
               id: id,
               command: command,
               device: value.device,
-              error: e.message,
+              error: msg,
               rawCommand: value.command,
               arguments: value.arguments,
             ),
+          );
+          LogFile.instance.dispath(
+            'Error while running command: $command',
+            error: e,
+            stackTrace: s,
           );
         } finally {
           if (autoCloseOutput && showOutput) {
@@ -89,23 +103,83 @@ class AdbController with NavigationController {
   }
 
   Future<void> connect() async {
+    final nativeWirelessDebugSupported = await confirmDialog(
+      (context) => 'Do you have android 11 or higher?',
+      title: 'Android 11 or higher required',
+    );
+    if (nativeWirelessDebugSupported == null) {
+      return;
+    }
+    if (!nativeWirelessDebugSupported) {
+      final connectedUsb = await confirmDialog(
+        (context) => 'Please connect your device via USB and confirm',
+        title: 'USB cable required',
+        confirmText: 'Ok',
+        cancelText: 'Cancel',
+      );
+      if (connectedUsb == null) {
+        return;
+      }
+      if (!connectedUsb) {
+        showSnackbar(
+          text:
+              'For older android versions you need to first connect your device via USB and then wirelessly',
+        );
+        return;
+      }
+
+      await run(
+        function: () => service.tcpip(),
+        command: 'adb tcpip 5555',
+      );
+      if (_commandOutputCloseTimer != null) {
+        await Future.delayed(_commandOutputCloseTimerDuration);
+      }
+      final ready = await confirmDialog(
+        (context) =>
+            'Please connect your device to the same wifi network as your computer and confirm.',
+        title: 'Take out the usb cable',
+        confirmText: 'Ok',
+        cancelText: 'Cancel',
+      );
+      if (ready == false) {
+        return;
+      }
+    }
+
     final ip = await showDialog<String>(
-      pageBuilder: (_) =>
-          AdbInputDialog.single(title: 'Enter your ip and port', label: 'host:port'),
+      pageBuilder: (_) => AdbInputDialog.single(
+        title: nativeWirelessDebugSupported ? 'Enter your ip and port' : 'Enter your ip',
+        label: nativeWirelessDebugSupported ? 'IP:PORT' : 'IP',
+      ),
     );
     if (ip == null) {
       return;
     }
+    String host;
+    String port;
+    if (nativeWirelessDebugSupported) {
+      final split = ip.split(':');
+      if (split.length != 2) {
+        showSnackbar(text: 'Invalid ip');
+        return;
+      }
+      host = split[0];
+      port = split[1];
+    } else {
+      host = ip;
+      port = '5555';
+    }
 
-    final parts = ip.split(':');
-    if (parts.isEmpty) {
-      return;
-    }
-    if (parts.length == 1) {
-      parts.add('5555');
-    }
-    final host = parts[0];
-    final port = parts[1];
+    // final parts = ip.split(':');
+    // if (parts.isEmpty) {
+    //   return;
+    // }
+    // if (parts.length == 1) {
+    //   parts.add('5555');
+    // }
+    // host = parts[0];
+    // port = parts[1];
     return run(
       function: () => service.connect(host, int.parse(port)),
       command: 'Connect to $host:$port',
@@ -262,6 +336,20 @@ class AdbController with NavigationController {
       command: command.command,
       autoCloseOutput: false,
       isRerun: true,
+    );
+  }
+
+  Future<void> inputText(AdbDevice device) async {
+    final text = await showDialog<String>(
+      pageBuilder: (_) => AdbInputDialog.single(
+        title: 'Enter your text',
+        label: 'text',
+      ),
+    );
+    if (text == null) return;
+    return run(
+      function: () => service.inputText(device, text),
+      command: 'Input text',
     );
   }
 }

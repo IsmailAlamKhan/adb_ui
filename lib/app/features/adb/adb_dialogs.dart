@@ -131,6 +131,7 @@ class AdbDeviceDialog extends ConsumerWidget {
               ),
               ListTile(
                 title: const Text('Disconnect'),
+                subtitle: const Text('Only available for WIFI devices'),
                 onTap: () {
                   Navigator.of(context).pop();
                   controller.disconnect(device);
@@ -163,6 +164,13 @@ class AdbDeviceDialog extends ConsumerWidget {
                   onTap: () {
                     Navigator.of(context).pop();
                     controller.runCommand(device);
+                  },
+                ),
+                ListTile(
+                  title: const Text('Input text'),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    controller.inputText(device);
                   },
                 ),
                 ListTile(
