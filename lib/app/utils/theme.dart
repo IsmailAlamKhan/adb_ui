@@ -58,6 +58,34 @@ class AppTheme {
           },
         ),
       ),
+      radioTheme: theme.radioTheme.copyWith(
+        fillColor: MaterialStateProperty.resolveWith(
+          (states) {
+            if (states.contains(MaterialState.disabled)) {
+              return colorScheme!.onSurface.withOpacity(0.12);
+            }
+            return colorScheme!.primary;
+          },
+        ),
+      ),
+      switchTheme: theme.switchTheme.copyWith(
+        thumbColor: MaterialStateProperty.resolveWith(
+          (states) {
+            if (states.contains(MaterialState.disabled)) {
+              return colorScheme!.onSurface.withOpacity(0.12);
+            }
+            return colorScheme!.primary;
+          },
+        ),
+        trackColor: MaterialStateProperty.resolveWith(
+          (states) {
+            if (states.contains(MaterialState.disabled)) {
+              return colorScheme!.onSurface.withOpacity(0.12);
+            }
+            return colorScheme!.onSurface.withOpacity(0.12);
+          },
+        ),
+      ),
     );
   }
 
@@ -83,4 +111,6 @@ class AppTheme {
   }
 
   static const defaultDuration = Duration(milliseconds: 300);
+
+  static const linkTextStyle = TextStyle(color: Colors.blue, decoration: TextDecoration.underline);
 }

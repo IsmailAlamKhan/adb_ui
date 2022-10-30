@@ -1,3 +1,4 @@
+export 'about/about.dart';
 export 'adb/adb.dart';
 export 'app_init_error/app_init_error.dart';
 export 'command_queue/command_queue.dart';
@@ -8,3 +9,4 @@ export 'package_info/package_info.dart';
 export 'settings/settings.dart';
 export 'splash/splash.dart';
 export 'terminal_outputs/terminal_outputs.dart';
+export 'update_checker/update_checker.dart';

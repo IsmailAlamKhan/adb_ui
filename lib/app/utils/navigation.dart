@@ -64,6 +64,20 @@ mixin NavigationController {
     return completer.future;
   }
 
+  Future<T?> adaptivePush<T>(
+    WidgetBuilder page, {
+    RoutePredicate? predicate,
+    RouteSettings? settings,
+  }) {
+    final completer = Completer<T?>();
+    eventBus.emit(NavigationEvent<T>.adaptivePush(
+      completer: completer,
+      page,
+      routeSettings: settings,
+    ));
+    return completer.future;
+  }
+
   Future<T?> push<T>(WidgetBuilder builder, {RouteSettings? settings}) =>
       _push<T>(builder, settings: settings);
 

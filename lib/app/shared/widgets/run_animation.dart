@@ -1,8 +1,10 @@
+import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../utils/utils.dart';
+import '../shared.dart';
 
 class RunAnimation extends HookConsumerWidget {
   const RunAnimation({
@@ -10,6 +12,41 @@ class RunAnimation extends HookConsumerWidget {
     required this.builder,
     required this.run,
   });
+
+  static Widget sizeTransition({
+    required Widget child,
+    required bool show,
+    Axis axis = Axis.vertical,
+    double axisAlignment = 0.0,
+  }) =>
+      RunAnimation(
+        run: show,
+        builder: (context, animation) => FadeSizeTransition(
+          animation: animation,
+          axis: axis,
+          axisAlignment: axisAlignment,
+          child: child,
+        ),
+      );
+
+  static Widget fadeTransition({
+    required Widget child,
+    required bool show,
+  }) =>
+      RunAnimation(
+        run: show,
+        builder: (context, animation) => FadeTransition(opacity: animation, child: child),
+      );
+
+  static Widget scaleTransition({
+    required Widget child,
+    required bool show,
+  }) =>
+      RunAnimation(
+        run: show,
+        builder: (context, animation) => FadeScaleTransition(animation: animation, child: child),
+      );
+
   final Widget Function(BuildContext context, Animation<double> animation) builder;
   final bool run;
   @override

@@ -1,5 +1,5 @@
 name: adb_ui
-description: A new Flutter project.
+description: Run adb commands with ease from a simple UI
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -17,7 +17,7 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 0.0.9
+version: 0.0.10
 
 environment:
   sdk: ">=2.18.2 <3.0.0"
@@ -63,6 +63,8 @@ dependencies:
   url_launcher: ^6.1.6
   collection: ^1.16.0
   package_info_plus: ^3.0.1
+  github: ^9.5.0
+  font_awesome_flutter: ^10.2.1
 
 dev_dependencies:
   flutter_test:

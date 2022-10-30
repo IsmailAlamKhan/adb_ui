@@ -122,6 +122,12 @@ class NavigationEventListener extends HookConsumerWidget {
             args,
           ) =>
               navigator.pushReplacementNamed(route, arguments: args).then(completer.complete),
+          adaptivePush: (
+            builder,
+            completer,
+            routeSettings,
+          ) =>
+              navigator.adaptivePush(builder, routeSettings).then(completer.complete),
         );
       });
       return subscription.cancel;

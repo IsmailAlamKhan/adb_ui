@@ -26,32 +26,31 @@ class AdaptiveDialog extends StatelessWidget {
 class ConstrainedDialog extends StatelessWidget {
   const ConstrainedDialog({
     super.key,
-    this.forceSize = false,
+    bool? forceSize,
+    this.forceHeight = true,
+    this.forceWidth = true,
     required this.child,
-  });
+  }) : forceSize = forceSize ?? (forceHeight || forceWidth);
+
+  static const defaultConstraints = BoxConstraints(maxWidth: 800, maxHeight: 600);
   final bool forceSize;
+  final bool forceHeight;
+  final bool forceWidth;
   final Widget child;
+
   @override
   Widget build(BuildContext context) {
     Widget child = this.child;
     if (forceSize) {
       child = Center(
         child: SizedBox(
-          width: 800,
-          height: 600,
+          width: forceWidth ? defaultConstraints.maxWidth : null,
+          height: forceHeight ? defaultConstraints.maxHeight : null,
           child: child,
         ),
       );
     } else {
-      child = Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(
-            maxWidth: 800,
-            maxHeight: 600,
-          ),
-          child: child,
-        ),
-      );
+      child = Center(child: ConstrainedBox(constraints: defaultConstraints, child: child));
     }
 
     return child;

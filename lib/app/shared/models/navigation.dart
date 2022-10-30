@@ -27,6 +27,13 @@ class NavigationEvent<T> with _$NavigationEvent<T>, Event {
     RoutePredicate? predicate,
     RouteSettings? routeSettings,
   }) = _Push<T>;
+
+  const factory NavigationEvent.adaptivePush(
+    WidgetBuilder builder, {
+    required Completer<T?> completer,
+    RouteSettings? routeSettings,
+  }) = _AdaptivePush<T>;
+
   const factory NavigationEvent.pushNamed(
     String route, {
     required Completer<T?> completer,

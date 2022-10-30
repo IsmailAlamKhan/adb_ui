@@ -30,11 +30,11 @@ class App {
         await windowManager.show();
         await windowManager.focus();
       });
-      await container.read(adbServiceProvider).verifyAdb();
-      await container.read(deviceControllerProvider.notifier).init();
-      await container.read(localStorageProvider).init();
-      await container.read(settingsControllerProvider.notifier).init();
       await container.read(packageInfoControllerProvider.notifier).init();
+      await container.read(localStorageProvider).init();
+      await container.read(deviceControllerProvider.notifier).init();
+      await container.read(adbServiceProvider).verifyAdb();
+      await container.read(settingsControllerProvider.notifier).init();
     } on Exception catch (e, stackTrace) {
       Exception exception = e;
       if (e is AppException) {
@@ -128,7 +128,9 @@ class _App extends ConsumerWidget {
         theme: light,
         navigatorKey: NavigatorService.instance.navigatorKey(false),
         builder: builder,
-        home: const HomeView(),
+        home: UpdateChecker(
+          child: const HomeView(),
+        ),
       ),
     );
   }

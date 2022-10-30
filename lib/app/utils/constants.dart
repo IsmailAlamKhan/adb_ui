@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:github/github.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -48,8 +49,12 @@ Future<Directory> getExternalDir() async {
 const bugReportUrl =
     'https://github.com/IsmailAlamKhan/adb_ui/issues/new?assignees=&labels=&template=bug_report.md&title=';
 
+const featureRequestUrl =
+    'https://github.com/IsmailAlamKhan/adb_ui/issues/new?assignees=&labels=&template=feature_request.md&title=';
+
 const appRepoUrl = 'https://github.com/IsmailAlamKhan/adb_ui';
 
-const authorGitHubUrl = 'https://github.com/IsmailAlamKhan';
+const changelogUrl = 'https://github.com/IsmailAlamKhan/adb_ui/CHANGELOG.md';
+final githubRepoSlug = RepositorySlug.full('IsmailAlamKhan/adb_ui');
 
 const riverpodKeepAlive = Riverpod(keepAlive: true);

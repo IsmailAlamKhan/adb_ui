@@ -1,4 +1,6 @@
+import 'package:github/github.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../shared/shared.dart';
 import '../features.dart';
@@ -13,7 +15,12 @@ abstract class SettingsService {
 
 class LocalStorageSettingsServiceImpl extends SettingsService {
   final LocalStorage localStorage;
-  LocalStorageSettingsServiceImpl(Ref ref) : localStorage = ref.read(localStorageProvider);
+  final PackageInfo? packageInfo;
+  final GitHub github;
+  LocalStorageSettingsServiceImpl(Ref ref)
+      : localStorage = ref.read(localStorageProvider),
+        packageInfo = ref.watch(packageInfoControllerProvider),
+        github = ref.read(githubProvider);
   @override
   Future<SettingsModel> getSettings() => localStorage.get<SettingsModel>(
         LocalStorageKeys.settings,

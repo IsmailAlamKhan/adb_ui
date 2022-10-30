@@ -32,6 +32,9 @@ mixin _$NavigationEvent<T> {
     required TResult Function(WidgetBuilder builder, Completer<T?> completer,
             RoutePredicate? predicate, RouteSettings? routeSettings)
         push,
+    required TResult Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)
+        adaptivePush,
     required TResult Function(String route, Completer<T?> completer,
             RoutePredicate? predicate, Object? arguments)
         pushNamed,
@@ -82,6 +85,9 @@ mixin _$NavigationEvent<T> {
     TResult? Function(WidgetBuilder builder, Completer<T?> completer,
             RoutePredicate? predicate, RouteSettings? routeSettings)?
         push,
+    TResult? Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)?
+        adaptivePush,
     TResult? Function(String route, Completer<T?> completer,
             RoutePredicate? predicate, Object? arguments)?
         pushNamed,
@@ -131,6 +137,9 @@ mixin _$NavigationEvent<T> {
     TResult Function(WidgetBuilder builder, Completer<T?> completer,
             RoutePredicate? predicate, RouteSettings? routeSettings)?
         push,
+    TResult Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)?
+        adaptivePush,
     TResult Function(String route, Completer<T?> completer,
             RoutePredicate? predicate, Object? arguments)?
         pushNamed,
@@ -169,6 +178,7 @@ mixin _$NavigationEvent<T> {
   TResult map<TResult extends Object?>({
     required TResult Function(_Dialog<T> value) dialog,
     required TResult Function(_Push<T> value) push,
+    required TResult Function(_AdaptivePush<T> value) adaptivePush,
     required TResult Function(_PushNamed<T> value) pushNamed,
     required TResult Function(_PushReplacement<T> value) pushReplacement,
     required TResult Function(_PushReplacementNamed<T> value)
@@ -186,6 +196,7 @@ mixin _$NavigationEvent<T> {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_Dialog<T> value)? dialog,
     TResult? Function(_Push<T> value)? push,
+    TResult? Function(_AdaptivePush<T> value)? adaptivePush,
     TResult? Function(_PushNamed<T> value)? pushNamed,
     TResult? Function(_PushReplacement<T> value)? pushReplacement,
     TResult? Function(_PushReplacementNamed<T> value)? pushReplacementNamed,
@@ -202,6 +213,7 @@ mixin _$NavigationEvent<T> {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_Dialog<T> value)? dialog,
     TResult Function(_Push<T> value)? push,
+    TResult Function(_AdaptivePush<T> value)? adaptivePush,
     TResult Function(_PushNamed<T> value)? pushNamed,
     TResult Function(_PushReplacement<T> value)? pushReplacement,
     TResult Function(_PushReplacementNamed<T> value)? pushReplacementNamed,
@@ -419,6 +431,9 @@ class _$_Dialog<T> implements _Dialog<T> {
     required TResult Function(WidgetBuilder builder, Completer<T?> completer,
             RoutePredicate? predicate, RouteSettings? routeSettings)
         push,
+    required TResult Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)
+        adaptivePush,
     required TResult Function(String route, Completer<T?> completer,
             RoutePredicate? predicate, Object? arguments)
         pushNamed,
@@ -481,6 +496,9 @@ class _$_Dialog<T> implements _Dialog<T> {
     TResult? Function(WidgetBuilder builder, Completer<T?> completer,
             RoutePredicate? predicate, RouteSettings? routeSettings)?
         push,
+    TResult? Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)?
+        adaptivePush,
     TResult? Function(String route, Completer<T?> completer,
             RoutePredicate? predicate, Object? arguments)?
         pushNamed,
@@ -542,6 +560,9 @@ class _$_Dialog<T> implements _Dialog<T> {
     TResult Function(WidgetBuilder builder, Completer<T?> completer,
             RoutePredicate? predicate, RouteSettings? routeSettings)?
         push,
+    TResult Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)?
+        adaptivePush,
     TResult Function(String route, Completer<T?> completer,
             RoutePredicate? predicate, Object? arguments)?
         pushNamed,
@@ -595,6 +616,7 @@ class _$_Dialog<T> implements _Dialog<T> {
   TResult map<TResult extends Object?>({
     required TResult Function(_Dialog<T> value) dialog,
     required TResult Function(_Push<T> value) push,
+    required TResult Function(_AdaptivePush<T> value) adaptivePush,
     required TResult Function(_PushNamed<T> value) pushNamed,
     required TResult Function(_PushReplacement<T> value) pushReplacement,
     required TResult Function(_PushReplacementNamed<T> value)
@@ -615,6 +637,7 @@ class _$_Dialog<T> implements _Dialog<T> {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_Dialog<T> value)? dialog,
     TResult? Function(_Push<T> value)? push,
+    TResult? Function(_AdaptivePush<T> value)? adaptivePush,
     TResult? Function(_PushNamed<T> value)? pushNamed,
     TResult? Function(_PushReplacement<T> value)? pushReplacement,
     TResult? Function(_PushReplacementNamed<T> value)? pushReplacementNamed,
@@ -634,6 +657,7 @@ class _$_Dialog<T> implements _Dialog<T> {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_Dialog<T> value)? dialog,
     TResult Function(_Push<T> value)? push,
+    TResult Function(_AdaptivePush<T> value)? adaptivePush,
     TResult Function(_PushNamed<T> value)? pushNamed,
     TResult Function(_PushReplacement<T> value)? pushReplacement,
     TResult Function(_PushReplacementNamed<T> value)? pushReplacementNamed,
@@ -788,6 +812,9 @@ class _$_Push<T> implements _Push<T> {
     required TResult Function(WidgetBuilder builder, Completer<T?> completer,
             RoutePredicate? predicate, RouteSettings? routeSettings)
         push,
+    required TResult Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)
+        adaptivePush,
     required TResult Function(String route, Completer<T?> completer,
             RoutePredicate? predicate, Object? arguments)
         pushNamed,
@@ -841,6 +868,9 @@ class _$_Push<T> implements _Push<T> {
     TResult? Function(WidgetBuilder builder, Completer<T?> completer,
             RoutePredicate? predicate, RouteSettings? routeSettings)?
         push,
+    TResult? Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)?
+        adaptivePush,
     TResult? Function(String route, Completer<T?> completer,
             RoutePredicate? predicate, Object? arguments)?
         pushNamed,
@@ -893,6 +923,9 @@ class _$_Push<T> implements _Push<T> {
     TResult Function(WidgetBuilder builder, Completer<T?> completer,
             RoutePredicate? predicate, RouteSettings? routeSettings)?
         push,
+    TResult Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)?
+        adaptivePush,
     TResult Function(String route, Completer<T?> completer,
             RoutePredicate? predicate, Object? arguments)?
         pushNamed,
@@ -937,6 +970,7 @@ class _$_Push<T> implements _Push<T> {
   TResult map<TResult extends Object?>({
     required TResult Function(_Dialog<T> value) dialog,
     required TResult Function(_Push<T> value) push,
+    required TResult Function(_AdaptivePush<T> value) adaptivePush,
     required TResult Function(_PushNamed<T> value) pushNamed,
     required TResult Function(_PushReplacement<T> value) pushReplacement,
     required TResult Function(_PushReplacementNamed<T> value)
@@ -957,6 +991,7 @@ class _$_Push<T> implements _Push<T> {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_Dialog<T> value)? dialog,
     TResult? Function(_Push<T> value)? push,
+    TResult? Function(_AdaptivePush<T> value)? adaptivePush,
     TResult? Function(_PushNamed<T> value)? pushNamed,
     TResult? Function(_PushReplacement<T> value)? pushReplacement,
     TResult? Function(_PushReplacementNamed<T> value)? pushReplacementNamed,
@@ -976,6 +1011,7 @@ class _$_Push<T> implements _Push<T> {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_Dialog<T> value)? dialog,
     TResult Function(_Push<T> value)? push,
+    TResult Function(_AdaptivePush<T> value)? adaptivePush,
     TResult Function(_PushNamed<T> value)? pushNamed,
     TResult Function(_PushReplacement<T> value)? pushReplacement,
     TResult Function(_PushReplacementNamed<T> value)? pushReplacementNamed,
@@ -1007,6 +1043,339 @@ abstract class _Push<T> implements NavigationEvent<T> {
   RouteSettings? get routeSettings;
   @JsonKey(ignore: true)
   _$$_PushCopyWith<T, _$_Push<T>> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$_AdaptivePushCopyWith<T, $Res> {
+  factory _$$_AdaptivePushCopyWith(
+          _$_AdaptivePush<T> value, $Res Function(_$_AdaptivePush<T>) then) =
+      __$$_AdaptivePushCopyWithImpl<T, $Res>;
+  @useResult
+  $Res call(
+      {WidgetBuilder builder,
+      Completer<T?> completer,
+      RouteSettings? routeSettings});
+}
+
+/// @nodoc
+class __$$_AdaptivePushCopyWithImpl<T, $Res>
+    extends _$NavigationEventCopyWithImpl<T, $Res, _$_AdaptivePush<T>>
+    implements _$$_AdaptivePushCopyWith<T, $Res> {
+  __$$_AdaptivePushCopyWithImpl(
+      _$_AdaptivePush<T> _value, $Res Function(_$_AdaptivePush<T>) _then)
+      : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? builder = null,
+    Object? completer = null,
+    Object? routeSettings = freezed,
+  }) {
+    return _then(_$_AdaptivePush<T>(
+      null == builder
+          ? _value.builder
+          : builder // ignore: cast_nullable_to_non_nullable
+              as WidgetBuilder,
+      completer: null == completer
+          ? _value.completer
+          : completer // ignore: cast_nullable_to_non_nullable
+              as Completer<T?>,
+      routeSettings: freezed == routeSettings
+          ? _value.routeSettings
+          : routeSettings // ignore: cast_nullable_to_non_nullable
+              as RouteSettings?,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$_AdaptivePush<T> implements _AdaptivePush<T> {
+  const _$_AdaptivePush(this.builder,
+      {required this.completer, this.routeSettings});
+
+  @override
+  final WidgetBuilder builder;
+  @override
+  final Completer<T?> completer;
+  @override
+  final RouteSettings? routeSettings;
+
+  @override
+  String toString() {
+    return 'NavigationEvent<$T>.adaptivePush(builder: $builder, completer: $completer, routeSettings: $routeSettings)';
+  }
+
+  @override
+  bool operator ==(dynamic other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$_AdaptivePush<T> &&
+            (identical(other.builder, builder) || other.builder == builder) &&
+            (identical(other.completer, completer) ||
+                other.completer == completer) &&
+            (identical(other.routeSettings, routeSettings) ||
+                other.routeSettings == routeSettings));
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, builder, completer, routeSettings);
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$_AdaptivePushCopyWith<T, _$_AdaptivePush<T>> get copyWith =>
+      __$$_AdaptivePushCopyWithImpl<T, _$_AdaptivePush<T>>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(
+            Completer<T?> completer,
+            WidgetBuilder pageBuilder,
+            bool barrierDismissible,
+            String? barrierLabel,
+            Color barrierColor,
+            Duration transitionDuration,
+            RouteTransitionsBuilder? transitionBuilder,
+            bool useRootNavigator,
+            RouteSettings? routeSettings)
+        dialog,
+    required TResult Function(WidgetBuilder builder, Completer<T?> completer,
+            RoutePredicate? predicate, RouteSettings? routeSettings)
+        push,
+    required TResult Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)
+        adaptivePush,
+    required TResult Function(String route, Completer<T?> completer,
+            RoutePredicate? predicate, Object? arguments)
+        pushNamed,
+    required TResult Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)
+        pushReplacement,
+    required TResult Function(
+            String route, Completer<T?> completer, Object? arguments)
+        pushReplacementNamed,
+    required TResult Function(T? result) pop,
+    required TResult Function(RoutePredicate predicate) popUntil,
+    required TResult Function(SnackBar snackbar) snackBar,
+    required TResult Function() showLoading,
+    required TResult Function() hideLoading,
+    required TResult Function(
+            WidgetBuilder builder,
+            Completer<T?> completer,
+            Color? backgroundColor,
+            double? elevation,
+            ShapeBorder? shape,
+            Clip? clipBehavior,
+            BoxConstraints? constraints,
+            Color? barrierColor,
+            bool isScrollControlled,
+            bool useRootNavigator,
+            bool isDismissible,
+            bool enableDrag,
+            RouteSettings? routeSettings,
+            AnimationController? transitionAnimationController,
+            Offset? anchorPoint)
+        bottomSheet,
+    required TResult Function(OverlayEntry entry) overlay,
+  }) {
+    return adaptivePush(builder, completer, routeSettings);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(
+            Completer<T?> completer,
+            WidgetBuilder pageBuilder,
+            bool barrierDismissible,
+            String? barrierLabel,
+            Color barrierColor,
+            Duration transitionDuration,
+            RouteTransitionsBuilder? transitionBuilder,
+            bool useRootNavigator,
+            RouteSettings? routeSettings)?
+        dialog,
+    TResult? Function(WidgetBuilder builder, Completer<T?> completer,
+            RoutePredicate? predicate, RouteSettings? routeSettings)?
+        push,
+    TResult? Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)?
+        adaptivePush,
+    TResult? Function(String route, Completer<T?> completer,
+            RoutePredicate? predicate, Object? arguments)?
+        pushNamed,
+    TResult? Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)?
+        pushReplacement,
+    TResult? Function(String route, Completer<T?> completer, Object? arguments)?
+        pushReplacementNamed,
+    TResult? Function(T? result)? pop,
+    TResult? Function(RoutePredicate predicate)? popUntil,
+    TResult? Function(SnackBar snackbar)? snackBar,
+    TResult? Function()? showLoading,
+    TResult? Function()? hideLoading,
+    TResult? Function(
+            WidgetBuilder builder,
+            Completer<T?> completer,
+            Color? backgroundColor,
+            double? elevation,
+            ShapeBorder? shape,
+            Clip? clipBehavior,
+            BoxConstraints? constraints,
+            Color? barrierColor,
+            bool isScrollControlled,
+            bool useRootNavigator,
+            bool isDismissible,
+            bool enableDrag,
+            RouteSettings? routeSettings,
+            AnimationController? transitionAnimationController,
+            Offset? anchorPoint)?
+        bottomSheet,
+    TResult? Function(OverlayEntry entry)? overlay,
+  }) {
+    return adaptivePush?.call(builder, completer, routeSettings);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(
+            Completer<T?> completer,
+            WidgetBuilder pageBuilder,
+            bool barrierDismissible,
+            String? barrierLabel,
+            Color barrierColor,
+            Duration transitionDuration,
+            RouteTransitionsBuilder? transitionBuilder,
+            bool useRootNavigator,
+            RouteSettings? routeSettings)?
+        dialog,
+    TResult Function(WidgetBuilder builder, Completer<T?> completer,
+            RoutePredicate? predicate, RouteSettings? routeSettings)?
+        push,
+    TResult Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)?
+        adaptivePush,
+    TResult Function(String route, Completer<T?> completer,
+            RoutePredicate? predicate, Object? arguments)?
+        pushNamed,
+    TResult Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)?
+        pushReplacement,
+    TResult Function(String route, Completer<T?> completer, Object? arguments)?
+        pushReplacementNamed,
+    TResult Function(T? result)? pop,
+    TResult Function(RoutePredicate predicate)? popUntil,
+    TResult Function(SnackBar snackbar)? snackBar,
+    TResult Function()? showLoading,
+    TResult Function()? hideLoading,
+    TResult Function(
+            WidgetBuilder builder,
+            Completer<T?> completer,
+            Color? backgroundColor,
+            double? elevation,
+            ShapeBorder? shape,
+            Clip? clipBehavior,
+            BoxConstraints? constraints,
+            Color? barrierColor,
+            bool isScrollControlled,
+            bool useRootNavigator,
+            bool isDismissible,
+            bool enableDrag,
+            RouteSettings? routeSettings,
+            AnimationController? transitionAnimationController,
+            Offset? anchorPoint)?
+        bottomSheet,
+    TResult Function(OverlayEntry entry)? overlay,
+    required TResult orElse(),
+  }) {
+    if (adaptivePush != null) {
+      return adaptivePush(builder, completer, routeSettings);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_Dialog<T> value) dialog,
+    required TResult Function(_Push<T> value) push,
+    required TResult Function(_AdaptivePush<T> value) adaptivePush,
+    required TResult Function(_PushNamed<T> value) pushNamed,
+    required TResult Function(_PushReplacement<T> value) pushReplacement,
+    required TResult Function(_PushReplacementNamed<T> value)
+        pushReplacementNamed,
+    required TResult Function(_Pop<T> value) pop,
+    required TResult Function(_PopUntil<T> value) popUntil,
+    required TResult Function(_SnackBar<T> value) snackBar,
+    required TResult Function(_ShowLoading<T> value) showLoading,
+    required TResult Function(_HideLoading<T> value) hideLoading,
+    required TResult Function(_BottomSheet<T> value) bottomSheet,
+    required TResult Function(_Overlay<T> value) overlay,
+  }) {
+    return adaptivePush(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_Dialog<T> value)? dialog,
+    TResult? Function(_Push<T> value)? push,
+    TResult? Function(_AdaptivePush<T> value)? adaptivePush,
+    TResult? Function(_PushNamed<T> value)? pushNamed,
+    TResult? Function(_PushReplacement<T> value)? pushReplacement,
+    TResult? Function(_PushReplacementNamed<T> value)? pushReplacementNamed,
+    TResult? Function(_Pop<T> value)? pop,
+    TResult? Function(_PopUntil<T> value)? popUntil,
+    TResult? Function(_SnackBar<T> value)? snackBar,
+    TResult? Function(_ShowLoading<T> value)? showLoading,
+    TResult? Function(_HideLoading<T> value)? hideLoading,
+    TResult? Function(_BottomSheet<T> value)? bottomSheet,
+    TResult? Function(_Overlay<T> value)? overlay,
+  }) {
+    return adaptivePush?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_Dialog<T> value)? dialog,
+    TResult Function(_Push<T> value)? push,
+    TResult Function(_AdaptivePush<T> value)? adaptivePush,
+    TResult Function(_PushNamed<T> value)? pushNamed,
+    TResult Function(_PushReplacement<T> value)? pushReplacement,
+    TResult Function(_PushReplacementNamed<T> value)? pushReplacementNamed,
+    TResult Function(_Pop<T> value)? pop,
+    TResult Function(_PopUntil<T> value)? popUntil,
+    TResult Function(_SnackBar<T> value)? snackBar,
+    TResult Function(_ShowLoading<T> value)? showLoading,
+    TResult Function(_HideLoading<T> value)? hideLoading,
+    TResult Function(_BottomSheet<T> value)? bottomSheet,
+    TResult Function(_Overlay<T> value)? overlay,
+    required TResult orElse(),
+  }) {
+    if (adaptivePush != null) {
+      return adaptivePush(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _AdaptivePush<T> implements NavigationEvent<T> {
+  const factory _AdaptivePush(final WidgetBuilder builder,
+      {required final Completer<T?> completer,
+      final RouteSettings? routeSettings}) = _$_AdaptivePush<T>;
+
+  WidgetBuilder get builder;
+  Completer<T?> get completer;
+  RouteSettings? get routeSettings;
+  @JsonKey(ignore: true)
+  _$$_AdaptivePushCopyWith<T, _$_AdaptivePush<T>> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
@@ -1117,6 +1486,9 @@ class _$_PushNamed<T> implements _PushNamed<T> {
     required TResult Function(WidgetBuilder builder, Completer<T?> completer,
             RoutePredicate? predicate, RouteSettings? routeSettings)
         push,
+    required TResult Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)
+        adaptivePush,
     required TResult Function(String route, Completer<T?> completer,
             RoutePredicate? predicate, Object? arguments)
         pushNamed,
@@ -1170,6 +1542,9 @@ class _$_PushNamed<T> implements _PushNamed<T> {
     TResult? Function(WidgetBuilder builder, Completer<T?> completer,
             RoutePredicate? predicate, RouteSettings? routeSettings)?
         push,
+    TResult? Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)?
+        adaptivePush,
     TResult? Function(String route, Completer<T?> completer,
             RoutePredicate? predicate, Object? arguments)?
         pushNamed,
@@ -1222,6 +1597,9 @@ class _$_PushNamed<T> implements _PushNamed<T> {
     TResult Function(WidgetBuilder builder, Completer<T?> completer,
             RoutePredicate? predicate, RouteSettings? routeSettings)?
         push,
+    TResult Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)?
+        adaptivePush,
     TResult Function(String route, Completer<T?> completer,
             RoutePredicate? predicate, Object? arguments)?
         pushNamed,
@@ -1266,6 +1644,7 @@ class _$_PushNamed<T> implements _PushNamed<T> {
   TResult map<TResult extends Object?>({
     required TResult Function(_Dialog<T> value) dialog,
     required TResult Function(_Push<T> value) push,
+    required TResult Function(_AdaptivePush<T> value) adaptivePush,
     required TResult Function(_PushNamed<T> value) pushNamed,
     required TResult Function(_PushReplacement<T> value) pushReplacement,
     required TResult Function(_PushReplacementNamed<T> value)
@@ -1286,6 +1665,7 @@ class _$_PushNamed<T> implements _PushNamed<T> {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_Dialog<T> value)? dialog,
     TResult? Function(_Push<T> value)? push,
+    TResult? Function(_AdaptivePush<T> value)? adaptivePush,
     TResult? Function(_PushNamed<T> value)? pushNamed,
     TResult? Function(_PushReplacement<T> value)? pushReplacement,
     TResult? Function(_PushReplacementNamed<T> value)? pushReplacementNamed,
@@ -1305,6 +1685,7 @@ class _$_PushNamed<T> implements _PushNamed<T> {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_Dialog<T> value)? dialog,
     TResult Function(_Push<T> value)? push,
+    TResult Function(_AdaptivePush<T> value)? adaptivePush,
     TResult Function(_PushNamed<T> value)? pushNamed,
     TResult Function(_PushReplacement<T> value)? pushReplacement,
     TResult Function(_PushReplacementNamed<T> value)? pushReplacementNamed,
@@ -1441,6 +1822,9 @@ class _$_PushReplacement<T> implements _PushReplacement<T> {
     required TResult Function(WidgetBuilder builder, Completer<T?> completer,
             RoutePredicate? predicate, RouteSettings? routeSettings)
         push,
+    required TResult Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)
+        adaptivePush,
     required TResult Function(String route, Completer<T?> completer,
             RoutePredicate? predicate, Object? arguments)
         pushNamed,
@@ -1494,6 +1878,9 @@ class _$_PushReplacement<T> implements _PushReplacement<T> {
     TResult? Function(WidgetBuilder builder, Completer<T?> completer,
             RoutePredicate? predicate, RouteSettings? routeSettings)?
         push,
+    TResult? Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)?
+        adaptivePush,
     TResult? Function(String route, Completer<T?> completer,
             RoutePredicate? predicate, Object? arguments)?
         pushNamed,
@@ -1546,6 +1933,9 @@ class _$_PushReplacement<T> implements _PushReplacement<T> {
     TResult Function(WidgetBuilder builder, Completer<T?> completer,
             RoutePredicate? predicate, RouteSettings? routeSettings)?
         push,
+    TResult Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)?
+        adaptivePush,
     TResult Function(String route, Completer<T?> completer,
             RoutePredicate? predicate, Object? arguments)?
         pushNamed,
@@ -1590,6 +1980,7 @@ class _$_PushReplacement<T> implements _PushReplacement<T> {
   TResult map<TResult extends Object?>({
     required TResult Function(_Dialog<T> value) dialog,
     required TResult Function(_Push<T> value) push,
+    required TResult Function(_AdaptivePush<T> value) adaptivePush,
     required TResult Function(_PushNamed<T> value) pushNamed,
     required TResult Function(_PushReplacement<T> value) pushReplacement,
     required TResult Function(_PushReplacementNamed<T> value)
@@ -1610,6 +2001,7 @@ class _$_PushReplacement<T> implements _PushReplacement<T> {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_Dialog<T> value)? dialog,
     TResult? Function(_Push<T> value)? push,
+    TResult? Function(_AdaptivePush<T> value)? adaptivePush,
     TResult? Function(_PushNamed<T> value)? pushNamed,
     TResult? Function(_PushReplacement<T> value)? pushReplacement,
     TResult? Function(_PushReplacementNamed<T> value)? pushReplacementNamed,
@@ -1629,6 +2021,7 @@ class _$_PushReplacement<T> implements _PushReplacement<T> {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_Dialog<T> value)? dialog,
     TResult Function(_Push<T> value)? push,
+    TResult Function(_AdaptivePush<T> value)? adaptivePush,
     TResult Function(_PushNamed<T> value)? pushNamed,
     TResult Function(_PushReplacement<T> value)? pushReplacement,
     TResult Function(_PushReplacementNamed<T> value)? pushReplacementNamed,
@@ -1757,6 +2150,9 @@ class _$_PushReplacementNamed<T> implements _PushReplacementNamed<T> {
     required TResult Function(WidgetBuilder builder, Completer<T?> completer,
             RoutePredicate? predicate, RouteSettings? routeSettings)
         push,
+    required TResult Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)
+        adaptivePush,
     required TResult Function(String route, Completer<T?> completer,
             RoutePredicate? predicate, Object? arguments)
         pushNamed,
@@ -1810,6 +2206,9 @@ class _$_PushReplacementNamed<T> implements _PushReplacementNamed<T> {
     TResult? Function(WidgetBuilder builder, Completer<T?> completer,
             RoutePredicate? predicate, RouteSettings? routeSettings)?
         push,
+    TResult? Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)?
+        adaptivePush,
     TResult? Function(String route, Completer<T?> completer,
             RoutePredicate? predicate, Object? arguments)?
         pushNamed,
@@ -1862,6 +2261,9 @@ class _$_PushReplacementNamed<T> implements _PushReplacementNamed<T> {
     TResult Function(WidgetBuilder builder, Completer<T?> completer,
             RoutePredicate? predicate, RouteSettings? routeSettings)?
         push,
+    TResult Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)?
+        adaptivePush,
     TResult Function(String route, Completer<T?> completer,
             RoutePredicate? predicate, Object? arguments)?
         pushNamed,
@@ -1906,6 +2308,7 @@ class _$_PushReplacementNamed<T> implements _PushReplacementNamed<T> {
   TResult map<TResult extends Object?>({
     required TResult Function(_Dialog<T> value) dialog,
     required TResult Function(_Push<T> value) push,
+    required TResult Function(_AdaptivePush<T> value) adaptivePush,
     required TResult Function(_PushNamed<T> value) pushNamed,
     required TResult Function(_PushReplacement<T> value) pushReplacement,
     required TResult Function(_PushReplacementNamed<T> value)
@@ -1926,6 +2329,7 @@ class _$_PushReplacementNamed<T> implements _PushReplacementNamed<T> {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_Dialog<T> value)? dialog,
     TResult? Function(_Push<T> value)? push,
+    TResult? Function(_AdaptivePush<T> value)? adaptivePush,
     TResult? Function(_PushNamed<T> value)? pushNamed,
     TResult? Function(_PushReplacement<T> value)? pushReplacement,
     TResult? Function(_PushReplacementNamed<T> value)? pushReplacementNamed,
@@ -1945,6 +2349,7 @@ class _$_PushReplacementNamed<T> implements _PushReplacementNamed<T> {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_Dialog<T> value)? dialog,
     TResult Function(_Push<T> value)? push,
+    TResult Function(_AdaptivePush<T> value)? adaptivePush,
     TResult Function(_PushNamed<T> value)? pushNamed,
     TResult Function(_PushReplacement<T> value)? pushReplacement,
     TResult Function(_PushReplacementNamed<T> value)? pushReplacementNamed,
@@ -2054,6 +2459,9 @@ class _$_Pop<T> implements _Pop<T> {
     required TResult Function(WidgetBuilder builder, Completer<T?> completer,
             RoutePredicate? predicate, RouteSettings? routeSettings)
         push,
+    required TResult Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)
+        adaptivePush,
     required TResult Function(String route, Completer<T?> completer,
             RoutePredicate? predicate, Object? arguments)
         pushNamed,
@@ -2107,6 +2515,9 @@ class _$_Pop<T> implements _Pop<T> {
     TResult? Function(WidgetBuilder builder, Completer<T?> completer,
             RoutePredicate? predicate, RouteSettings? routeSettings)?
         push,
+    TResult? Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)?
+        adaptivePush,
     TResult? Function(String route, Completer<T?> completer,
             RoutePredicate? predicate, Object? arguments)?
         pushNamed,
@@ -2159,6 +2570,9 @@ class _$_Pop<T> implements _Pop<T> {
     TResult Function(WidgetBuilder builder, Completer<T?> completer,
             RoutePredicate? predicate, RouteSettings? routeSettings)?
         push,
+    TResult Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)?
+        adaptivePush,
     TResult Function(String route, Completer<T?> completer,
             RoutePredicate? predicate, Object? arguments)?
         pushNamed,
@@ -2203,6 +2617,7 @@ class _$_Pop<T> implements _Pop<T> {
   TResult map<TResult extends Object?>({
     required TResult Function(_Dialog<T> value) dialog,
     required TResult Function(_Push<T> value) push,
+    required TResult Function(_AdaptivePush<T> value) adaptivePush,
     required TResult Function(_PushNamed<T> value) pushNamed,
     required TResult Function(_PushReplacement<T> value) pushReplacement,
     required TResult Function(_PushReplacementNamed<T> value)
@@ -2223,6 +2638,7 @@ class _$_Pop<T> implements _Pop<T> {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_Dialog<T> value)? dialog,
     TResult? Function(_Push<T> value)? push,
+    TResult? Function(_AdaptivePush<T> value)? adaptivePush,
     TResult? Function(_PushNamed<T> value)? pushNamed,
     TResult? Function(_PushReplacement<T> value)? pushReplacement,
     TResult? Function(_PushReplacementNamed<T> value)? pushReplacementNamed,
@@ -2242,6 +2658,7 @@ class _$_Pop<T> implements _Pop<T> {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_Dialog<T> value)? dialog,
     TResult Function(_Push<T> value)? push,
+    TResult Function(_AdaptivePush<T> value)? adaptivePush,
     TResult Function(_PushNamed<T> value)? pushNamed,
     TResult Function(_PushReplacement<T> value)? pushReplacement,
     TResult Function(_PushReplacementNamed<T> value)? pushReplacementNamed,
@@ -2349,6 +2766,9 @@ class _$_PopUntil<T> implements _PopUntil<T> {
     required TResult Function(WidgetBuilder builder, Completer<T?> completer,
             RoutePredicate? predicate, RouteSettings? routeSettings)
         push,
+    required TResult Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)
+        adaptivePush,
     required TResult Function(String route, Completer<T?> completer,
             RoutePredicate? predicate, Object? arguments)
         pushNamed,
@@ -2402,6 +2822,9 @@ class _$_PopUntil<T> implements _PopUntil<T> {
     TResult? Function(WidgetBuilder builder, Completer<T?> completer,
             RoutePredicate? predicate, RouteSettings? routeSettings)?
         push,
+    TResult? Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)?
+        adaptivePush,
     TResult? Function(String route, Completer<T?> completer,
             RoutePredicate? predicate, Object? arguments)?
         pushNamed,
@@ -2454,6 +2877,9 @@ class _$_PopUntil<T> implements _PopUntil<T> {
     TResult Function(WidgetBuilder builder, Completer<T?> completer,
             RoutePredicate? predicate, RouteSettings? routeSettings)?
         push,
+    TResult Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)?
+        adaptivePush,
     TResult Function(String route, Completer<T?> completer,
             RoutePredicate? predicate, Object? arguments)?
         pushNamed,
@@ -2498,6 +2924,7 @@ class _$_PopUntil<T> implements _PopUntil<T> {
   TResult map<TResult extends Object?>({
     required TResult Function(_Dialog<T> value) dialog,
     required TResult Function(_Push<T> value) push,
+    required TResult Function(_AdaptivePush<T> value) adaptivePush,
     required TResult Function(_PushNamed<T> value) pushNamed,
     required TResult Function(_PushReplacement<T> value) pushReplacement,
     required TResult Function(_PushReplacementNamed<T> value)
@@ -2518,6 +2945,7 @@ class _$_PopUntil<T> implements _PopUntil<T> {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_Dialog<T> value)? dialog,
     TResult? Function(_Push<T> value)? push,
+    TResult? Function(_AdaptivePush<T> value)? adaptivePush,
     TResult? Function(_PushNamed<T> value)? pushNamed,
     TResult? Function(_PushReplacement<T> value)? pushReplacement,
     TResult? Function(_PushReplacementNamed<T> value)? pushReplacementNamed,
@@ -2537,6 +2965,7 @@ class _$_PopUntil<T> implements _PopUntil<T> {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_Dialog<T> value)? dialog,
     TResult Function(_Push<T> value)? push,
+    TResult Function(_AdaptivePush<T> value)? adaptivePush,
     TResult Function(_PushNamed<T> value)? pushNamed,
     TResult Function(_PushReplacement<T> value)? pushReplacement,
     TResult Function(_PushReplacementNamed<T> value)? pushReplacementNamed,
@@ -2644,6 +3073,9 @@ class _$_SnackBar<T> implements _SnackBar<T> {
     required TResult Function(WidgetBuilder builder, Completer<T?> completer,
             RoutePredicate? predicate, RouteSettings? routeSettings)
         push,
+    required TResult Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)
+        adaptivePush,
     required TResult Function(String route, Completer<T?> completer,
             RoutePredicate? predicate, Object? arguments)
         pushNamed,
@@ -2697,6 +3129,9 @@ class _$_SnackBar<T> implements _SnackBar<T> {
     TResult? Function(WidgetBuilder builder, Completer<T?> completer,
             RoutePredicate? predicate, RouteSettings? routeSettings)?
         push,
+    TResult? Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)?
+        adaptivePush,
     TResult? Function(String route, Completer<T?> completer,
             RoutePredicate? predicate, Object? arguments)?
         pushNamed,
@@ -2749,6 +3184,9 @@ class _$_SnackBar<T> implements _SnackBar<T> {
     TResult Function(WidgetBuilder builder, Completer<T?> completer,
             RoutePredicate? predicate, RouteSettings? routeSettings)?
         push,
+    TResult Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)?
+        adaptivePush,
     TResult Function(String route, Completer<T?> completer,
             RoutePredicate? predicate, Object? arguments)?
         pushNamed,
@@ -2793,6 +3231,7 @@ class _$_SnackBar<T> implements _SnackBar<T> {
   TResult map<TResult extends Object?>({
     required TResult Function(_Dialog<T> value) dialog,
     required TResult Function(_Push<T> value) push,
+    required TResult Function(_AdaptivePush<T> value) adaptivePush,
     required TResult Function(_PushNamed<T> value) pushNamed,
     required TResult Function(_PushReplacement<T> value) pushReplacement,
     required TResult Function(_PushReplacementNamed<T> value)
@@ -2813,6 +3252,7 @@ class _$_SnackBar<T> implements _SnackBar<T> {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_Dialog<T> value)? dialog,
     TResult? Function(_Push<T> value)? push,
+    TResult? Function(_AdaptivePush<T> value)? adaptivePush,
     TResult? Function(_PushNamed<T> value)? pushNamed,
     TResult? Function(_PushReplacement<T> value)? pushReplacement,
     TResult? Function(_PushReplacementNamed<T> value)? pushReplacementNamed,
@@ -2832,6 +3272,7 @@ class _$_SnackBar<T> implements _SnackBar<T> {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_Dialog<T> value)? dialog,
     TResult Function(_Push<T> value)? push,
+    TResult Function(_AdaptivePush<T> value)? adaptivePush,
     TResult Function(_PushNamed<T> value)? pushNamed,
     TResult Function(_PushReplacement<T> value)? pushReplacement,
     TResult Function(_PushReplacementNamed<T> value)? pushReplacementNamed,
@@ -2912,6 +3353,9 @@ class _$_ShowLoading<T> implements _ShowLoading<T> {
     required TResult Function(WidgetBuilder builder, Completer<T?> completer,
             RoutePredicate? predicate, RouteSettings? routeSettings)
         push,
+    required TResult Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)
+        adaptivePush,
     required TResult Function(String route, Completer<T?> completer,
             RoutePredicate? predicate, Object? arguments)
         pushNamed,
@@ -2965,6 +3409,9 @@ class _$_ShowLoading<T> implements _ShowLoading<T> {
     TResult? Function(WidgetBuilder builder, Completer<T?> completer,
             RoutePredicate? predicate, RouteSettings? routeSettings)?
         push,
+    TResult? Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)?
+        adaptivePush,
     TResult? Function(String route, Completer<T?> completer,
             RoutePredicate? predicate, Object? arguments)?
         pushNamed,
@@ -3017,6 +3464,9 @@ class _$_ShowLoading<T> implements _ShowLoading<T> {
     TResult Function(WidgetBuilder builder, Completer<T?> completer,
             RoutePredicate? predicate, RouteSettings? routeSettings)?
         push,
+    TResult Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)?
+        adaptivePush,
     TResult Function(String route, Completer<T?> completer,
             RoutePredicate? predicate, Object? arguments)?
         pushNamed,
@@ -3061,6 +3511,7 @@ class _$_ShowLoading<T> implements _ShowLoading<T> {
   TResult map<TResult extends Object?>({
     required TResult Function(_Dialog<T> value) dialog,
     required TResult Function(_Push<T> value) push,
+    required TResult Function(_AdaptivePush<T> value) adaptivePush,
     required TResult Function(_PushNamed<T> value) pushNamed,
     required TResult Function(_PushReplacement<T> value) pushReplacement,
     required TResult Function(_PushReplacementNamed<T> value)
@@ -3081,6 +3532,7 @@ class _$_ShowLoading<T> implements _ShowLoading<T> {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_Dialog<T> value)? dialog,
     TResult? Function(_Push<T> value)? push,
+    TResult? Function(_AdaptivePush<T> value)? adaptivePush,
     TResult? Function(_PushNamed<T> value)? pushNamed,
     TResult? Function(_PushReplacement<T> value)? pushReplacement,
     TResult? Function(_PushReplacementNamed<T> value)? pushReplacementNamed,
@@ -3100,6 +3552,7 @@ class _$_ShowLoading<T> implements _ShowLoading<T> {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_Dialog<T> value)? dialog,
     TResult Function(_Push<T> value)? push,
+    TResult Function(_AdaptivePush<T> value)? adaptivePush,
     TResult Function(_PushNamed<T> value)? pushNamed,
     TResult Function(_PushReplacement<T> value)? pushReplacement,
     TResult Function(_PushReplacementNamed<T> value)? pushReplacementNamed,
@@ -3175,6 +3628,9 @@ class _$_HideLoading<T> implements _HideLoading<T> {
     required TResult Function(WidgetBuilder builder, Completer<T?> completer,
             RoutePredicate? predicate, RouteSettings? routeSettings)
         push,
+    required TResult Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)
+        adaptivePush,
     required TResult Function(String route, Completer<T?> completer,
             RoutePredicate? predicate, Object? arguments)
         pushNamed,
@@ -3228,6 +3684,9 @@ class _$_HideLoading<T> implements _HideLoading<T> {
     TResult? Function(WidgetBuilder builder, Completer<T?> completer,
             RoutePredicate? predicate, RouteSettings? routeSettings)?
         push,
+    TResult? Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)?
+        adaptivePush,
     TResult? Function(String route, Completer<T?> completer,
             RoutePredicate? predicate, Object? arguments)?
         pushNamed,
@@ -3280,6 +3739,9 @@ class _$_HideLoading<T> implements _HideLoading<T> {
     TResult Function(WidgetBuilder builder, Completer<T?> completer,
             RoutePredicate? predicate, RouteSettings? routeSettings)?
         push,
+    TResult Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)?
+        adaptivePush,
     TResult Function(String route, Completer<T?> completer,
             RoutePredicate? predicate, Object? arguments)?
         pushNamed,
@@ -3324,6 +3786,7 @@ class _$_HideLoading<T> implements _HideLoading<T> {
   TResult map<TResult extends Object?>({
     required TResult Function(_Dialog<T> value) dialog,
     required TResult Function(_Push<T> value) push,
+    required TResult Function(_AdaptivePush<T> value) adaptivePush,
     required TResult Function(_PushNamed<T> value) pushNamed,
     required TResult Function(_PushReplacement<T> value) pushReplacement,
     required TResult Function(_PushReplacementNamed<T> value)
@@ -3344,6 +3807,7 @@ class _$_HideLoading<T> implements _HideLoading<T> {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_Dialog<T> value)? dialog,
     TResult? Function(_Push<T> value)? push,
+    TResult? Function(_AdaptivePush<T> value)? adaptivePush,
     TResult? Function(_PushNamed<T> value)? pushNamed,
     TResult? Function(_PushReplacement<T> value)? pushReplacement,
     TResult? Function(_PushReplacementNamed<T> value)? pushReplacementNamed,
@@ -3363,6 +3827,7 @@ class _$_HideLoading<T> implements _HideLoading<T> {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_Dialog<T> value)? dialog,
     TResult Function(_Push<T> value)? push,
+    TResult Function(_AdaptivePush<T> value)? adaptivePush,
     TResult Function(_PushNamed<T> value)? pushNamed,
     TResult Function(_PushReplacement<T> value)? pushReplacement,
     TResult Function(_PushReplacementNamed<T> value)? pushReplacementNamed,
@@ -3641,6 +4106,9 @@ class _$_BottomSheet<T> implements _BottomSheet<T> {
     required TResult Function(WidgetBuilder builder, Completer<T?> completer,
             RoutePredicate? predicate, RouteSettings? routeSettings)
         push,
+    required TResult Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)
+        adaptivePush,
     required TResult Function(String route, Completer<T?> completer,
             RoutePredicate? predicate, Object? arguments)
         pushNamed,
@@ -3709,6 +4177,9 @@ class _$_BottomSheet<T> implements _BottomSheet<T> {
     TResult? Function(WidgetBuilder builder, Completer<T?> completer,
             RoutePredicate? predicate, RouteSettings? routeSettings)?
         push,
+    TResult? Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)?
+        adaptivePush,
     TResult? Function(String route, Completer<T?> completer,
             RoutePredicate? predicate, Object? arguments)?
         pushNamed,
@@ -3776,6 +4247,9 @@ class _$_BottomSheet<T> implements _BottomSheet<T> {
     TResult Function(WidgetBuilder builder, Completer<T?> completer,
             RoutePredicate? predicate, RouteSettings? routeSettings)?
         push,
+    TResult Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)?
+        adaptivePush,
     TResult Function(String route, Completer<T?> completer,
             RoutePredicate? predicate, Object? arguments)?
         pushNamed,
@@ -3835,6 +4309,7 @@ class _$_BottomSheet<T> implements _BottomSheet<T> {
   TResult map<TResult extends Object?>({
     required TResult Function(_Dialog<T> value) dialog,
     required TResult Function(_Push<T> value) push,
+    required TResult Function(_AdaptivePush<T> value) adaptivePush,
     required TResult Function(_PushNamed<T> value) pushNamed,
     required TResult Function(_PushReplacement<T> value) pushReplacement,
     required TResult Function(_PushReplacementNamed<T> value)
@@ -3855,6 +4330,7 @@ class _$_BottomSheet<T> implements _BottomSheet<T> {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_Dialog<T> value)? dialog,
     TResult? Function(_Push<T> value)? push,
+    TResult? Function(_AdaptivePush<T> value)? adaptivePush,
     TResult? Function(_PushNamed<T> value)? pushNamed,
     TResult? Function(_PushReplacement<T> value)? pushReplacement,
     TResult? Function(_PushReplacementNamed<T> value)? pushReplacementNamed,
@@ -3874,6 +4350,7 @@ class _$_BottomSheet<T> implements _BottomSheet<T> {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_Dialog<T> value)? dialog,
     TResult Function(_Push<T> value)? push,
+    TResult Function(_AdaptivePush<T> value)? adaptivePush,
     TResult Function(_PushNamed<T> value)? pushNamed,
     TResult Function(_PushReplacement<T> value)? pushReplacement,
     TResult Function(_PushReplacementNamed<T> value)? pushReplacementNamed,
@@ -4009,6 +4486,9 @@ class _$_Overlay<T> implements _Overlay<T> {
     required TResult Function(WidgetBuilder builder, Completer<T?> completer,
             RoutePredicate? predicate, RouteSettings? routeSettings)
         push,
+    required TResult Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)
+        adaptivePush,
     required TResult Function(String route, Completer<T?> completer,
             RoutePredicate? predicate, Object? arguments)
         pushNamed,
@@ -4062,6 +4542,9 @@ class _$_Overlay<T> implements _Overlay<T> {
     TResult? Function(WidgetBuilder builder, Completer<T?> completer,
             RoutePredicate? predicate, RouteSettings? routeSettings)?
         push,
+    TResult? Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)?
+        adaptivePush,
     TResult? Function(String route, Completer<T?> completer,
             RoutePredicate? predicate, Object? arguments)?
         pushNamed,
@@ -4114,6 +4597,9 @@ class _$_Overlay<T> implements _Overlay<T> {
     TResult Function(WidgetBuilder builder, Completer<T?> completer,
             RoutePredicate? predicate, RouteSettings? routeSettings)?
         push,
+    TResult Function(WidgetBuilder builder, Completer<T?> completer,
+            RouteSettings? routeSettings)?
+        adaptivePush,
     TResult Function(String route, Completer<T?> completer,
             RoutePredicate? predicate, Object? arguments)?
         pushNamed,
@@ -4158,6 +4644,7 @@ class _$_Overlay<T> implements _Overlay<T> {
   TResult map<TResult extends Object?>({
     required TResult Function(_Dialog<T> value) dialog,
     required TResult Function(_Push<T> value) push,
+    required TResult Function(_AdaptivePush<T> value) adaptivePush,
     required TResult Function(_PushNamed<T> value) pushNamed,
     required TResult Function(_PushReplacement<T> value) pushReplacement,
     required TResult Function(_PushReplacementNamed<T> value)
@@ -4178,6 +4665,7 @@ class _$_Overlay<T> implements _Overlay<T> {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_Dialog<T> value)? dialog,
     TResult? Function(_Push<T> value)? push,
+    TResult? Function(_AdaptivePush<T> value)? adaptivePush,
     TResult? Function(_PushNamed<T> value)? pushNamed,
     TResult? Function(_PushReplacement<T> value)? pushReplacement,
     TResult? Function(_PushReplacementNamed<T> value)? pushReplacementNamed,
@@ -4197,6 +4685,7 @@ class _$_Overlay<T> implements _Overlay<T> {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_Dialog<T> value)? dialog,
     TResult Function(_Push<T> value)? push,
+    TResult Function(_AdaptivePush<T> value)? adaptivePush,
     TResult Function(_PushNamed<T> value)? pushNamed,
     TResult Function(_PushReplacement<T> value)? pushReplacement,
     TResult Function(_PushReplacementNamed<T> value)? pushReplacementNamed,
