@@ -18,18 +18,20 @@ class App {
 
     try {
       runApp(const ProviderScope(child: SplashView()));
-      await windowManager.ensureInitialized();
+      if(Platform.isLinux || Platform.isWindows) {
+        await windowManager.ensureInitialized();
 
-      WindowOptions windowOptions = const WindowOptions(
-        backgroundColor: Colors.transparent,
-        skipTaskbar: false,
-        minimumSize: Size(400, 600),
-        titleBarStyle: TitleBarStyle.hidden,
-      );
-      windowManager.waitUntilReadyToShow(windowOptions, () async {
-        await windowManager.show();
-        await windowManager.focus();
-      });
+        WindowOptions windowOptions = const WindowOptions(
+          backgroundColor: Colors.transparent,
+          skipTaskbar: false,
+          minimumSize: Size(400, 600),
+          titleBarStyle: TitleBarStyle.hidden,
+        );
+        windowManager.waitUntilReadyToShow(windowOptions, () async {
+          await windowManager.show();
+          await windowManager.focus();
+        });
+      }
       await container.read(packageInfoControllerProvider.notifier).init();
       await container.read(localStorageProvider).init();
       await container.read(deviceControllerProvider.notifier).init();
@@ -47,22 +49,22 @@ class App {
   }
 
   static Future<void> run() async {
+    WidgetsFlutterBinding.ensureInitialized();
     NavigatorService.init();
     AppLogger.init();
     await LogFile.init();
-    WidgetsFlutterBinding.ensureInitialized();
 
     FlutterError.onError = LogFile.instance.dispatchFlutterErrorLogs;
     final container = ProviderContainer();
     runZonedGuarded(
-      () async {
+          () async {
         await init(container);
         runApp(UncontrolledProviderScope(
           container: container,
           child: const _App(),
         ));
       },
-      (error, stack) {
+          (error, stack) {
         if (error is AppInitializationException) {
           runApp(UncontrolledProviderScope(
             container: container,
@@ -78,12 +80,12 @@ class App {
 class AppWrapper extends ConsumerWidget {
   const AppWrapper({super.key, required this.builder});
   final Widget Function(
-    BuildContext context,
-    ThemeMode themeMode,
-    ThemeData light,
-    ThemeData dark,
-    TransitionBuilder builder,
-  ) builder;
+      BuildContext context,
+      ThemeMode themeMode,
+      ThemeData light,
+      ThemeData dark,
+      TransitionBuilder builder,
+      ) builder;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(settingsControllerProvider);
@@ -98,18 +100,27 @@ class AppWrapper extends ConsumerWidget {
             settings.themeMode,
             AppTheme.themeDataFrom(colorScheme: lightDynamic, brightness: Brightness.light),
             AppTheme.themeDataFrom(colorScheme: darkDynamic, brightness: Brightness.dark),
-            (context, child) {
-          child = virtualWindowFrameBuilder(context, child);
-          return GestureDetector(
-            onTap: () {
-              FocusManager.instance.primaryFocus?.unfocus();
-            },
-            child: NavigationEventListener(
-              navigator: NavigatorService.instance.navigatorKey(false),
-              child: child,
-            ),
-          );
-        }),
+                (context, child) {
+              if (Platform.isWindows || Platform.isLinux) {
+                child = virtualWindowFrameBuilder(context, child);
+              }
+              var data = MediaQuery.of(context);
+              if(Platform.isMacOS){
+                data = data.copyWith(padding: const EdgeInsets.only(top: 22));
+              }
+              return MediaQuery(
+                data: data,
+                child: GestureDetector(
+                  onTap: () {
+                    FocusManager.instance.primaryFocus?.unfocus();
+                  },
+                  child: NavigationEventListener(
+                    navigator: NavigatorService.instance.navigatorKey(false),
+                    child: child ?? const SizedBox.shrink(),
+                  ),
+                ),
+              );
+            }),
       ),
     );
   }
@@ -126,11 +137,10 @@ class _App extends ConsumerWidget {
         title: appName,
         darkTheme: dark,
         theme: light,
+        debugShowCheckedModeBanner: false,
         navigatorKey: NavigatorService.instance.navigatorKey(false),
         builder: builder,
-        home: UpdateChecker(
-          child: const HomeView(),
-        ),
+        home: const UpdateChecker(child: HomeView()),
       ),
     );
   }
@@ -152,6 +162,21 @@ class WindowTitleBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (Platform.isMacOS) {
+      return MediaQuery.fromWindow(
+        child: Builder(
+          builder: (context) {
+            return MediaQuery(
+              data: MediaQuery.of(context).copyWith(
+                padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 24),
+              ),
+              child: child,
+            );
+          },
+        ),
+      );
+    }
+
     return Directionality(
       textDirection: TextDirection.ltr,
       child: _AppThemeBuilder(

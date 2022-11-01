@@ -20,6 +20,7 @@ class Result {
   final AdbDevice? device;
   final String command;
   final List<String> arguments;
+
   Result({
     required this.stdoutStream,
     required this.stderrStream,
@@ -68,7 +69,9 @@ abstract class AdbService {
 
   /// commands
   Future<Result> connect(String host, int port);
+
   Future<Result> tcpip();
+
   Future<Result> pair(String pair, String host, int port);
 
   Future<Result> rerunCommand(
@@ -81,16 +84,21 @@ abstract class AdbService {
   /// connnected device commands
 
   Future<Result> disconnect(AdbDevice device);
+
   Future<Result> installApk(AdbDevice device, String path);
+
   Future<Result> scrcpy(AdbDevice device);
 
   Future<List<AdbFileSystem>> ls(AdbDevice device, String? path);
 
-  Future<Result> pushFile(AdbDevice device, String file, String destinationPath);
+  Future<Result> pushFile(
+      AdbDevice device, String file, String destinationPath);
 
-  Future<Result> pullFile(AdbDevice device, String file, String destinationPath);
+  Future<Result> pullFile(
+      AdbDevice device, String file, String destinationPath);
 
-  Future<Result> runCustomCommand(AdbDevice device, String command, {String executable = 'adb'});
+  Future<Result> runCustomCommand(AdbDevice device, String command,
+      {String executable = 'adb'});
 
   Future<Result> inputText(AdbDevice device, String text);
 
@@ -99,8 +107,33 @@ abstract class AdbService {
   /// -commands-
 }
 
+Map<String, String>? _unixEnvironmentMap;
+
+void _loadUnixEnvironment() {
+  /// get enviroment.
+  const cmd =
+      'source ~/.zshrc;source ~/.bashrc;source ~/.profile;source ~/.bash_profile;/usr/bin/env';
+  final result = Process.runSync(
+    '/bin/sh',
+    ['-c', cmd],
+    runInShell: true,
+  );
+  _unixEnvironmentMap = {};
+  if (result.exitCode == 0) {
+    result.stdout.toString().trim().split('\n').forEach((line) {
+      final parts = line.split('=');
+      final key = parts[0];
+      final value = parts.length > 1 ? parts[1] : '';
+      _unixEnvironmentMap?[key] = value;
+    });
+  } else {
+    throw 'Error requesting environment: ${result.stderr}';
+  }
+}
+
 class ProccessAdbServiceImpl implements AdbService {
   final Ref ref;
+
   ProccessAdbServiceImpl(this.ref);
 
   Future<Result> run(
@@ -111,6 +144,13 @@ class ProccessAdbServiceImpl implements AdbService {
     AdbDevice? device,
     bool addToLogs = true,
   }) async {
+    // Unix exception.
+    if (io.Platform.isLinux || io.Platform.isMacOS) {
+      if (_unixEnvironmentMap == null) {
+        _loadUnixEnvironment();
+      }
+    }
+
     // logWarning(arguments);
     Process process;
     final _command = [
@@ -120,7 +160,12 @@ class ProccessAdbServiceImpl implements AdbService {
       ...arguments,
     ];
     try {
-      process = await io.Process.start(executable, _command);
+      process = await io.Process.start(
+        executable,
+        _command,
+        environment: _unixEnvironmentMap,
+        runInShell: true,
+      );
     } on ProcessException catch (e) {
       if (e.message == 'No such file or directory') {
         if (executable == 'adb') {
@@ -164,7 +209,8 @@ class ProccessAdbServiceImpl implements AdbService {
     final devices = <AdbDevice>[];
     final output = (await process.stdout).split('\n').toList()
       ..removeWhere((element) =>
-          element.trim().toLowerCase().contains('devices attached') || element.trim().isEmpty);
+          element.trim().toLowerCase().contains('devices attached') ||
+          element.trim().isEmpty);
 
     for (var element in output) {
       final parts = element.split('	');
@@ -192,7 +238,8 @@ class ProccessAdbServiceImpl implements AdbService {
   Stream<List<AdbDevice>> get connectedDevicesStream {
     final future = getConnectedDevices;
     // return Stream.fromFuture(future());
-    return Stream.periodic(const Duration(seconds: 1)).asyncMap((_) => future());
+    return Stream.periodic(const Duration(seconds: 1))
+        .asyncMap((_) => future());
   }
 
   @override
@@ -284,14 +331,16 @@ class ProccessAdbServiceImpl implements AdbService {
           if (output.contains('No such file or directory')) {
             throw PermissionDeniedException();
           }
-          final files = output.split('\n').toList().map((e) => e.trim()).toList();
+          final files =
+              output.split('\n').toList().map((e) => e.trim()).toList();
           files.forEach(logInfo);
           final result = <AdbFileSystem>[];
           for (var element in files) {
             if (element == '') {
               continue;
             }
-            List<String> parts = element.split(' ')..removeWhere((element) => element.isEmpty);
+            List<String> parts = element.split(' ')
+              ..removeWhere((element) => element.isEmpty);
 
             final inode = parts.first;
 
@@ -365,7 +414,8 @@ class ProccessAdbServiceImpl implements AdbService {
   }
 
   @override
-  Future<Result> pullFile(AdbDevice device, String file, String destinationPath) {
+  Future<Result> pullFile(
+      AdbDevice device, String file, String destinationPath) {
     return run(
       'pull',
       arguments: [file, destinationPath],
@@ -384,7 +434,8 @@ class ProccessAdbServiceImpl implements AdbService {
   }
 
   @override
-  Future<Result> runCustomCommand(AdbDevice device, String command, {String executable = 'adb'}) {
+  Future<Result> runCustomCommand(AdbDevice device, String command,
+      {String executable = 'adb'}) {
     return run(
       '',
       arguments: [...command.split(' ')],
@@ -413,7 +464,8 @@ class ProccessAdbServiceImpl implements AdbService {
   @override
   Future<bool> scrcpyAvailable() async {
     try {
-      return await run('', arguments: ['--version'], executable: 'scrcpy').then((result) async {
+      return await run('', arguments: ['--version'], executable: 'scrcpy')
+          .then((result) async {
         final exitCode = await result.exitCode;
         if (exitCode == 0) {
           return true;
@@ -469,7 +521,8 @@ class ProccessAdbServiceImpl implements AdbService {
         assert(device != null, 'Device cannot be null');
         return scrcpy(device!);
       case '':
-        return runCustomCommand(device!, arguments.join(' '), executable: executable);
+        return runCustomCommand(device!, arguments.join(' '),
+            executable: executable);
       default:
         throw AppException('Command not found');
     }
