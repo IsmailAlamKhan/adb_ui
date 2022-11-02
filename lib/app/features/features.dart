@@ -10,3 +10,4 @@ export 'settings/settings.dart';
 export 'splash/splash.dart';
 export 'terminal_outputs/terminal_outputs.dart';
 export 'update_checker/update_checker.dart';
+export 'menubar/menubar.dart';
