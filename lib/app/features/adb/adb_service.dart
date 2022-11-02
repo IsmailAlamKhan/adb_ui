@@ -2,7 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io' as io;
 import 'dart:io';
-
+import 'package:flutter/cupertino.dart';
+import 'package:path_provider/path_provider.dart' as p;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../utils/utils.dart';
@@ -108,26 +109,83 @@ abstract class AdbService {
 }
 
 Map<String, String>? _unixEnvironmentMap;
+const _kFileContentEnvSh = '''#!/bin/sh
+set +x
 
-void _loadUnixEnvironment() {
-  /// get enviroment.
-  const cmd =
-      'source ~/.zshrc;source ~/.bashrc;source ~/.profile;source ~/.bash_profile;/usr/bin/env';
+[ -f /etc/profile ] && source /etc/profile;
+[ -f /etc/profiles ] && source /etc/profiles; 
+[ -f /etc/bashrc ] && source /etc/bashrc;
+[ -f /etc/bash.bashrc ] && source /etc/bash.bashrc;
+[ -f /etc/zprofile ] && source /etc/zprofile;
+[ -f /etc/zshenv ] && source /etc/zshenv; 
+[ -f /etc/zshrc ] && source /etc/zshrc;
+
+cd ~/;
+
+ # ZSH
+[ -f .zshrc ] && source ./.zshrc ; 
+[ -f .zshenv ] && source ./.zshenv ; 
+[ -f .zprofile ] && source ./.zprofile ; 
+
+ # Korn Shell (ksh)
+[ -f .kshrc ] && source ./.kshrc ; 
+
+[ -f .profile ] && source ./.profile ;
+[ -f .profiles ] && source ./.profiles ;
+[ -f .bash_login ] && source ./.bash_login ;
+[ -f .bashrc ] && source ./.bashrc ;
+[ -f .bash_profile ] && source ./.bash_profile ;
+
+# RedHat
+[ -f .kshrc ] && source ./.kshrc ; 
+
+# Custom profile
+[ -f .adb_ui ] && source ./.adb_ui ;
+
+/usr/bin/env;
+''';
+
+FutureOr _loadUnixEnvironment() async {
+  final supportDir = await p.getApplicationSupportDirectory();
+  final tempFile = File('${supportDir.absolute.path}/env.sh');
+  logInfo('Created temp sh file at ${tempFile.absolute.path}');
+
+  tempFile.createSync(recursive: true);
+  tempFile.writeAsStringSync(_kFileContentEnvSh);
+  // wait some milliseconds for file to be flushed.
+  await Future.delayed(const Duration(milliseconds: 300));
+
+  // execution permissions (no need to get result).
+  final chmodResult =
+      // io.Process.runSync('chmod', ['777', '"${tempFile.absolute.path}"']);
+      io.Process.runSync(
+          '/bin/sh', ['-c', 'chmod +x "${tempFile.absolute.path}"']);
+  LogFile.instance.dispath(
+      "Permission result (${chmodResult.exitCode}) - out= ${chmodResult.stdout} - err=${chmodResult.stderr}");
+
   final result = Process.runSync(
     '/bin/sh',
-    ['-c', cmd],
+    ['-c', '"${tempFile.absolute.path}"'],
     runInShell: true,
   );
+
   _unixEnvironmentMap = {};
-  if (result.exitCode == 0) {
+  var stdOut = result.stdout.toString().trim();
+  if (stdOut.isNotEmpty) {
     result.stdout.toString().trim().split('\n').forEach((line) {
       final parts = line.split('=');
       final key = parts[0];
       final value = parts.length > 1 ? parts[1] : '';
       _unixEnvironmentMap?[key] = value;
     });
+    LogFile.instance
+        .dispath("Source System Environment result:\n$_unixEnvironmentMap");
   } else {
-    throw 'Error requesting environment: ${result.stderr}';
+    logError("ERROR: ${result.stderr} // ${result.exitCode}");
+    throw AppException(
+      'Error requesting environment: ${result.stderr}',
+      result.exitCode.toString(),
+    );
   }
 }
 
@@ -147,7 +205,7 @@ class ProccessAdbServiceImpl implements AdbService {
     // Unix exception.
     if (io.Platform.isLinux || io.Platform.isMacOS) {
       if (_unixEnvironmentMap == null) {
-        _loadUnixEnvironment();
+        await _loadUnixEnvironment();
       }
     }
 
