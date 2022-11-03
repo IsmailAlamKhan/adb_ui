@@ -92,11 +92,14 @@ abstract class AdbService {
 
   Future<List<AdbFileSystem>> ls(AdbDevice device, String? path);
 
-  Future<Result> pushFile(AdbDevice device, String file, String destinationPath);
+  Future<Result> pushFile(
+      AdbDevice device, String file, String destinationPath);
 
-  Future<Result> pullFile(AdbDevice device, String file, String destinationPath);
+  Future<Result> pullFile(
+      AdbDevice device, String file, String destinationPath);
 
-  Future<Result> runCustomCommand(AdbDevice device, String command, {String executable = 'adb'});
+  Future<Result> runCustomCommand(AdbDevice device, String command,
+      {String executable = 'adb'});
 
   Future<Result> inputText(AdbDevice device, String text);
 
@@ -141,6 +144,8 @@ cd ~/;
 /usr/bin/env;
 ''';
 
+Map<String, String>? _unixEnvironmentMap;
+
 Future<Map<String, String>?> _loadUnixEnvironment() async {
   final supportDir = await p.getApplicationSupportDirectory();
   final tempFile = File('${supportDir.absolute.path}/env.sh');
@@ -154,7 +159,8 @@ Future<Map<String, String>?> _loadUnixEnvironment() async {
   // execution permissions (no need to get result).
   final chmodResult =
       // io.Process.runSync('chmod', ['777', '"${tempFile.absolute.path}"']);
-      io.Process.runSync('/bin/sh', ['-c', 'chmod +x "${tempFile.absolute.path}"']);
+      io.Process.runSync(
+          '/bin/sh', ['-c', 'chmod +x "${tempFile.absolute.path}"']);
   LogFile.instance.dispath(
       "Permission result (${chmodResult.exitCode}) - out= ${chmodResult.stdout} - err=${chmodResult.stderr}");
 
@@ -163,17 +169,16 @@ Future<Map<String, String>?> _loadUnixEnvironment() async {
     ['-c', '"${tempFile.absolute.path}"'],
     runInShell: true,
   );
-
-  final _unixEnvironmentMap = {};
+  final envMap = <String, String>{};
   var stdOut = result.stdout.toString().trim();
   if (stdOut.isNotEmpty) {
     result.stdout.toString().trim().split('\n').forEach((line) {
       final parts = line.split('=');
       final key = parts[0];
       final value = parts.length > 1 ? parts[1] : '';
-      _unixEnvironmentMap[key] = value;
+      envMap[key] = value;
     });
-    LogFile.instance.dispath("Source System Environment result:\n$_unixEnvironmentMap");
+    LogFile.instance.dispath("Source System Environment result:\n$envMap");
   } else {
     logError("ERROR: ${result.stderr} // ${result.exitCode}");
     throw AppException(
@@ -181,13 +186,13 @@ Future<Map<String, String>?> _loadUnixEnvironment() async {
       result.exitCode.toString(),
     );
   }
+  return envMap;
 }
 
 class ProccessAdbServiceImpl implements AdbService {
   final Ref ref;
 
   ProccessAdbServiceImpl(this.ref);
-  Map<String, String>? _unixEnvironmentMap;
 
   Future<Result> run(
     String command, {
@@ -260,7 +265,8 @@ class ProccessAdbServiceImpl implements AdbService {
     final devices = <AdbDevice>[];
     final output = (await process.stdout).split('\n').toList()
       ..removeWhere((element) =>
-          element.trim().toLowerCase().contains('devices attached') || element.trim().isEmpty);
+          element.trim().toLowerCase().contains('devices attached') ||
+          element.trim().isEmpty);
 
     for (var element in output) {
       final parts = element.split('	');
@@ -288,7 +294,8 @@ class ProccessAdbServiceImpl implements AdbService {
   Stream<List<AdbDevice>> get connectedDevicesStream {
     final future = getConnectedDevices;
     // return Stream.fromFuture(future());
-    return Stream.periodic(const Duration(seconds: 1)).asyncMap((_) => future());
+    return Stream.periodic(const Duration(seconds: 1))
+        .asyncMap((_) => future());
   }
 
   @override
@@ -380,14 +387,16 @@ class ProccessAdbServiceImpl implements AdbService {
           if (output.contains('No such file or directory')) {
             throw PermissionDeniedException();
           }
-          final files = output.split('\n').toList().map((e) => e.trim()).toList();
+          final files =
+              output.split('\n').toList().map((e) => e.trim()).toList();
           files.forEach(logInfo);
           final result = <AdbFileSystem>[];
           for (var element in files) {
             if (element == '') {
               continue;
             }
-            List<String> parts = element.split(' ')..removeWhere((element) => element.isEmpty);
+            List<String> parts = element.split(' ')
+              ..removeWhere((element) => element.isEmpty);
 
             final inode = parts.first;
 
@@ -461,7 +470,8 @@ class ProccessAdbServiceImpl implements AdbService {
   }
 
   @override
-  Future<Result> pullFile(AdbDevice device, String file, String destinationPath) {
+  Future<Result> pullFile(
+      AdbDevice device, String file, String destinationPath) {
     return run(
       'pull',
       arguments: [file, destinationPath],
@@ -480,7 +490,8 @@ class ProccessAdbServiceImpl implements AdbService {
   }
 
   @override
-  Future<Result> runCustomCommand(AdbDevice device, String command, {String executable = 'adb'}) {
+  Future<Result> runCustomCommand(AdbDevice device, String command,
+      {String executable = 'adb'}) {
     return run(
       '',
       arguments: [...command.split(' ')],
@@ -509,7 +520,8 @@ class ProccessAdbServiceImpl implements AdbService {
   @override
   Future<bool> scrcpyAvailable() async {
     try {
-      return await run('', arguments: ['--version'], executable: 'scrcpy').then((result) async {
+      return await run('', arguments: ['--version'], executable: 'scrcpy')
+          .then((result) async {
         final exitCode = await result.exitCode;
         if (exitCode == 0) {
           return true;
@@ -565,7 +577,8 @@ class ProccessAdbServiceImpl implements AdbService {
         assert(device != null, 'Device cannot be null');
         return scrcpy(device!);
       case '':
-        return runCustomCommand(device!, arguments.join(' '), executable: executable);
+        return runCustomCommand(device!, arguments.join(' '),
+            executable: executable);
       default:
         throw AppException('Command not found');
     }
