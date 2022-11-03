@@ -5,9 +5,7 @@ import 'dart:ui';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'features/features.dart';
@@ -44,8 +42,7 @@ class App {
       if (e is AppException) {
         exception = AppInitializationException(e);
       } else if (e is ProcessException) {
-        exception = AppInitializationException(
-            AppException(e.message, e.errorCode.toString()));
+        exception = AppInitializationException(AppException(e.message, e.errorCode.toString()));
       }
       throw Error.throwWithStackTrace(exception, stackTrace);
     }
@@ -74,8 +71,7 @@ class App {
             child: AppInitErrorView(exception: error),
           ));
         }
-        LogFile.instance
-            .dispath('Error on zone', error: error, stackTrace: stack);
+        LogFile.instance.dispath('Error on zone', error: error, stackTrace: stack);
       },
     );
   }
@@ -104,11 +100,9 @@ class AppWrapper extends ConsumerWidget {
         child: builder(
             context,
             settings.themeMode,
-            AppTheme.themeDataFrom(
-                colorScheme: lightDynamic, brightness: Brightness.light),
-            AppTheme.themeDataFrom(
-                colorScheme: darkDynamic,
-                brightness: Brightness.dark), (context, child) {
+            AppTheme.themeDataFrom(colorScheme: lightDynamic, brightness: Brightness.light),
+            AppTheme.themeDataFrom(colorScheme: darkDynamic, brightness: Brightness.dark),
+            (context, child) {
           if (Platform.isWindows || Platform.isLinux) {
             child = virtualWindowFrameBuilder(context, child);
           }
@@ -177,8 +171,7 @@ class WindowTitleBar extends StatelessWidget {
             builder: (context) {
               return MediaQuery(
                 data: MediaQuery.of(context).copyWith(
-                  padding: EdgeInsets.only(
-                      top: MediaQuery.of(context).padding.top + 24),
+                  padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 24),
                 ),
                 child: child,
               );
@@ -239,8 +232,7 @@ class NoScrollBarScrollBehavior extends MaterialScrollBehavior {
   const NoScrollBarScrollBehavior();
 
   @override
-  Widget buildScrollbar(
-      BuildContext context, Widget child, ScrollableDetails details) {
+  Widget buildScrollbar(BuildContext context, Widget child, ScrollableDetails details) {
     return child;
   }
 }
@@ -263,8 +255,7 @@ class _AppThemeBuilder extends StatefulWidget {
   State<_AppThemeBuilder> createState() => __AppThemeBuilderState();
 }
 
-class __AppThemeBuilderState extends State<_AppThemeBuilder>
-    with WidgetsBindingObserver {
+class __AppThemeBuilderState extends State<_AppThemeBuilder> with WidgetsBindingObserver {
   ThemeMode themeMode = ThemeMode.light;
 
   WidgetsBinding get _binding => WidgetsBinding.instance;

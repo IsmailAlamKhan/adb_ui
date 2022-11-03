@@ -2,9 +2,9 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Adb ui"
-#define MyAppVersion "0.0.10"
+#define MyAppVersion "0.0.11"
 #define MyAppPublisher "Md Ismail Alam Khan"
-#define MyAppURL "https://www.example.com/"
+#define MyAppURL "https://github.com/IsmailAlamKhan/adb_ui"
 #define MyAppExeName "adb_ui.exe"
 
 [Setup]
@@ -24,7 +24,7 @@ AllowNoIcons=yes
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
 ;PrivilegesRequired=lowest
 OutputDir=D:\programming\flutter_projects\adb_ui\Installers
-OutputBaseFilename=adb_ui_setup
+OutputBaseFilename="adb-ui-setup-windows"
 SetupIconFile=D:\programming\flutter_projects\adb_ui\windows\runner\resources\app_icon.ico
 Compression=lzma
 SolidCompression=yes
