@@ -1,3 +1,8 @@
+# v0.0.11
+
+- Update checker is improved.
+- Added support for Mac os(thanks to [@roipeker](!https://www.github.com/roipeker/)).
+
 # v0.0.10
 
 - Recreate about page and added check for update there([#13](https://github.com/IsmailAlamKhan/adb_ui/issues/13))

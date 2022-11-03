@@ -31,3 +31,13 @@ There are 2 ways to install this.
 - Find the latest release from https://github.com/IsmailAlamKhan/adb_ui/releases
 - Download the dmg file
 - Follow the steps to install.
+
+### Linux
+
+Coming soon.
+
+## Contributers
+
+Huge thanks goes to these people for helping me with this project, the ones who make the issues and feature requests and testing the app out and giving feedback.
+
+### Special thanks to goes [@roipeker](!https://www.github.com/roipeker/) for running the app on mac os and helping me with the mac os build.
