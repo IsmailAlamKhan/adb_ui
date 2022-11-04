@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import '../../utils/utils.dart';
@@ -62,7 +64,16 @@ class ConfirmDialog extends StatelessWidget {
           cancelButton,
           extraActions,
         ) ??
-        [...?extraActions, cancelButton, confirmButton];
+        [
+          ...?extraActions,
+          if (Platform.isWindows) ...[
+            cancelButton,
+            confirmButton,
+          ] else ...[
+            confirmButton,
+            cancelButton,
+          ],
+        ];
     final _text = this.text;
     String text;
     if (_text is String) {
