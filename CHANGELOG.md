@@ -1,3 +1,7 @@
+# v0.0.12
+
+- Added Linux support
+
 # v0.0.11
 
 - Update checker is improved.

@@ -30,11 +30,13 @@ There are 2 ways to install this.
 
 - Find the latest release from https://github.com/IsmailAlamKhan/adb_ui/releases
 - Download the dmg file
-- Follow the steps to install.
+- Extract and run
 
 ### Linux
 
-Coming soon.
+- Find the latest release from https://github.com/IsmailAlamKhan/adb_ui/releases
+- Download the tar.gz file
+- Extract and run
 
 ## Contributers
 
