@@ -28,10 +28,11 @@ abstract class AsyncValueBuilderBase<T> extends StatelessWidget {
     Object error,
     StackTrace? stackTrace,
   ) {
+    final message = exceptionToString(error);
     if (isCompact) {
-      return AppExceptionIndicatorCompact(message: error.toString(), onTryAgain: onTryAgain);
+      return AppExceptionIndicatorCompact(message: message, onTryAgain: onTryAgain);
     } else {
-      return AppExceptionIndicator(message: error.toString(), onTryAgain: onTryAgain);
+      return AppExceptionIndicator(message: message, onTryAgain: onTryAgain);
     }
   }
 }
