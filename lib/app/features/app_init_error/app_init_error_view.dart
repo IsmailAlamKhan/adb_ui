@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../app.dart';
 import '../../shared/widgets/widgets.dart';
 import '../../utils/utils.dart';
-import '../adb/adb.dart';
 
 class AppInitErrorView extends StatelessWidget {
   const AppInitErrorView({
@@ -37,13 +36,8 @@ class _AppInitErrorView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String message;
-    final exception = this.exception.exception;
-    if (exception is AdbNotFoundException) {
-      message = 'Adb not found please install android platform tools';
-    } else {
-      message = exception.message;
-    }
+    String message = exceptionToString(exception);
+
     return Scaffold(
       body: Center(
         child: AppExceptionIndicator(

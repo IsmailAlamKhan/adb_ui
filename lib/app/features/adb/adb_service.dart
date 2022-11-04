@@ -92,14 +92,11 @@ abstract class AdbService {
 
   Future<List<AdbFileSystem>> ls(AdbDevice device, String? path);
 
-  Future<Result> pushFile(
-      AdbDevice device, String file, String destinationPath);
+  Future<Result> pushFile(AdbDevice device, String file, String destinationPath);
 
-  Future<Result> pullFile(
-      AdbDevice device, String file, String destinationPath);
+  Future<Result> pullFile(AdbDevice device, String file, String destinationPath);
 
-  Future<Result> runCustomCommand(AdbDevice device, String command,
-      {String executable = 'adb'});
+  Future<Result> runCustomCommand(AdbDevice device, String command, {String executable = 'adb'});
 
   Future<Result> inputText(AdbDevice device, String text);
 
@@ -159,8 +156,7 @@ Future<Map<String, String>?> _loadUnixEnvironment() async {
   // execution permissions (no need to get result).
   final chmodResult =
       // io.Process.runSync('chmod', ['777', '"${tempFile.absolute.path}"']);
-      io.Process.runSync(
-          '/bin/sh', ['-c', 'chmod +x "${tempFile.absolute.path}"']);
+      io.Process.runSync('/bin/sh', ['-c', 'chmod +x "${tempFile.absolute.path}"']);
   LogFile.instance.dispath(
       "Permission result (${chmodResult.exitCode}) - out= ${chmodResult.stdout} - err=${chmodResult.stderr}");
 
@@ -265,8 +261,7 @@ class ProccessAdbServiceImpl implements AdbService {
     final devices = <AdbDevice>[];
     final output = (await process.stdout).split('\n').toList()
       ..removeWhere((element) =>
-          element.trim().toLowerCase().contains('devices attached') ||
-          element.trim().isEmpty);
+          element.trim().toLowerCase().contains('devices attached') || element.trim().isEmpty);
 
     for (var element in output) {
       final parts = element.split('	');
@@ -294,8 +289,7 @@ class ProccessAdbServiceImpl implements AdbService {
   Stream<List<AdbDevice>> get connectedDevicesStream {
     final future = getConnectedDevices;
     // return Stream.fromFuture(future());
-    return Stream.periodic(const Duration(seconds: 1))
-        .asyncMap((_) => future());
+    return Stream.periodic(const Duration(seconds: 1)).asyncMap((_) => future());
   }
 
   @override
@@ -356,7 +350,7 @@ class ProccessAdbServiceImpl implements AdbService {
           final stdout = output.first;
           final stderr = output.last;
           if (stderr != '') {
-            throw AppException("Failed to install");
+            throw AppException("Failed to install cause $stderr");
           }
           if (stdout.contains('Success')) {
             return 'Installed $path';
@@ -377,7 +371,7 @@ class ProccessAdbServiceImpl implements AdbService {
       ).then((result) async {
         final stdErr = await result.stderr;
         if (stdErr != '') {
-          throw AppException("Failed to list files ");
+          throw AppException("Failed to list files $stdErr");
         }
 
         return result.stdout.then((output) async {
@@ -387,16 +381,14 @@ class ProccessAdbServiceImpl implements AdbService {
           if (output.contains('No such file or directory')) {
             throw PermissionDeniedException();
           }
-          final files =
-              output.split('\n').toList().map((e) => e.trim()).toList();
+          final files = output.split('\n').toList().map((e) => e.trim()).toList();
           files.forEach(logInfo);
           final result = <AdbFileSystem>[];
           for (var element in files) {
             if (element == '') {
               continue;
             }
-            List<String> parts = element.split(' ')
-              ..removeWhere((element) => element.isEmpty);
+            List<String> parts = element.split(' ')..removeWhere((element) => element.isEmpty);
 
             final inode = parts.first;
 
@@ -470,8 +462,7 @@ class ProccessAdbServiceImpl implements AdbService {
   }
 
   @override
-  Future<Result> pullFile(
-      AdbDevice device, String file, String destinationPath) {
+  Future<Result> pullFile(AdbDevice device, String file, String destinationPath) {
     return run(
       'pull',
       arguments: [file, destinationPath],
@@ -490,8 +481,7 @@ class ProccessAdbServiceImpl implements AdbService {
   }
 
   @override
-  Future<Result> runCustomCommand(AdbDevice device, String command,
-      {String executable = 'adb'}) {
+  Future<Result> runCustomCommand(AdbDevice device, String command, {String executable = 'adb'}) {
     return run(
       '',
       arguments: [...command.split(' ')],
@@ -520,8 +510,7 @@ class ProccessAdbServiceImpl implements AdbService {
   @override
   Future<bool> scrcpyAvailable() async {
     try {
-      return await run('', arguments: ['--version'], executable: 'scrcpy')
-          .then((result) async {
+      return await run('', arguments: ['--version'], executable: 'scrcpy').then((result) async {
         final exitCode = await result.exitCode;
         if (exitCode == 0) {
           return true;
@@ -577,8 +566,7 @@ class ProccessAdbServiceImpl implements AdbService {
         assert(device != null, 'Device cannot be null');
         return scrcpy(device!);
       case '':
-        return runCustomCommand(device!, arguments.join(' '),
-            executable: executable);
+        return runCustomCommand(device!, arguments.join(' '), executable: executable);
       default:
         throw AppException('Command not found');
     }
@@ -620,7 +608,8 @@ class NotDirException extends AppException {
 }
 
 class AdbNotFoundException extends AppException {
-  AdbNotFoundException() : super('Adb not found');
+  AdbNotFoundException()
+      : super('Adb not found please install it, Adb is required for this app to run');
 }
 
 class ScrcpyNotFoundException extends AppException {

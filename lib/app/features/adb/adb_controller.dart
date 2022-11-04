@@ -1,8 +1,6 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
@@ -67,14 +65,8 @@ class AdbController with NavigationController {
         try {
           await value.messege;
         } catch (e, s) {
-          String msg = 'An unknown error occurred';
-          if (e is AppException) {
-            msg = e.message;
-          } else if (e is ProcessException) {
-            msg = e.message;
-          } else if (kDebugMode) {
-            msg = e.toString();
-          }
+          String msg = exceptionToString(e);
+
           commandQueueController.updateCommand(
             CommandModel.error(
               id: id,

@@ -1,9 +1,13 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:github/github.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+
+import 'exception.dart';
 
 const appName = 'ADB UI';
 
@@ -58,3 +62,24 @@ const changelogUrl = 'https://github.com/IsmailAlamKhan/adb_ui/CHANGELOG.md';
 final githubRepoSlug = RepositorySlug.full('IsmailAlamKhan/adb_ui');
 
 const riverpodKeepAlive = Riverpod(keepAlive: true);
+
+String exceptionToString(Object exception) {
+  late String message;
+
+  if (exception is! Exception) {
+    if (kDebugMode) {
+      message = exception.toString();
+    } else {
+      message = 'Unknown error';
+    }
+  } else {
+    if (exception is AppException) {
+      exception = exception.message;
+    } else if (exception is PlatformException) {
+      exception = exception.message ?? exception.code;
+    } else {
+      message = exception.toString();
+    }
+  }
+  return message;
+}
