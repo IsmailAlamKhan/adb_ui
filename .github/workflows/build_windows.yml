@@ -22,6 +22,7 @@ jobs:
     env:
       RELEASE_PATH: build/windows/runner/Release
       APPNAME: "adb-ui"
+      VERSION: ${{ github.event.inputs.version }}
     steps:
       - name: Checkout the code
         uses: actions/checkout@v2
@@ -34,7 +35,7 @@ jobs:
 
       - name: Run Installers/installer.iss Inno script
         run: |
-          "%programfiles(x86)%\Inno Setup 6\iscc.exe" /dversion=${{github.event.inputs.version}} "Installers/installer.iss"
+          "%programfiles(x86)%\Inno Setup 6\iscc.exe" /dversion=${{env.VERSION}} "Installers/installer.iss"
         shell: cmd
 
       - name: Upload Windows installer
@@ -43,15 +44,15 @@ jobs:
           name: ${{env.APPNAME}}-setup-windows.exe
           path: Installers/${{env.APPNAME}}-setup-windows.exe
 
-      - name: Make Windows app zip
-        uses: vimtor/action-zip@v1
+      - name: Archive Release
+        uses: thedoctor0/zip-release@master
         with:
-          files: ${{ env.RELEASE_PATH }}
-          recursive: false
-          dest: ${{env.APPNAME}}-windows.zip
+          type: "zip"
+          filename: ${{ env.APPNAME }}-setup-windows.zip
+          directory: ${{ env.RELEASE_PATH }}
 
       - name: Upload Windows zip
         uses: actions/upload-artifact@v2
         with:
-          name: ${{env.APPNAME}}-windows.zip
-          path: ${{ github.workspace}}/${{env.APPNAME}}-windows.zip
+          name: ${{env.APPNAME}}-setup-windows.zip
+          path: ${{env.RELEASE_PATH}}/${{env.APPNAME}}-setup-windows.zip
