@@ -13,6 +13,10 @@ name: Build Mac OS
         required: true
         default: "0.0.0"
         type: string
+  push:
+    branches:
+      - "*"
+
 jobs:
   build:
     runs-on: macos-latest
