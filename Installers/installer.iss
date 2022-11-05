@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Adb ui"
-#define MyAppVersion "0.0.11"
+#define MyAppVersion "0.0.12"
 #define MyAppPublisher "Md Ismail Alam Khan"
 #define MyAppURL "https://github.com/IsmailAlamKhan/adb_ui"
 #define MyAppExeName "adb_ui.exe"
@@ -37,15 +37,9 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "D:\programming\flutter_projects\adb_ui\build\windows\runner\Release\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\programming\flutter_projects\adb_ui\build\windows\runner\Release\*"; DestDir: "{app}"; Flags: ignoreversion 
-; Source: "D:\programming\flutter_projects\adb_ui\build\windows\runner\Release\desktop_drop_plugin.dll"; DestDir: "{app}"; Flags: ignoreversion
-; Source: "D:\programming\flutter_projects\adb_ui\build\windows\runner\Release\dynamic_color_plugin.dll"; DestDir: "{app}"; Flags: ignoreversion
-; Source: "D:\programming\flutter_projects\adb_ui\build\windows\runner\Release\flutter_windows.dll"; DestDir: "{app}"; Flags: ignoreversion
-; Source: "D:\programming\flutter_projects\adb_ui\build\windows\runner\Release\network_info_plus_windows_plugin.dll"; DestDir: "{app}"; Flags: ignoreversion
-; Source: "D:\programming\flutter_projects\adb_ui\build\windows\runner\Release\screen_retriever_plugin.dll"; DestDir: "{app}"; Flags: ignoreversion
-; Source: "D:\programming\flutter_projects\adb_ui\build\windows\runner\Release\window_manager_plugin.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\programming\flutter_projects\adb_ui\build\windows\runner\Release\data\*"; DestDir: "{app}\data"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\build\windows\runner\Release\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\build\windows\runner\Release\*"; DestDir: "{app}"; Flags: ignoreversion 
+Source: "..\build\windows\runner\Release\data\*"; DestDir: "{app}\data"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
