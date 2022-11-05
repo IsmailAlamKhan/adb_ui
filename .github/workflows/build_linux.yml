@@ -1,8 +1,8 @@
 name: Build Linux
 "on":
-  # push:
-  #   branches:
-  #     - "master"
+  push:
+    branches:
+      - "*"
   workflow_dispatch:
     inputs:
       version:
