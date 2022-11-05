@@ -1,0 +1,58 @@
+name: Build Linux
+"on":
+  # push:
+  #   branches:
+  #     - "master"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version"
+        required: true
+        default: "0.0.0"
+  workflow_call:
+    inputs:
+      version:
+        description: "Version"
+        required: true
+        default: "0.0.0"
+        type: string
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_PATH: build/linux/release/bundle
+      APPNAME: "adb-ui"
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v2
+
+      - name: Install and set Flutter version
+        uses: subosito/flutter-action@v2.4.0
+
+      - name: Build Linux app
+        run: flutter build linux --release
+
+      - name: Make .desktop file
+        run: |
+          echo "[Desktop Entry]
+          Version=${{github.event.inputs.version}}
+          Name=Adb ui
+          Comment=Run adb commands with a simple ui
+          Exec=<Path to the instalation>adb_ui
+          Icon=<Path to the instalation>logo.png
+          Terminal=false
+          Type=Application
+          Categories=Utility;Application;" > ${{env.RELEASE_PATH}}/${{env.APPNAME}}.desktop
+
+      - name: Make Linux app tar.gz
+        uses: vimtor/action-zip@v1
+        with:
+          files: ${{ env.RELEASE_PATH }}
+          recursive: false
+          dest: ${{env.APPNAME}}-setup-linux.tar.gz
+
+      - name: Upload Linux zip
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{env.APPNAME}}-setup-linux.tar.gz
+          path: ${{ github.workspace}}/${{env.APPNAME}}-setup-linux.tar.gz

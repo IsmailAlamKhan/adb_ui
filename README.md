@@ -37,19 +37,7 @@ There are 2 ways to install this.
 - Find the latest release from https://github.com/IsmailAlamKhan/adb_ui/releases
 - Download the tar.gz file
 - Extract and run
-- (Optional) make a .desktop file and put the following contents there and then put that file to `~/.local/share/applications` to make this app available on "Show Applications"
-```
-[Desktop Entry]
-Version=<current version e.g 0.0.12>
-Name=Adb ui
-Comment=Run adb commands with a simple ui
-Exec=<Path to the instalation e.g /home/ismail/Applications/adb-ui/>adb_ui
-Icon=<Path to the instalation e.g /home/ismail/Applications/adb-ui/>logo.png
-Terminal=false
-Type=Application
-Categories=Utility;Application;
-```
-
+- (Optional) Open the adb-ui.desktop file provied in the tar.gz and replace `<Path to the instalation>` with something like `/home/ismail/Applications/adb-ui/` rename it to .desktop and then put that file to `~/.local/share/applications` to make this app available on "Show Applications"
 
 ## Contributers
 

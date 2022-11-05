@@ -20,7 +20,7 @@ jobs:
   build:
     runs-on: windows-latest
     env:
-      WINDOWS_RELEASE_PATH: build/windows/runner/Release
+      RELEASE_PATH: build/windows/runner/Release
       APPNAME: "adb-ui"
     steps:
       - name: Checkout the code
@@ -46,7 +46,7 @@ jobs:
       - name: Make Windows app zip
         uses: vimtor/action-zip@v1
         with:
-          files: ${{ env.WINDOWS_RELEASE_PATH }}
+          files: ${{ env.RELEASE_PATH }}
           recursive: false
           dest: ${{env.APPNAME}}-windows.zip
 
@@ -54,4 +54,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: ${{env.APPNAME}}-windows.zip
-          path: ${{ github.workspace}} ${{env.APPNAME}}-windows.zip
+          path: ${{ github.workspace}}/${{env.APPNAME}}-windows.zip
