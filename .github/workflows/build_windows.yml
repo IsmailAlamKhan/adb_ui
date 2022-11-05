@@ -3,7 +3,7 @@ name: Build Windows
   # push:
   #   branches:
   #     - "master"
-  workflow_call:
+  workflow_dispatch:
 
 jobs:
   build:
