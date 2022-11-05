@@ -1,0 +1,46 @@
+name: Build Windows
+"on":
+  push:
+    branches:
+      - "master"
+  workflow_call:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    env:
+      WINDOWS_RELEASE_PATH: build/windows/runner/Release
+      APPNAME: "adb-ui"
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v2
+
+      - name: Install and set Flutter version
+        uses: subosito/flutter-action@v2.4.0
+
+      - name: Build Windows app
+        run: flutter build windows --release
+
+      - name: Run Installers/installer.iss Inno script
+        run: |
+          "%programfiles(x86)%\Inno Setup 6\iscc.exe" "Installers/installer.iss"
+        shell: cmd
+
+      - name: Upload Windows installer
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{APPNAME}}-setup-windows.exe
+          path: Installers/${{APPNAME}}-setup-windows.exe
+
+      - name: Make Windows app zip
+        uses: vimtor/action-zip@v1
+        with:
+          files: ${{ env.WINDOWS_RELEASE_PATH }}
+          recursive: false
+          dest: ${{APPNAME}}-windows.zip
+
+      - name: Upload Windows zip
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{APPNAME}}-windows.zip
+          path: ${{ github.workspace ${{APPNAME}}-windows.zip
