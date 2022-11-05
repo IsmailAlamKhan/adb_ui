@@ -29,18 +29,18 @@ jobs:
       - name: Upload Windows installer
         uses: actions/upload-artifact@v2
         with:
-          name: ${{APPNAME}}-setup-windows.exe
-          path: Installers/${{APPNAME}}-setup-windows.exe
+          name: ${{env.APPNAME}}-setup-windows.exe
+          path: Installers/${{env.APPNAME}}-setup-windows.exe
 
       - name: Make Windows app zip
         uses: vimtor/action-zip@v1
         with:
           files: ${{ env.WINDOWS_RELEASE_PATH }}
           recursive: false
-          dest: ${{APPNAME}}-windows.zip
+          dest: ${{env.APPNAME}}-windows.zip
 
       - name: Upload Windows zip
         uses: actions/upload-artifact@v2
         with:
-          name: ${{APPNAME}}-windows.zip
-          path: ${{ github.workspace ${{APPNAME}}-windows.zip
+          name: ${{env.APPNAME}}-windows.zip
+          path: ${{ github.workspace}} ${{env.APPNAME}}-windows.zip
