@@ -36,6 +36,7 @@ jobs:
 
       - name: Make .desktop file
         run: |
+          touch ${{env.RELEASE_PATH}}/${{env.APPNAME}}.desktop
           echo "[Desktop Entry]
           Version=${{env.VERSION}}
           Name=Adb ui
