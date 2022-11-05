@@ -36,7 +36,7 @@ jobs:
 
       - name: Make .desktop file
         run: |
-          touch ${{env.RELEASE_PATH}}/${{env.APPNAME}}.desktop
+          touch ${{ github.workspace }}/${{env.RELEASE_PATH}}/${{env.APPNAME}}.desktop
           echo "[Desktop Entry]
           Version=${{env.VERSION}}
           Name=Adb ui
@@ -45,7 +45,7 @@ jobs:
           Icon=<Path to the instalation>logo.png
           Terminal=false
           Type=Application
-          Categories=Utility;Application;" > ${{env.RELEASE_PATH}}/${{env.APPNAME}}.desktop
+          Categories=Utility;Application;" > ${{ github.workspace }}/${{env.RELEASE_PATH}}/${{env.APPNAME}}.desktop
 
       - name: Archive Release
         uses: thedoctor0/zip-release@master

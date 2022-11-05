@@ -48,11 +48,11 @@ jobs:
         uses: thedoctor0/zip-release@master
         with:
           type: "zip"
-          filename: ${{ env.APPNAME }}-setup-windows.zip
+          filename: ${{ env.APPNAME }}-windows.zip
           directory: ${{ env.RELEASE_PATH }}
 
       - name: Upload Windows zip
         uses: actions/upload-artifact@v2
         with:
-          name: ${{env.APPNAME}}-setup-windows.zip
-          path: ${{env.RELEASE_PATH}}/${{env.APPNAME}}-setup-windows.zip
+          name: ${{env.APPNAME}}-windows.zip
+          path: ${{env.RELEASE_PATH}}/${{env.APPNAME}}-windows.zip
