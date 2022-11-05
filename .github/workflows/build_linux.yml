@@ -50,7 +50,7 @@ jobs:
       - name: Archive Release
         uses: thedoctor0/zip-release@master
         with:
-          type: "tar.zip"
+          type: "zip"
           filename: ${{ env.APPNAME }}-setup-linux.zip
           directory: ${{ env.RELEASE_PATH }}
 
