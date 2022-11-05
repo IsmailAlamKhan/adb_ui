@@ -17,7 +17,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      RELEASE_PATH: build/linux/release/bundle
+      RELEASE_PATH: build/linux/x64/release/bundle
       APPNAME: "adb-ui"
       VERSION: ${{ github.event.inputs.version }}
 
