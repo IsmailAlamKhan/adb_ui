@@ -4,7 +4,18 @@ name: Build Windows
   #   branches:
   #     - "master"
   workflow_dispatch:
-
+    inputs:
+      version:
+        description: "Version"
+        required: true
+        default: "0.0.0"
+  workflow_call:
+    inputs:
+      version:
+        description: "Version"
+        required: true
+        default: "0.0.0"
+        type: string
 jobs:
   build:
     runs-on: windows-latest
@@ -23,7 +34,7 @@ jobs:
 
       - name: Run Installers/installer.iss Inno script
         run: |
-          "%programfiles(x86)%\Inno Setup 6\iscc.exe" "Installers/installer.iss"
+          "%programfiles(x86)%\Inno Setup 6\iscc.exe" /dversion=${{github.event.inputs.version}} "Installers/installer.iss"
         shell: cmd
 
       - name: Upload Windows installer
