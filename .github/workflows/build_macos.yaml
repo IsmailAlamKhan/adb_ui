@@ -1,0 +1,29 @@
+name: Build Mac OS
+"on":
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version"
+        required: true
+        default: "0.0.0"
+  workflow_call:
+    inputs:
+      version:
+        description: "Version"
+        required: true
+        default: "0.0.0"
+        type: string
+jobs:
+  build:
+    runs-on: macos-latest
+    env:
+      MACOS_APP_RELEASE_PATH: build/macos/Build/Products/Release
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v2
+
+      - name: Install and set Flutter version
+        uses: subosito/flutter-action@v2.4.0
+
+      - name: Build macOS app
+        run: flutter build macos --release
