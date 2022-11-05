@@ -1,8 +1,8 @@
 name: Build Windows
 "on":
-  push:
-    branches:
-      - "master"
+  # push:
+  #   branches:
+  #     - "master"
   workflow_call:
 
 jobs:
