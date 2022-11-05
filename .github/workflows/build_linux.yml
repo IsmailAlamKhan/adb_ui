@@ -50,12 +50,12 @@ jobs:
       - name: Archive Release
         uses: thedoctor0/zip-release@master
         with:
-          type: "tar.gz"
-          filename: ${{ env.APPNAME }}-setup-linux.tar.gz
+          type: "tar.zip"
+          filename: ${{ env.APPNAME }}-setup-linux.zip
           directory: ${{ env.RELEASE_PATH }}
 
       - name: Upload Linux zip
         uses: actions/upload-artifact@v2
         with:
-          name: ${{env.APPNAME}}-setup-linux.tar.gz
-          path: ${{env.RELEASE_PATH}}/${{env.APPNAME}}-setup-linux.tar.gz
+          name: ${{env.APPNAME}}-setup-linux.zip
+          path: ${{env.RELEASE_PATH}}/${{env.APPNAME}}-setup-linux.zip
