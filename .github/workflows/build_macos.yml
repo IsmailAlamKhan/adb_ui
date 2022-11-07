@@ -42,7 +42,7 @@ jobs:
 
       - name: Make .dmg file
         run: |
-          appdmg Installers/dmg_creator/config.json ${{env.APPNAME}}-setup-macos.dmg
+          appdmg Installers/dmg_creator/config.json ${{ github.workspace }}/${{env.RELEASE_PATH}}/${{env.APPNAME}}-setup-macos.dmg
 
       - name: upload to release
         uses: actions/upload-release-asset@v1
@@ -50,6 +50,6 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: ${{ inputs.release-upload-url }}
-          asset_path: ${{env.APPNAME}}-setup-macos-dmg
-          asset_name: ${{env.APPNAME}}-setup-macos-dmg
+          asset_path: ${{env.RELEASE_PATH}}//${{env.RELEASE_PATH}}/${{env.APPNAME}}-setup-macos.dmg
+          asset_name: ${{env.APPNAME}}-setup-macos.dmg
           asset_content_type: application/zip
