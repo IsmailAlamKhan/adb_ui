@@ -1,7 +1,7 @@
 name: adb_ui
 description: Run adb commands with ease from a simple UI
 publish_to: none
-version: 0.0.14
+version: 0.0.13
 
 environment:
   sdk: '>=2.18.2 <3.0.0'
