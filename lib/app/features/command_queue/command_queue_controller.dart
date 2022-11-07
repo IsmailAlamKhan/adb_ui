@@ -8,7 +8,10 @@ final commandQueueControllerProvider =
     StateNotifierProvider<CommandQueueController, List<CommandModel>>(CommandQueueController.new);
 
 class CommandQueueController extends StateNotifier<List<CommandModel>> {
-  CommandQueueController(Ref ref) : super([]);
+  final CommandQueueService service;
+  CommandQueueController(Ref ref)
+      : service = ref.read(commandQueueServiceProvider),
+        super([]);
 
   final outputSubscriptions = <String, StreamSubscription>{};
   final outputControllers = <String, StreamController>{};
@@ -20,11 +23,13 @@ class CommandQueueController extends StateNotifier<List<CommandModel>> {
 
   void removeCommand(CommandModel command) {
     state = state.where((element) => element.id != command.id).toList();
+    service.removeCommand(command);
   }
 
   void clear() {
     state = [];
     stopAllSubscriptions();
+    service.clear();
   }
 
   void updateCommand(CommandModel command) {
@@ -48,7 +53,7 @@ class CommandQueueController extends StateNotifier<List<CommandModel>> {
 
   void listenAndChangeCommand(CommandModel command) {
     command.whenOrNull(
-      adding: (id, _command, __, stdout, stderr, ___, ____) {
+      adding: (id, _command, __, stdout, stderr, ___, ____, _) {
         final streamController = StreamController<String>.broadcast();
 
         final stdoutSubscription = stdout.listen(
@@ -68,7 +73,7 @@ class CommandQueueController extends StateNotifier<List<CommandModel>> {
         updateCommand(command.toRunning(streamController.stream));
         streamController.add('Running: $_command');
       },
-      running: (id, _command, device, output, _, __) {
+      running: (id, _command, device, output, _, __, ___) {
         final buffer = StringBuffer();
         final subscription = output.listen(
           (event) {
@@ -87,9 +92,22 @@ class CommandQueueController extends StateNotifier<List<CommandModel>> {
         );
         outputSubscriptions[id] = subscription;
       },
-      error: (id, _, __, ___, ____, _____) => stopSubscription(id),
-      done: (id, _, __, ___, ____, _____) => stopSubscription(id),
+      // error: (id, _, __, ___, ____, _____) => stopSubscription(id),
+      // done: (id, _, __, ___, ____, _____) => stopSubscription(id),
     );
+
+    command.whenError((command) {
+      stopSubscription(command.id);
+      service.saveCommand(command);
+    });
+    command.whenDone((command) {
+      stopSubscription(command.id);
+      service.saveCommand(command);
+    });
+  }
+
+  Future<void> init() {
+    return service.getCommands().then((value) => state = value);
   }
 
   @override

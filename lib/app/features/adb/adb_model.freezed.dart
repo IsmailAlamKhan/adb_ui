@@ -14,12 +14,17 @@ T _$identity<T>(T value) => value;
 final _privateConstructorUsedError = UnsupportedError(
     'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
 
+AdbDevice _$AdbDeviceFromJson(Map<String, dynamic> json) {
+  return _AdbDevice.fromJson(json);
+}
+
 /// @nodoc
 mixin _$AdbDevice {
   String get id => throw _privateConstructorUsedError;
   String get type => throw _privateConstructorUsedError;
   String get model => throw _privateConstructorUsedError;
 
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
   $AdbDeviceCopyWith<AdbDevice> get copyWith =>
       throw _privateConstructorUsedError;
@@ -110,11 +115,14 @@ class __$$_AdbDeviceCopyWithImpl<$Res>
 }
 
 /// @nodoc
-
+@JsonSerializable()
 class _$_AdbDevice extends _AdbDevice {
   const _$_AdbDevice(
       {required this.id, required this.type, required this.model})
       : super._();
+
+  factory _$_AdbDevice.fromJson(Map<String, dynamic> json) =>
+      _$$_AdbDeviceFromJson(json);
 
   @override
   final String id;
@@ -138,6 +146,7 @@ class _$_AdbDevice extends _AdbDevice {
             (identical(other.model, model) || other.model == model));
   }
 
+  @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(runtimeType, id, type, model);
 
@@ -146,6 +155,13 @@ class _$_AdbDevice extends _AdbDevice {
   @pragma('vm:prefer-inline')
   _$$_AdbDeviceCopyWith<_$_AdbDevice> get copyWith =>
       __$$_AdbDeviceCopyWithImpl<_$_AdbDevice>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$_AdbDeviceToJson(
+      this,
+    );
+  }
 }
 
 abstract class _AdbDevice extends AdbDevice {
@@ -154,6 +170,9 @@ abstract class _AdbDevice extends AdbDevice {
       required final String type,
       required final String model}) = _$_AdbDevice;
   const _AdbDevice._() : super._();
+
+  factory _AdbDevice.fromJson(Map<String, dynamic> json) =
+      _$_AdbDevice.fromJson;
 
   @override
   String get id;

@@ -19,13 +19,10 @@ class CurrentCommandOutput extends HookConsumerWidget {
       (value) => value.firstWhere((element) => element.id == commandId),
     ));
 
-    final content = command.maybeWhen<Widget>(
-      running: (id, command, device, output, rawCommand, executable) =>
-          _CommandRunning(output: output),
-      error: (id, command, device, error, rawCommand, executable) => _CommandError(error: error),
-      done: (id, command, device, output, rawCommand, executable) => _CommandDone(output: output),
-      orElse: () => const Center(child: CircularProgressIndicator()),
-    );
+    Widget content = const Center(child: CircularProgressIndicator());
+    command.whenRunning((command) => content = _CommandRunning(output: command.output));
+    command.whenError((command) => content = _CommandError(error: command.error));
+    command.whenDone((command) => content = _CommandDone(output: command.output));
 
     return Center(
       child: ConstrainedBox(

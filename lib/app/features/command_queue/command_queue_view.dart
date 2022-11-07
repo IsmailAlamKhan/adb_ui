@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../shared/shared.dart';
@@ -36,6 +37,16 @@ class CommandQueueView extends HookConsumerWidget {
                   childCount: queue.length,
                   (context, index) {
                     final command = queue[index];
+                    Widget? leading;
+                    command.whenDone((_) => leading = const Icon(Icons.check));
+                    command.whenError((_) => leading = const Icon(Icons.error));
+                    command.whenRunning(
+                      (p0) => leading = const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    );
                     return ListTile(
                       title: Text.rich(
                         TextSpan(
@@ -49,16 +60,8 @@ class CommandQueueView extends HookConsumerWidget {
                           ],
                         ),
                       ),
-                      leading: command.whenOrNull(
-                        done: (_, __, ___, ____, _____, ______) => const Icon(Icons.check),
-                        error: (_, __, ___, ____, _____, ______) => const Icon(Icons.error),
-                        running: (_, __, ___, ____, _____, ______) => const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      ),
-                      subtitle: command.device != null ? Text(command.device!.model) : null,
+                      leading: leading,
+                      subtitle: _Subtitle(command: command),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -91,5 +94,28 @@ class CommandQueueView extends HookConsumerWidget {
         ),
       ),
     );
+  }
+}
+
+class _Subtitle extends HookWidget {
+  const _Subtitle({super.key, required this.command});
+
+  final CommandModel command;
+
+  @override
+  Widget build(BuildContext context) {
+    String? device = command.device?.model;
+    final startedIn = 'Started ${command.startedAt.timeAgoSinceNow()}';
+    String? finishedIn = command.finishedIn?.let((it) => 'Finished in ${it}ms');
+    if (finishedIn != null && device != null) {
+      return Text('$startedIn | $finishedIn\n$device ');
+    }
+    if (finishedIn != null) {
+      return Text('$startedIn | $finishedIn');
+    }
+    if (device != null) {
+      return Text('$startedIn | $device');
+    }
+    return Text(startedIn);
   }
 }

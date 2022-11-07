@@ -25,7 +25,7 @@ class LocalStorageSettingsServiceImpl extends SettingsService {
   Future<SettingsModel> getSettings() => localStorage.get<SettingsModel>(
         LocalStorageKeys.settings,
         defaultValue: SettingsModel.initial,
-        fromJson: SettingsModel.fromJson,
+        fromJson: (json) => SettingsModel.fromJson(json),
       );
 
   @override

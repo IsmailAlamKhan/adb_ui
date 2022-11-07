@@ -36,6 +36,7 @@ class AdbController with NavigationController {
     bool isRerun = false,
     bool showOutput = true,
   }) async {
+    final startedAt = DateTime.now();
     String id = const Uuid().v4();
     if (isRerun) {
       id = 'rerun-$id';
@@ -52,6 +53,7 @@ class AdbController with NavigationController {
           stderr: value.stderrStream,
           rawCommand: value.command,
           arguments: value.arguments,
+          startedAt: startedAt,
         );
         commandQueueController.addCommand(_command);
         if (showOutput) {
@@ -75,6 +77,8 @@ class AdbController with NavigationController {
               error: msg,
               rawCommand: value.command,
               arguments: value.arguments,
+              startedAt: startedAt,
+              endedAt: DateTime.now(),
             ),
           );
           LogFile.instance.dispath(

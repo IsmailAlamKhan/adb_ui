@@ -538,6 +538,31 @@ class ProccessAdbServiceImpl implements AdbService {
       });
 
   @override
+  Future<Result> tcpip() => run('tcpip', arguments: ['5555']).then((value) {
+        return value.copyWith(
+          messege: value.stdout.then((output) {
+            if (output.contains('restarting in TCP mode port: 5555')) {
+              return 'Restarted in TCP mode';
+            }
+            logError('Failed to restart in TCP mode', error: output);
+            throw AppException('Failed to restart in TCP mode cause $output');
+          }),
+        );
+      });
+
+  @override
+  Future<Result> inputText(AdbDevice device, String text) =>
+      run('shell', device: device, arguments: ['input', 'text', text])
+          .then((value) => value.copyWith(
+                messege: value.stdout.then((value) {
+                  if (value.isEmpty) {
+                    return 'Text sent';
+                  }
+                  logError('Failed to send text', error: value);
+                  throw AppException('Failed to send text cause $value');
+                }),
+              ));
+  @override
   Future<Result> rerunCommand(
     String command,
     AdbDevice? device,
@@ -565,38 +590,24 @@ class ProccessAdbServiceImpl implements AdbService {
       case 'scrcpy':
         assert(device != null, 'Device cannot be null');
         return scrcpy(device!);
+
+      case 'tcpip':
+        return tcpip();
+
+      case 'shell':
+        if (arguments.first == 'input' && arguments[1] == 'text') {
+          assert(device != null, 'Device cannot be null');
+          return inputText(device!, arguments.last);
+        } else {
+          assert(device != null, 'Device cannot be null');
+          return runCustomCommand(device!, arguments.join(' '), executable: executable);
+        }
       case '':
         return runCustomCommand(device!, arguments.join(' '), executable: executable);
       default:
         throw AppException('Command not found');
     }
   }
-
-  @override
-  Future<Result> tcpip() => run('tcpip', arguments: ['5555']).then((value) {
-        return value.copyWith(
-          messege: value.stdout.then((output) {
-            if (output.contains('restarting in TCP mode port: 5555')) {
-              return 'Restarted in TCP mode';
-            }
-            logError('Failed to restart in TCP mode', error: output);
-            throw AppException('Failed to restart in TCP mode cause $output');
-          }),
-        );
-      });
-
-  @override
-  Future<Result> inputText(AdbDevice device, String text) =>
-      run('shell', device: device, arguments: ['input', 'text', text])
-          .then((value) => value.copyWith(
-                messege: value.stdout.then((value) {
-                  if (value.isEmpty) {
-                    return 'Text sent';
-                  }
-                  logError('Failed to send text', error: value);
-                  throw AppException('Failed to send text cause $value');
-                }),
-              ));
 }
 
 class PermissionDeniedException extends AppException {

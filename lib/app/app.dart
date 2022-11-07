@@ -37,6 +37,7 @@ class App {
       await container.read(deviceControllerProvider.notifier).init();
       await container.read(adbServiceProvider).verifyAdb();
       await container.read(settingsControllerProvider.notifier).init();
+      await container.read(commandQueueControllerProvider.notifier).init();
     } on Exception catch (e, stackTrace) {
       Exception exception = e;
       if (e is AppException) {
