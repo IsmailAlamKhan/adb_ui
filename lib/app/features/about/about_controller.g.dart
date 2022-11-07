@@ -29,7 +29,7 @@ class _SystemHash {
   }
 }
 
-String $AboutControllerHash() => r'60367c3bdb7505b3ebe92f3ba05b773808a119d2';
+String $AboutControllerHash() => r'dd095686e5b87bb058f82732ab3dd921ebc0fdd1';
 
 /// See also [AboutController].
 final aboutControllerProvider =

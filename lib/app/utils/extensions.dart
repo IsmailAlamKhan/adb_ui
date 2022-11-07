@@ -138,6 +138,27 @@ extension MyDateTime on DateTime {
     final formattedTimeZoneOffset = intl.NumberFormat('00').format(_timeZoneOffset);
     return "${intl.DateFormat('yyyy-MM-dd HH:mm:ss').format(this)} ${_timeZoneOffset.isNegative ? '-' : '+'}$formattedTimeZoneOffset";
   }
+
+  String timeAgoSinceNow() {
+    final date2 = DateTime.now();
+    final difference = date2.difference(this);
+    if (difference.inSeconds < 5) {
+      return 'Just now';
+    } else if (difference.inSeconds < 60) {
+      return '${difference.inSeconds} seconds ago';
+    } else if (difference.inMinutes < 60) {
+      return '${difference.inMinutes} minutes ago';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours} hours ago';
+    } else if (difference.inDays < 6) {
+      return '${difference.inDays} days ago';
+    } else if ((difference.inDays / 7).ceil() < 4) {
+      return '${(difference.inDays / 7).ceil()} weeks ago';
+    } else if ((difference.inDays / 30).ceil() < 30) {
+      return '${(difference.inDays / 30).ceil()} months ago';
+    }
+    return '${(difference.inDays / 365).round()} years ago';
+  }
 }
 
 extension ExtendedNullableString on String? {
@@ -422,6 +443,14 @@ extension BrightnessX on Brightness {
       return Colors.black87;
     } else {
       return Colors.white70;
+    }
+  }
+}
+
+extension LetObject on Object? {
+  T? let<T>(T Function(Object it) block) {
+    if (this != null) {
+      return block(this!);
     }
   }
 }

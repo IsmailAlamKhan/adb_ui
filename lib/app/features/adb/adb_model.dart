@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'adb_model.freezed.dart';
+part 'adb_model.g.dart';
 
 @freezed
 class AdbDevice with _$AdbDevice {
@@ -12,6 +13,8 @@ class AdbDevice with _$AdbDevice {
   }) = _AdbDevice;
 
   bool get isOffline => type.trim().toLowerCase() == 'offline';
+
+  factory AdbDevice.fromJson(Map<String, dynamic> json) => _$AdbDeviceFromJson(json);
 }
 
 mixin AdbFileSystem {

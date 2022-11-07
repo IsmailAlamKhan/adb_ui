@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:github/github.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -34,8 +35,8 @@ class GithubAboutServiceImpl extends AboutService {
       final latestRelease = await github.repositories.getLatestRelease(githubRepoSlug);
       final os = Platform.operatingSystem;
       final installUrl = latestRelease.assets!
-          .firstWhere((element) => element.name!.contains('setup-$os'))
-          .browserDownloadUrl;
+          .firstWhereOrNull((element) => element.name!.contains('setup-$os'))
+          ?.browserDownloadUrl;
       if (installUrl == null) return;
       await launchUrlString(installUrl);
     } on GitHubError catch (e) {

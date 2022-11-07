@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 enum LocalStorageKeys {
+  commands('commands'),
   settings('settings');
 
   final String key;
@@ -24,7 +25,7 @@ abstract class LocalStorage {
   Future<T> get<T>(
     LocalStorageKeys key, {
     T? defaultValue,
-    T Function(Map<String, dynamic>)? fromJson,
+    T Function(dynamic)? fromJson,
   });
   Future<void> set<T>(LocalStorageKeys key, T value);
 }
@@ -50,7 +51,7 @@ class LocalStorageSharedPrefImpl implements LocalStorage {
   Future<T> get<T>(
     LocalStorageKeys key, {
     T? defaultValue,
-    T Function(Map<String, dynamic>)? fromJson,
+    T Function(dynamic)? fromJson,
   }) async {
     final value = sharedPreferences.get(key.key);
     if (value == null && defaultValue != null) {
@@ -77,12 +78,9 @@ class LocalStorageSharedPrefImpl implements LocalStorage {
       return sharedPreferences.setInt(key.key, value);
     } else if (value is String) {
       return sharedPreferences.setString(key.key, value);
-    } else if (value is Map) {
+    } else if (value is Map || value is List || value is LocalStorageModel) {
       return sharedPreferences.setString(key.key, jsonEncode(value));
-    } else if (value is List) {
-      return sharedPreferences.setString(key.key, jsonEncode(value));
-    } else if (value is LocalStorageModel) {
-      return sharedPreferences.setString(key.key, jsonEncode(value.toJson()));
+      // return sharedPreferences.setString(key.key, jsonEncode(value));
     }
     throw Exception('Unsupported type');
   }

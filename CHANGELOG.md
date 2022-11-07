@@ -1,3 +1,4 @@
-# v0.0.12
+## 0.0.14
 
-- Added Linux support
+- Command queue will persist across restarts
+- Added timestamps to command queue
