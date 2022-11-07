@@ -21,8 +21,8 @@ jobs:
     runs-on: windows-latest
     env:
       RELEASE_PATH: build/windows/runner/Release
-      # APPNAME: ${{ github.event.inputs.app-name }}
-      # VERSION: ${{ github.event.inputs.version }}
+      APPNAME: ${{ inputs.app-name }}
+      VERSION: ${{ inputs.version }}
     steps:
       - name: Checkout the code
         uses: actions/checkout@v2
@@ -35,7 +35,7 @@ jobs:
 
       - name: Run Installers/installer.iss Inno script
         run: |
-          "%programfiles(x86)%\Inno Setup 6\iscc.exe" /dversion=${{github.event.inputs.version}} "Installers/installer.iss"
+          "%programfiles(x86)%\Inno Setup 6\iscc.exe" /dversion=${{env.VERSION}} "Installers/installer.iss"
         shell: cmd
 
       - name: upload zip to release
@@ -44,15 +44,15 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: ${{ inputs.release-upload-url }}
-          asset_path: Installers/${{github.event.inputs.app-name}}-setup-windows.exe
-          asset_name: ${{github.event.inputs.app-name}}-setup-windows.exe
+          asset_path: Installers/${{env.APPNAME}}-setup-windows.exe
+          asset_name: ${{env.APPNAME}}-setup-windows.exe
           asset_content_type: application/x-msdownload
 
       - name: Archive Release
         uses: thedoctor0/zip-release@master
         with:
           type: "zip"
-          filename: ${{ github.event.inputs.app-name }}-windows.zip
+          filename: ${{ env.APPNAME }}-windows.zip
           directory: ${{ env.RELEASE_PATH }}
 
       - name: upload zip to release
@@ -61,6 +61,6 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: ${{ inputs.release-upload-url }}
-          asset_path: ${{env.RELEASE_PATH}}/${{github.event.inputs.app-name}}-windows.zip
-          asset_name: ${{github.event.inputs.app-name}}-windows.zip
+          asset_path: ${{env.RELEASE_PATH}}/${{env.APPNAME}}-windows.zip
+          asset_name: ${{env.APPNAME}}-windows.zip
           asset_content_type: application/zip

@@ -21,8 +21,8 @@ jobs:
     runs-on: macos-latest
     env:
       RELEASE_PATH: build/macos/Build/Products/Release
-      APPNAME: ${{ github.event.inputs.app-name }}
-      VERSION: ${{ github.event.inputs.version }}
+      APPNAME: ${{ inputs.app-name }}
+      VERSION: ${{ inputs.version }}
 
     steps:
       - name: Checkout the code
