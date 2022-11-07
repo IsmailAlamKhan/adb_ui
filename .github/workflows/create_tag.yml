@@ -7,3 +7,24 @@ on:
         description: "Version"
         required: true
         default: "v0.0.0"
+
+jobs:
+  create-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v2
+
+      - name: Create Tag
+        if: ${{ steps.version.outputs.content }} != ''
+        uses: actions/github-script@v3
+        with:
+          github-token: ${{ secrets.PAT }}
+          script: |
+            github.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+             ref: "refs/tags/${{ github.event.inputs.version }}",
+              sha: context.sha
+            })
+      - uses: actions/checkout@v2

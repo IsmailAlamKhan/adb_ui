@@ -30,11 +30,14 @@ There are 2 ways to install this.
 
 - Find the latest release from https://github.com/IsmailAlamKhan/adb_ui/releases
 - Download the dmg file
-- Follow the steps to install.
+- Extract and run
 
 ### Linux
 
-Coming soon.
+- Find the latest release from https://github.com/IsmailAlamKhan/adb_ui/releases
+- Download the tar.gz file
+- Extract and run
+- (Optional) Open the adb-ui.desktop file provied in the tar.gz and replace `<Path to the instalation>` with something like `/home/ismail/Applications/adb-ui/` rename it to .desktop and then put that file to `~/.local/share/applications` to make this app available on "Show Applications"
 
 ## Contributers
 

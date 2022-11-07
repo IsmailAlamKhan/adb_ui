@@ -1,0 +1,60 @@
+name: Build and release
+
+on:
+  push:
+    tags:
+      - "v*"
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    outputs:
+      release: ${{ steps.create_release.outputs.upload_url }}
+
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v2
+
+      - name: Read ChangeLog
+        uses: juliangruber/read-file-action@v1
+        id: changelog
+        with:
+          path: ./CHANGELOG.md
+
+      - name: release
+        uses: actions/create-release@v1
+        id: create_release
+        with:
+          draft: false
+          prerelease: false
+          release_name: ${{ github.ref }}
+          tag_name: ${{ github.ref }}
+          body: ${{steps.changelog.outputs.content}}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+  build-windows:
+    needs: [create-release]
+    uses: ./.github/workflows/build_windows.yml
+    secrets: inherit
+    with:
+      release-upload-url: ${{ needs.create-release.outputs.release }}
+      app-name: "adb-ui"
+      version: ${{ github.ref }}
+
+  build-linux:
+    needs: [create-release]
+    uses: ./.github/workflows/build_linux.yml
+    secrets: inherit
+    with:
+      release-upload-url: ${{ needs.create-release.outputs.release }}
+      app-name: "adb-ui"
+      version: ${{ github.ref }}
+
+  build-macos:
+    needs: [create-release]
+    uses: ./.github/workflows/build_macos.yml
+    secrets: inherit
+    with:
+      release-upload-url: ${{ needs.create-release.outputs.release }}
+      app-name: "adb-ui"
+      version: ${{ github.ref }}

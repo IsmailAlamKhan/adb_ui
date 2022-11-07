@@ -1,11 +1,6 @@
 name: Build Linux
-"on":
-  workflow_dispatch:
-    inputs:
-      version:
-        description: "Version"
-        required: true
-        default: "0.0.0"
+
+on
   workflow_call:
     inputs:
       version:
@@ -13,3 +8,63 @@ name: Build Linux
         required: true
         default: "0.0.0"
         type: string
+
+      release-upload-url:
+        description: "Release upload URL"
+        required: true
+        type: string
+      app-name:
+        description: "Application name"
+        required: true
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_PATH: build/linux/x64/release/bundle
+      APPNAME: ${{ inputs.app-name }}
+      VERSION: ${{ inputs.version }}
+
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v2
+
+      - name: Install and set Flutter version
+        uses: subosito/flutter-action@v2.4.0
+
+      - name: Install dependencies
+        run: sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev
+
+      - name: Build Linux app
+        run: flutter build linux --release
+
+      - name: Make .desktop file
+        run: |
+          touch ${{ github.workspace }}/${{env.RELEASE_PATH}}/${{env.APPNAME}}.desktop
+          echo "[Desktop Entry]
+          Version=${{env.VERSION}}
+          Name=Adb ui
+          Comment=Run adb commands with a simple ui
+          Exec=<Path to the instalation>adb_ui
+          Icon=<Path to the instalation>logo.png
+          Terminal=false
+          Type=Application
+          Categories=Utility;Application;" > ${{ github.workspace }}/${{env.RELEASE_PATH}}/${{env.APPNAME}}.desktop
+
+      - name: Archive Release
+        uses: thedoctor0/zip-release@master
+        with:
+          type: "zip"
+          filename: ${{ env.APPNAME }}-setup-linux.zip
+          directory: ${{ env.RELEASE_PATH }}
+
+      - name: upload to release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ inputs.release-upload-url }}
+          asset_path: ${{env.RELEASE_PATH}}/${{env.APPNAME}}-setup-linux.zip
+          asset_name: ${{env.APPNAME}}-setup-linux.zip
+          asset_content_type: application/zip

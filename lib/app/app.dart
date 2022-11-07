@@ -18,7 +18,7 @@ class App {
 
     try {
       runApp(const ProviderScope(child: SplashView()));
-      if (Platform.isLinux || Platform.isWindows) {
+      if (Platform.isWindows) {
         await windowManager.ensureInitialized();
 
         WindowOptions windowOptions = const WindowOptions(
@@ -103,7 +103,7 @@ class AppWrapper extends ConsumerWidget {
             AppTheme.themeDataFrom(colorScheme: lightDynamic, brightness: Brightness.light),
             AppTheme.themeDataFrom(colorScheme: darkDynamic, brightness: Brightness.dark),
             (context, child) {
-          if (Platform.isWindows || Platform.isLinux) {
+          if (Platform.isWindows) {
             child = virtualWindowFrameBuilder(context, child);
           }
           var data = MediaQuery.of(context);
@@ -179,6 +179,9 @@ class WindowTitleBar extends StatelessWidget {
           ),
         ),
       );
+    }
+    if (Platform.isLinux) {
+      return child;
     }
 
     return Directionality(

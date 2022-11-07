@@ -9,7 +9,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'exception.dart';
 
-const appName = 'ADB UI';
+const appName = 'Adb ui';
 
 Color tintColor({
   required Color color,

@@ -1,11 +1,5 @@
 name: Build Mac OS
-"on":
-  workflow_dispatch:
-    inputs:
-      version:
-        description: "Version"
-        required: true
-        default: "0.0.0"
+on:
   workflow_call:
     inputs:
       version:
@@ -13,14 +7,49 @@ name: Build Mac OS
         required: true
         default: "0.0.0"
         type: string
+      release-upload-url:
+        description: "Release upload URL"
+        required: true
+        type: string
+      app-name:
+        description: "Application name"
+        required: true
+        type: string
+
 jobs:
   build:
     runs-on: macos-latest
     env:
       RELEASE_PATH: build/macos/Build/Products/Release
-      APPNAME: "adb-ui"
-      VERSION: ${{ github.event.inputs.version }}
+      APPNAME: ${{ inputs.app-name }}
+      VERSION: ${{ inputs.version }}
 
     steps:
       - name: Checkout the code
         uses: actions/checkout@v2
+
+      - name: Install and set Flutter version
+        uses: subosito/flutter-action@v2.4.0
+
+      - name: Install node
+        uses: actions/setup-node@master
+
+      - name: Instal appdmg
+        run: npm install -g appdmg
+
+      - name: Build Mac app
+        run: flutter build macos --release
+
+      - name: Make .dmg file
+        run: |
+          appdmg Installers/dmg_creator/config.json ${{ github.workspace }}/${{env.RELEASE_PATH}}/${{env.APPNAME}}-setup-macos-dmg
+
+      - name: upload to release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ inputs.release-upload-url }}
+          asset_path: ${{env.RELEASE_PATH}}//${{env.RELEASE_PATH}}/${{env.APPNAME}}-setup-macos-dmg
+          asset_name: ${{env.APPNAME}}-setup-macos-dmg
+          asset_content_type: application/zip
