@@ -15,7 +15,6 @@ on:
         description: "Application name"
         required: true
         type: string
-        default: "GME"
 
 jobs:
   build:

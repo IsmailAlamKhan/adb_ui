@@ -16,14 +16,14 @@ on:
         description: "Application name"
         required: true
         type: string
-        default: "GME"
+
 jobs:
   build:
     runs-on: ubuntu-latest
     env:
       RELEASE_PATH: build/linux/x64/release/bundle
-      APPNAME: ${{ github.event.inputs.app-name }}
-      VERSION: ${{ github.event.inputs.version }}
+      # APPNAME: ${{ github.event.inputs.app-name }}
+      # VERSION: ${{ github.event.inputs.version }}
 
     steps:
       - name: Checkout the code
@@ -40,22 +40,22 @@ jobs:
 
       - name: Make .desktop file
         run: |
-          touch ${{ github.workspace }}/${{env.RELEASE_PATH}}/${{env.APPNAME}}.desktop
+          touch ${{ github.workspace }}/${{env.RELEASE_PATH}}/${{github.event.inputs.app-name}}.desktop
           echo "[Desktop Entry]
-          Version=${{env.VERSION}}
+          Version=${{github.event.inputs.version}}
           Name=Adb ui
           Comment=Run adb commands with a simple ui
           Exec=<Path to the instalation>adb_ui
           Icon=<Path to the instalation>logo.png
           Terminal=false
           Type=Application
-          Categories=Utility;Application;" > ${{ github.workspace }}/${{env.RELEASE_PATH}}/${{env.APPNAME}}.desktop
+          Categories=Utility;Application;" > ${{ github.workspace }}/${{env.RELEASE_PATH}}/${{github.event.inputs.app-name}}.desktop
 
       - name: Archive Release
         uses: thedoctor0/zip-release@master
         with:
           type: "zip"
-          filename: ${{ env.APPNAME }}-setup-linux.zip
+          filename: ${{ github.event.inputs.app-name }}-setup-linux.zip
           directory: ${{ env.RELEASE_PATH }}
 
       - name: upload to release
@@ -64,6 +64,6 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: ${{ inputs.release-upload-url }}
-          asset_path: ${{env.RELEASE_PATH}}/${{env.APPNAME}}-setup-linux.zip
-          asset_name: ${{env.APPNAME}}-setup-linux.zip
+          asset_path: ${{env.RELEASE_PATH}}/${{github.event.inputs.app-name}}-setup-linux.zip
+          asset_name: ${{github.event.inputs.app-name}}-setup-linux.zip
           asset_content_type: application/zip
