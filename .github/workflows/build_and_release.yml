@@ -14,6 +14,12 @@ jobs:
       - name: Checkout the code
         uses: actions/checkout@v2
 
+      - name: Read ChangeLog
+        uses: juliangruber/read-file-action@v1
+        id: changelog
+        with:
+          path: ./CHANGELOG.md
+
       - name: release
         uses: actions/create-release@v1
         id: create_release
@@ -22,6 +28,7 @@ jobs:
           prerelease: false
           release_name: ${{ github.ref }}
           tag_name: ${{ github.ref }}
+          body: ${{steps.changelog.outputs.content}}
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
