@@ -42,7 +42,7 @@ jobs:
 
       - name: Make .dmg file
         run: |
-          appdmg Installers/dmg_creator/config.json ${{env.APPNAME}}-setup-macos-dmg
+          appdmg Installers/dmg_creator/config.json ${{env.APPNAME}}-setup-macos.dmg
 
       - name: upload to release
         uses: actions/upload-release-asset@v1
