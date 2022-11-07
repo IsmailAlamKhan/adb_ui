@@ -48,8 +48,8 @@ echo "====staged all git files===="
 
 
 
-git tag -a "$version" -m "$message"
-git commit -m "$message"
+
+git commit -m "Updating to $version" -m "$message"
 git push origin master
 
 echo "====pushed as version $version===="

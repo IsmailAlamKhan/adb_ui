@@ -1,0 +1,37 @@
+name: Create tag on PR
+
+on:
+  push:
+    branches:
+      - main
+jobs:
+  create-tag:
+    if: contains( github.event.head_commit.message, 'Updating to' )
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v2
+
+      - name: Read Version
+        id: version
+        uses: juliangruber/read-file-action@v1
+        with:
+          path: ./version.txt
+
+      - name: Fix version
+        id: fixed-version
+        run: bash ./fix-version.sh "${{steps.version.outputs.content}}"
+
+      - name: Create Tag
+        if: ${{ steps.version.outputs.content }} != ''
+        uses: actions/github-script@v3
+        with:
+          github-token: ${{ secrets.PAT }}
+          script: |
+            github.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+             ref: "refs/tags/v${{ steps.fixed-version.outputs.version }}",
+              sha: context.sha
+            })
+      - uses: actions/checkout@v2
