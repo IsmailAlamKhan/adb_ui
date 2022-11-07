@@ -1,5 +1,5 @@
 name: Build Linux
-"on":
+on:
   workflow_call:
     inputs:
       version:

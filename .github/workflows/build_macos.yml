@@ -1,5 +1,5 @@
 name: Build Mac OS
-"on":
+on:
   workflow_call:
     inputs:
       version:
