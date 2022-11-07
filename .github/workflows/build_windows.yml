@@ -1,14 +1,5 @@
 name: Build Windows
 "on":
-  # push:
-  #   branches:
-  #     - "master"
-  workflow_dispatch:
-    inputs:
-      version:
-        description: "Version"
-        required: true
-        default: "0.0.0"
   workflow_call:
     inputs:
       version:
@@ -16,12 +7,21 @@ name: Build Windows
         required: true
         default: "0.0.0"
         type: string
+      release-upload-url:
+        description: "Release upload URL"
+        required: true
+        type: string
+      app-name:
+        description: "Application name"
+        required: true
+        type: string
+        default: "GME"
 jobs:
   build:
     runs-on: windows-latest
     env:
       RELEASE_PATH: build/windows/runner/Release
-      APPNAME: "adb-ui"
+      APPNAME: ${{ github.event.inputs.app-name }}
       VERSION: ${{ github.event.inputs.version }}
     steps:
       - name: Checkout the code
@@ -38,11 +38,15 @@ jobs:
           "%programfiles(x86)%\Inno Setup 6\iscc.exe" /dversion=${{env.VERSION}} "Installers/installer.iss"
         shell: cmd
 
-      - name: Upload Windows installer
-        uses: actions/upload-artifact@v2
+      - name: upload zip to release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         with:
-          name: ${{env.APPNAME}}-setup-windows.exe
-          path: Installers/${{env.APPNAME}}-setup-windows.exe
+          upload_url: ${{ inputs.release-upload-url }}
+          asset_path: Installers/${{env.APPNAME}}-setup-windows.exe
+          asset_name: ${{env.APPNAME}}-setup-windows.exe
+          asset_content_type: application/x-msdownload
 
       - name: Archive Release
         uses: thedoctor0/zip-release@master
@@ -51,8 +55,12 @@ jobs:
           filename: ${{ env.APPNAME }}-windows.zip
           directory: ${{ env.RELEASE_PATH }}
 
-      - name: Upload Windows zip
-        uses: actions/upload-artifact@v2
+      - name: upload zip to release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         with:
-          name: ${{env.APPNAME}}-windows.zip
-          path: ${{env.RELEASE_PATH}}/${{env.APPNAME}}-windows.zip
+          upload_url: ${{ inputs.release-upload-url }}
+          asset_path: ${{env.RELEASE_PATH}}/${{env.APPNAME}}-windows.zip
+          asset_name: ${{env.APPNAME}}-windows.zip
+          asset_content_type: application/zip

@@ -1,11 +1,5 @@
 name: Build Linux
 "on":
-  workflow_dispatch:
-    inputs:
-      version:
-        description: "Version"
-        required: true
-        default: "0.0.0"
   workflow_call:
     inputs:
       version:
@@ -13,12 +7,22 @@ name: Build Linux
         required: true
         default: "0.0.0"
         type: string
+
+      release-upload-url:
+        description: "Release upload URL"
+        required: true
+        type: string
+      app-name:
+        description: "Application name"
+        required: true
+        type: string
+        default: "GME"
 jobs:
   build:
     runs-on: ubuntu-latest
     env:
       RELEASE_PATH: build/linux/x64/release/bundle
-      APPNAME: "adb-ui"
+      APPNAME: ${{ github.event.inputs.app-name }}
       VERSION: ${{ github.event.inputs.version }}
 
     steps:
@@ -54,8 +58,12 @@ jobs:
           filename: ${{ env.APPNAME }}-setup-linux.zip
           directory: ${{ env.RELEASE_PATH }}
 
-      - name: Upload Linux zip
-        uses: actions/upload-artifact@v2
+      - name: upload to release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         with:
-          name: ${{env.APPNAME}}-setup-linux.zip
-          path: ${{env.RELEASE_PATH}}/${{env.APPNAME}}-setup-linux.zip
+          upload_url: ${{ inputs.release-upload-url }}
+          asset_path: ${{env.RELEASE_PATH}}/${{env.APPNAME}}-setup-linux.zip
+          asset_name: ${{env.APPNAME}}-setup-linux.zip
+          asset_content_type: application/zip
