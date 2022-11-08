@@ -47,7 +47,7 @@ jobs:
           Name=Adb ui
           Comment=Run adb commands with a simple ui
           Exec=<Path to the instalation>adb_ui
-          Icon=<Path to the instalation>logo.png
+          Icon=<Path to the instalation>/data/flutter_assets/assets/logo.png
           Terminal=false
           Type=Application
           Categories=Utility;Application;" > ${{ github.workspace }}/${{env.RELEASE_PATH}}/${{env.APPNAME}}.desktop
