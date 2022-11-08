@@ -38,7 +38,7 @@ jobs:
           "%programfiles(x86)%\Inno Setup 6\iscc.exe" /dversion=${{env.VERSION}} "Installers/installer.iss"
         shell: cmd
 
-      - name: upload zip to release
+      - name: upload setup to release
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ github.token }}

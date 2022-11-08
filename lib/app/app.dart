@@ -32,6 +32,7 @@ class App {
           await windowManager.focus();
         });
       }
+
       await container.read(packageInfoControllerProvider.notifier).init();
       await container.read(localStorageProvider).init();
       await container.read(deviceControllerProvider.notifier).init();
