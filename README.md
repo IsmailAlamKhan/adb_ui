@@ -1,4 +1,4 @@
-# adb_ui
+# ADB UI
 
 This is a very simple app to easily run adb commands with a simple ui made with flutter. More features cooming soon.
 
@@ -11,6 +11,16 @@ Currently working features:
 - Open scrcpy.
 - Rerun command from command quque.
 
+## Screenshots
+
+<div>
+<img style="height:200px;" src="screenshots/1.png"/>
+<img style="height:200px;" src="screenshots/2.png"/>
+<img style="height:200px;" src="screenshots/3.png"/>
+<img style="height:200px;" src="screenshots/4.png"/>
+<img style="height:200px;" src="screenshots/5.png"/>
+<img style="height:200px;" src="screenshots/6.png"/>
+</div>
 ## Instalation
 
 ### Windows
