@@ -21,6 +21,7 @@ Currently working features:
 <img style="height:200px;" src="screenshots/5.png"/>
 <img style="height:200px;" src="screenshots/6.png"/>
 </div>
+
 ## Instalation
 
 ### Windows
