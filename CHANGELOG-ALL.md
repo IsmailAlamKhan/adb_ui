@@ -1,3 +1,6 @@
+## 0.0.14
+
+- Fix app initialization
 ## 0.0.13
 
 - Command queue will persist across restarts
