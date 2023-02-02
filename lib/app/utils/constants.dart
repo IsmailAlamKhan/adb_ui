@@ -64,19 +64,19 @@ final githubRepoSlug = RepositorySlug.full('IsmailAlamKhan/adb_ui');
 const riverpodKeepAlive = Riverpod(keepAlive: true);
 
 String exceptionToString(Object exception) {
-  late String message;
+  String message = 'Unknown error';
 
   if (exception is! Exception) {
     if (kDebugMode) {
       message = exception.toString();
-    } else {
-      message = 'Unknown error';
     }
   } else {
     if (exception is AppException) {
-      exception = exception.message;
+      message = exception.message;
     } else if (exception is PlatformException) {
-      exception = exception.message ?? exception.code;
+      message = exception.message ?? exception.code;
+    } else if (exception is ProcessException) {
+      message = exception.message;
     } else {
       message = exception.toString();
     }

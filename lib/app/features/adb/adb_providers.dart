@@ -18,9 +18,14 @@ Future<List<AdbFileSystem>> adbFiles(
   required AdbDevice device,
   String? path,
 }) async {
-  final AdbService adb = ref.read(adbServiceProvider);
-  final files = await adb.ls(device, path);
-  return files;
+  try {
+    final AdbService adb = ref.read(adbServiceProvider);
+    final files = await adb.ls(device, path);
+    return files;
+  } catch (e, s) {
+    LogFile.instance.dispath('adbFiles', error: e, stackTrace: s);
+    rethrow;
+  }
 }
 
 @riverpodKeepAlive

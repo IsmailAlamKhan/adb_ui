@@ -414,7 +414,7 @@ class ProccessAdbServiceImpl implements AdbService {
                 element.name == 'odm' ||
                 element.name == 'lost+found' ||
                 element.name == 'bugreports' ||
-                element.name == 'data' ||
+                
                 element.name == 'sys' ||
                 element.name == 'system' ||
                 element.name == 'apex' ||
