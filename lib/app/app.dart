@@ -167,7 +167,7 @@ class WindowTitleBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (Platform.isMacOS) {
-      return MenuBar(
+      return CustomMenuBar(
         child: MediaQuery.fromWindow(
           child: Builder(
             builder: (context) {

@@ -74,9 +74,9 @@ String exceptionToString(Object exception) {
     }
   } else {
     if (exception is AppException) {
-      exception = exception.message;
+      message = exception.message;
     } else if (exception is PlatformException) {
-      exception = exception.message ?? exception.code;
+      message = exception.message ?? exception.code;
     } else {
       message = exception.toString();
     }

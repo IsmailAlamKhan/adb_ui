@@ -7,10 +7,10 @@ import 'package:path_provider/path_provider.dart';
 import '../../utils/utils.dart';
 import '../features.dart';
 
-class MenuBar extends StatelessWidget {
+class CustomMenuBar extends StatelessWidget {
   final Widget child;
 
-  const MenuBar({super.key, required this.child});
+  const CustomMenuBar({super.key, required this.child});
 
   @override
   Widget build(BuildContext context) {

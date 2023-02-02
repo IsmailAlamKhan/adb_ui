@@ -4,6 +4,7 @@ import 'dart:io' as io;
 import 'dart:io';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart' as p;
 
 import '../../utils/utils.dart';
@@ -145,7 +146,7 @@ Map<String, String>? _unixEnvironmentMap;
 
 Future<Map<String, String>?> _loadUnixEnvironment() async {
   final supportDir = await p.getApplicationSupportDirectory();
-  final tempFile = File('${supportDir.absolute.path}/env.sh');
+  final tempFile = File(join(supportDir.absolute.path, 'env.sh'));
   logInfo('Created temp sh file at ${tempFile.absolute.path}');
 
   tempFile.createSync(recursive: true);
@@ -154,16 +155,16 @@ Future<Map<String, String>?> _loadUnixEnvironment() async {
   await Future.delayed(const Duration(milliseconds: 300));
 
   // execution permissions (no need to get result).
-  final chmodResult =
-      // io.Process.runSync('chmod', ['777', '"${tempFile.absolute.path}"']);
-      io.Process.runSync('/bin/sh', ['-c', 'chmod +x "${tempFile.absolute.path}"']);
+  final chmodResult = io.Process.runSync('chmod', ['u+x', 'env.sh'],
+      workingDirectory: supportDir.absolute.path);
   LogFile.instance.dispath(
-      "Permission result (${chmodResult.exitCode}) - out= ${chmodResult.stdout} - err=${chmodResult.stderr}");
+      "Permission result (${chmodResult.exitCode}) - out=${chmodResult.stdout} - err=${chmodResult.stderr}");
 
   final result = Process.runSync(
-    '/bin/sh',
-    ['-c', '"${tempFile.absolute.path}"'],
+    'bash',
+    ['-c', './env.sh'],
     runInShell: true,
+    workingDirectory: supportDir.absolute.path,
   );
   final envMap = <String, String>{};
   var stdOut = result.stdout.toString().trim();
