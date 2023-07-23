@@ -180,7 +180,7 @@ mixin NavigationController {
     String? title,
     Color? confirmTextColor,
     Color? cancelTextColor,
-    List<Widget>? extraActions,
+    List<ConfirmDialogAction>? extraActions,
     ConfirmDialogLayoutBuilder? layoutBuilder,
   }) =>
       showDialog<bool>(

@@ -36,7 +36,7 @@ class CurrentCommandOutput extends HookConsumerWidget {
                 if (command.device != null)
                   TextSpan(
                     text: ' on ${command.device!.model}',
-                    style: Theme.of(context).textTheme.caption,
+                    style: Theme.of(context).textTheme.bodySmall,
                   ),
               ],
             ),

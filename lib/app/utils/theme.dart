@@ -43,9 +43,9 @@ class AppTheme {
           borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide(color: colorScheme.error),
         ),
-        errorStyle: textTheme.caption!.copyWith(color: colorScheme.error),
-        labelStyle: textTheme.caption!.copyWith(color: colorScheme.onBackground.withOpacity(0.6)),
-        hintStyle: textTheme.caption!.copyWith(color: colorScheme.onBackground.withOpacity(0.6)),
+        errorStyle: textTheme.bodySmall!.copyWith(color: colorScheme.error),
+        labelStyle: textTheme.bodySmall!.copyWith(color: colorScheme.onBackground.withOpacity(0.6)),
+        hintStyle: textTheme.bodySmall!.copyWith(color: colorScheme.onBackground.withOpacity(0.6)),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
       checkboxTheme: theme.checkboxTheme.copyWith(

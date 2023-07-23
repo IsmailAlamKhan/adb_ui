@@ -101,6 +101,8 @@ abstract class AdbService {
 
   Future<Result> inputText(AdbDevice device, String text);
 
+  Future<Result> uninstallApp(AdbDevice device, String packageName);
+
   /// -connnected device commands-
 
   /// -commands-
@@ -155,8 +157,8 @@ Future<Map<String, String>?> _loadUnixEnvironment() async {
   await Future.delayed(const Duration(milliseconds: 300));
 
   // execution permissions (no need to get result).
-  final chmodResult = io.Process.runSync('chmod', ['u+x', 'env.sh'],
-      workingDirectory: supportDir.absolute.path);
+  final chmodResult =
+      io.Process.runSync('chmod', ['u+x', 'env.sh'], workingDirectory: supportDir.absolute.path);
   LogFile.instance.dispath(
       "Permission result (${chmodResult.exitCode}) - out=${chmodResult.stdout} - err=${chmodResult.stderr}");
 
@@ -415,7 +417,6 @@ class ProccessAdbServiceImpl implements AdbService {
                 element.name == 'odm' ||
                 element.name == 'lost+found' ||
                 element.name == 'bugreports' ||
-                
                 element.name == 'sys' ||
                 element.name == 'system' ||
                 element.name == 'apex' ||
@@ -552,17 +553,21 @@ class ProccessAdbServiceImpl implements AdbService {
       });
 
   @override
-  Future<Result> inputText(AdbDevice device, String text) =>
-      run('shell', device: device, arguments: ['input', 'text', text])
-          .then((value) => value.copyWith(
-                messege: value.stdout.then((value) {
-                  if (value.isEmpty) {
-                    return 'Text sent';
-                  }
-                  logError('Failed to send text', error: value);
-                  throw AppException('Failed to send text cause $value');
-                }),
-              ));
+  Future<Result> inputText(AdbDevice device, String text) {
+    text = text.replaceAll('\'', '\\\'').replaceAll('"', '\\"').replaceAll(' ', '%s');
+    logInfo('Text: $text');
+    return run('shell', device: device, arguments: ['input', 'text', text])
+        .then((value) => value.copyWith(
+              messege: value.stdout.then((value) {
+                if (value.isEmpty) {
+                  return 'Text sent';
+                }
+                logError('Failed to send text', error: value);
+                throw AppException('Failed to send text cause $value');
+              }),
+            ));
+  }
+
   @override
   Future<Result> rerunCommand(
     String command,
@@ -608,6 +613,25 @@ class ProccessAdbServiceImpl implements AdbService {
       default:
         throw AppException('Command not found');
     }
+  }
+
+  @override
+  Future<Result> uninstallApp(AdbDevice device, String packageName) {
+    return run(
+      'uninstall',
+      arguments: [packageName],
+      device: device,
+    ).then((result) async {
+      return result.copyWith(
+        messege: result.stdout.then((output) {
+          if (output.contains('Success')) {
+            return 'Uninstalled $packageName';
+          }
+          logError('Failed to uninstall $packageName', error: output);
+          throw AppException('Failed to uninstall cause $output');
+        }),
+      );
+    });
   }
 }
 

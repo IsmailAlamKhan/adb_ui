@@ -5,6 +5,8 @@ import 'dart:ui';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -51,22 +53,28 @@ class App {
   }
 
   static Future<void> run() async {
-    WidgetsFlutterBinding.ensureInitialized();
-    NavigatorService.init();
-    AppLogger.init();
-    await LogFile.init();
-
-    FlutterError.onError = LogFile.instance.dispatchFlutterErrorLogs;
     final container = ProviderContainer();
     runZonedGuarded(
       () async {
+        WidgetsFlutterBinding.ensureInitialized();
+        NavigatorService.init();
+        AppLogger.init();
+        await LogFile.init();
+
+        GoogleFonts.pendingFonts([GoogleFonts.poppinsTextTheme()]);
+
+        FlutterError.onError = LogFile.instance.dispatchFlutterErrorLogs;
         await init(container);
         runApp(UncontrolledProviderScope(
           container: container,
           child: const _App(),
         ));
       },
-      (error, stack) {
+      (error, stack) async {
+        WidgetsFlutterBinding.ensureInitialized();
+        NavigatorService.init();
+        AppLogger.init();
+        await LogFile.init();
         if (error is AppInitializationException) {
           runApp(UncontrolledProviderScope(
             container: container,
@@ -168,7 +176,8 @@ class WindowTitleBar extends StatelessWidget {
   Widget build(BuildContext context) {
     if (Platform.isMacOS) {
       return CustomMenuBar(
-        child: MediaQuery.fromWindow(
+        child: MediaQuery.fromView(
+          view: View.of(context),
           child: Builder(
             builder: (context) {
               return MediaQuery(
@@ -211,9 +220,9 @@ class WindowTitleBar extends StatelessWidget {
                       brightness: Theme.of(context).brightness,
                       backgroundColor: Colors.transparent,
                       title: DefaultTextStyle(
-                        style: Theme.of(context).textTheme.bodyText2!,
-                        child: Row(
-                          children: const [
+                        style: Theme.of(context).textTheme.bodyMedium!,
+                        child: const Row(
+                          children: [
                             AppLogo(size: 20),
                             Gap(4),
                             Text(appName),
@@ -275,9 +284,10 @@ class __AppThemeBuilderState extends State<_AppThemeBuilder> with WidgetsBinding
   void _updateThemeMode([bool inital = false]) {
     ThemeMode themeMode = widget.themeMode;
     if (themeMode == ThemeMode.system) {
-      themeMode = _binding.window.platformBrightness == Brightness.dark //
-          ? ThemeMode.dark
-          : ThemeMode.light;
+      themeMode =
+          SchedulerBinding.instance.platformDispatcher.platformBrightness == Brightness.dark //
+              ? ThemeMode.dark
+              : ThemeMode.light;
     }
     if (themeMode != this.themeMode) {
       if (!inital) {

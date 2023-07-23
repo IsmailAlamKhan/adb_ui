@@ -34,12 +34,12 @@ class PaginationNewPageErrorIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) => InkWell(
         onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.only(top: 16, bottom: 16),
+        child: const Padding(
+          padding: EdgeInsets.only(top: 16, bottom: 16),
           child: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
+              children: [
                 Text(
                   'Something went wrong please try again',
                   textAlign: TextAlign.center,

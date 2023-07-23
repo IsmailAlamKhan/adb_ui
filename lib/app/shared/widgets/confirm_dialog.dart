@@ -1,16 +1,27 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 
-import '../../utils/utils.dart';
 import 'widgets.dart';
 
-typedef ConfirmDialogLayoutBuilder = List<Widget> Function(
+typedef ConfirmDialogLayoutBuilder = List<ConfirmDialogAction> Function(
   BuildContext context,
-  Widget confirm,
-  Widget cancel,
-  List<Widget>? extraActions,
+  ConfirmDialogAction confirm,
+  ConfirmDialogAction cancel,
+  List<ConfirmDialogAction>? extraActions,
 );
+
+class ConfirmDialogAction {
+  final String text;
+  final VoidCallback? onPressed;
+  final Color? textColor;
+  ConfirmDialogAction({
+    required this.text,
+    this.onPressed,
+    this.textColor,
+  });
+}
 
 class ConfirmDialog extends StatelessWidget {
   const ConfirmDialog({
@@ -35,7 +46,7 @@ class ConfirmDialog extends StatelessWidget {
   final String? title;
   final Color? confirmTextColor;
   final Color? cancelTextColor;
-  final List<Widget>? extraActions;
+  final List<ConfirmDialogAction>? extraActions;
   final ConfirmDialogLayoutBuilder? layoutBuilder;
   final VoidCallback? onConfirm;
   final VoidCallback? onCancel;
@@ -44,19 +55,30 @@ class ConfirmDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final navigator = Navigator.of(context);
-    final confirmButton = ElevatedButton(
+    // final confirmButton = FilledButton(
+    //   onPressed: onConfirm ?? () => navigator.pop(true),
+    //   style: ElevatedButton.styleFrom(
+    //     foregroundColor: confirmTextColor ?? theme.colorScheme.primary,
+    //   ),
+    //   child: Text(confirmText ?? "Yes"),
+    // );
+    // final cancelButton = ElevatedButton(
+    //   onPressed: onCancel ?? () => navigator.pop(false),
+    //   style: ElevatedButton.styleFrom(
+    //     foregroundColor: cancelTextColor ?? theme.colorScheme.error,
+    //   ).filled(context),
+    //   child: Text(cancelText ?? "No"),
+    // );
+    final confirmButton = ConfirmDialogAction(
+      text: confirmText ?? "Yes",
       onPressed: onConfirm ?? () => navigator.pop(true),
-      style: ElevatedButton.styleFrom(
-        foregroundColor: confirmTextColor ?? theme.colorScheme.primary,
-      ).filled(context),
-      child: Text(confirmText ?? "Yes"),
+      textColor: confirmTextColor ?? Colors.green,
     );
-    final cancelButton = ElevatedButton(
+
+    final cancelButton = ConfirmDialogAction(
+      text: cancelText ?? "No",
       onPressed: onCancel ?? () => navigator.pop(false),
-      style: ElevatedButton.styleFrom(
-        foregroundColor: cancelTextColor ?? theme.colorScheme.error,
-      ).filled(context),
-      child: Text(cancelText ?? "No"),
+      textColor: cancelTextColor ?? theme.colorScheme.error,
     );
     final actions = layoutBuilder?.call(
           context,
@@ -92,9 +114,15 @@ class ConfirmDialog extends StatelessWidget {
           ),
           content: Text(
             text,
-            style: Theme.of(context).textTheme.bodyText2,
+            style: Theme.of(context).textTheme.bodyMedium,
           ),
-          actions: actions,
+          actions: actions
+              .map((e) => TextButton(
+                    onPressed: e.onPressed,
+                    style: TextButton.styleFrom(foregroundColor: e.textColor),
+                    child: Text(e.text),
+                  ))
+              .toList(),
         ),
       ),
     );

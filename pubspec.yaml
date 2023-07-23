@@ -1,10 +1,10 @@
 name: adb_ui
 description: Run adb commands with ease from a simple UI
 publish_to: none
-version: 0.0.14
+version: 0.0.15
 
 environment:
-  sdk: '>=2.18.2 <3.0.0'
+  sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
   flutter:
@@ -17,7 +17,7 @@ dependencies:
   animations: ^2.0.7
   logging: ^1.1.0
   validators: ^3.0.0
-  google_fonts: ^3.0.1
+  google_fonts: ^5.1.0
   freezed_annotation: ^2.2.0
   lottie: ^1.4.3
   network_info_plus: ^2.3.2
@@ -37,7 +37,7 @@ dependencies:
   json_annotation: ^4.7.0
   url_launcher: ^6.1.6
   collection: ^1.16.0
-  package_info_plus: ^3.0.1
+  package_info_plus: ^4.0.2
   github: ^9.5.0
   font_awesome_flutter: ^10.2.1
 

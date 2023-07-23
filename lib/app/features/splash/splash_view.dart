@@ -12,7 +12,8 @@ class SplashView extends StatefulWidget {
 class _SplashViewState extends State<SplashView> {
   @override
   Widget build(BuildContext context) {
-    return MediaQuery.fromWindow(
+    return MediaQuery.fromView(
+      view: View.of(context),
       child: Builder(builder: (context) {
         final mq = MediaQuery.of(context);
         final theme = mq.platformBrightness == Brightness.dark

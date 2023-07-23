@@ -55,7 +55,7 @@ class CommandQueueView extends HookConsumerWidget {
                             if (command.isRerun)
                               TextSpan(
                                 text: ' (rerun)',
-                                style: Theme.of(context).textTheme.caption,
+                                style: Theme.of(context).textTheme.bodySmall,
                               ),
                           ],
                         ),

@@ -24,25 +24,31 @@ class AboutView extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  AppBar(title: const Text('About $appName'), toolbarHeight: 40),
+                  AppBar(
+                    title: const Text('About $appName'),
+                    toolbarHeight: 40,
+                    elevation: 0,
+                    surfaceTintColor: Colors.transparent,
+                    backgroundColor: Colors.transparent,
+                  ),
                   const Gap(8),
-                  Row(
+                  const Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const AppLogo(size: 100),
-                      const Gap(8),
+                      AppLogo(size: 100),
+                      Gap(8),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const _UpdateChecker(),
-                            const Gap(8),
+                            _UpdateChecker(),
+                            Gap(8),
                             Padding(
-                              padding: const EdgeInsets.only(left: 40),
+                              padding: EdgeInsets.only(left: 40),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
-                                children: const [
+                                children: [
                                   _CurrentVersion(),
                                   Gap(8),
                                   _ReportBug(),

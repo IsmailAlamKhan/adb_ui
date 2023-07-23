@@ -25,7 +25,7 @@ class HomeViewContent extends ConsumerWidget {
                 padding: const EdgeInsets.all(8),
                 child: Text(
                   '${connectedDevices.length} Connected device(s)',
-                  style: Theme.of(context).textTheme.headline6,
+                  style: Theme.of(context).textTheme.titleLarge,
                 ),
               ),
             ),
@@ -42,7 +42,7 @@ class HomeViewContent extends ConsumerWidget {
                           if (device.isOffline)
                             TextSpan(
                               text: ' (Offline)',
-                              style: Theme.of(context).textTheme.caption,
+                              style: Theme.of(context).textTheme.bodySmall,
                             ),
                         ],
                       ),

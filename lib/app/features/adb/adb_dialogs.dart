@@ -122,27 +122,19 @@ class AdbDeviceDialog extends ConsumerWidget {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              ListTile(
-                title: const Text('Copy id'),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  Clipboard.setData(ClipboardData(text: device.id));
-                },
-              ),
-              ListTile(
-                title: const Text('Disconnect'),
-                subtitle: const Text('Only available for WIFI devices'),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  controller.disconnect(device);
-                },
-              ),
               if (!device.isOffline) ...[
                 ListTile(
                   title: const Text('Install apk'),
                   onTap: () {
                     Navigator.of(context).pop();
                     controller.installApk(device);
+                  },
+                ),
+                ListTile(
+                  title: const Text('Uninstall app'),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    controller.uninstallApp(device);
                   },
                 ),
                 ListTile(
@@ -160,17 +152,17 @@ class AdbDeviceDialog extends ConsumerWidget {
                   },
                 ),
                 ListTile(
-                  title: const Text('Run command'),
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    controller.runCommand(device);
-                  },
-                ),
-                ListTile(
                   title: const Text('Input text'),
                   onTap: () {
                     Navigator.of(context).pop();
                     controller.inputText(device);
+                  },
+                ),
+                ListTile(
+                  title: const Text('Run command'),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    controller.runCommand(device);
                   },
                 ),
                 ListTile(
@@ -186,7 +178,22 @@ class AdbDeviceDialog extends ConsumerWidget {
                     controller.runScrcpy(device);
                   },
                 ),
-              ]
+              ],
+              ListTile(
+                title: const Text('Copy id'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  Clipboard.setData(ClipboardData(text: device.id));
+                },
+              ),
+              ListTile(
+                title: const Text('Disconnect'),
+                subtitle: const Text('Only available for WIFI devices'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  controller.disconnect(device);
+                },
+              ),
             ],
           ),
         ),

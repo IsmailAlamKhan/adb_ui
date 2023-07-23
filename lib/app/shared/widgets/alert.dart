@@ -83,7 +83,7 @@ class Alert extends StatelessWidget {
             Text(title, style: Theme.of(context).textTheme.headlineSmall),
             const Gap(10),
             if (messege != null) ...[
-              Text(messege!, style: Theme.of(context).textTheme.bodyText2),
+              Text(messege!, style: Theme.of(context).textTheme.bodyMedium),
               const Gap(10),
             ],
             Center(

@@ -1,3 +1,8 @@
-## 0.0.14
+## 0.0.15
 
-- Fix app initialization
+- Fixed input text bug
+- Fixed the ui problem on about page
+- Re-arrenged the device options(commands)
+- Added new device options(commands)
+  - Uninstall apk
+- Added cancel button on connect wireless dialog

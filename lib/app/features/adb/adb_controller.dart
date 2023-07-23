@@ -100,9 +100,11 @@ class AdbController with NavigationController {
 
   Future<void> connect() async {
     final nativeWirelessDebugSupported = await confirmDialog(
-      (context) => 'Do you have android 11 or higher?',
-      title: 'Android 11 or higher required',
-    );
+        (context) => 'Do you have android 11 or higher?',
+        title: 'Android 11 or higher required',
+        extraActions: [
+          ConfirmDialogAction(onPressed: () => pop(), text: 'Cancel'),
+        ]);
     if (nativeWirelessDebugSupported == null) {
       return;
     }
@@ -346,6 +348,21 @@ class AdbController with NavigationController {
     return run(
       function: () => service.inputText(device, text),
       command: 'Input text',
+    );
+  }
+
+  Future<void> uninstallApp(AdbDevice device) async {
+    final packageName = await showDialog<String>(
+      pageBuilder: (_) => AdbInputDialog.single(
+        title: 'Enter your package name',
+        label: 'package name',
+      ),
+    );
+
+    if (packageName == null) return;
+    run(
+      function: () => service.uninstallApp(device, packageName),
+      command: 'Uninstall app',
     );
   }
 }
