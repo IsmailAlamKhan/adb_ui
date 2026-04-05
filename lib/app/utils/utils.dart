@@ -5,4 +5,5 @@ export 'exception.dart';
 export 'extensions.dart';
 export 'logger.dart';
 export 'navigation.dart';
+export 'supabase_config.dart';
 export 'theme.dart';

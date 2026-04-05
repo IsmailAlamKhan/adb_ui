@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'features/features.dart';
@@ -35,8 +36,17 @@ class App {
         });
       }
 
+      if (SupabaseConfig.isConfigured) {
+        await Supabase.initialize(
+          url: SupabaseConfig.url,
+          anonKey: SupabaseConfig.anonKey,
+        );
+      }
+
       await container.read(packageInfoControllerProvider.notifier).init();
       await container.read(localStorageProvider).init();
+      container.read(authControllerProvider);
+      await container.read(licenseControllerProvider.notifier).hydrate();
       await container.read(deviceControllerProvider.notifier).init();
       await container.read(adbServiceProvider).verifyAdb();
       await container.read(settingsControllerProvider.notifier).init();
@@ -64,6 +74,7 @@ class App {
         GoogleFonts.pendingFonts([GoogleFonts.poppinsTextTheme()]);
 
         FlutterError.onError = LogFile.instance.dispatchFlutterErrorLogs;
+        registerProFeatures();
         await init(container);
         runApp(UncontrolledProviderScope(
           container: container,

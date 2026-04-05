@@ -2,18 +2,19 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../utils/utils.dart';
 import '../features.dart';
 
-class CustomMenuBar extends StatelessWidget {
+class CustomMenuBar extends ConsumerWidget {
   final Widget child;
 
   const CustomMenuBar({super.key, required this.child});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef _) {
     return PlatformMenuBar(
       menus: [
         PlatformMenu(
@@ -50,6 +51,19 @@ class CustomMenuBar extends StatelessWidget {
             const PlatformMenuItemGroup(
               members: [
                 PlatformProvidedMenuItem(type: PlatformProvidedMenuItemType.quit),
+              ],
+            ),
+          ],
+        ),
+        PlatformMenu(
+          label: 'Account',
+          menus: [
+            PlatformMenuItemGroup(
+              members: [
+                PlatformMenuItem(
+                  label: 'Account & licensing…',
+                  onSelected: () => Navigator.of(context).adaptivePush((_) => const AccountView()),
+                ),
               ],
             ),
           ],

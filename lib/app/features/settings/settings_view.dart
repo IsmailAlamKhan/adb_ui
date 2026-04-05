@@ -28,6 +28,7 @@ class SettingsView extends ConsumerWidget {
                 onSelected: (value) => controller.setThemeMode(value),
               ),
             ),
+            ListTile(title: const Text('Account'), onTap: controller.openAccount),
             ListTile(title: const Text('About app'), onTap: controller.aboutApp),
           ],
         ),

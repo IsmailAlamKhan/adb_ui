@@ -37,9 +37,11 @@ dependencies:
   json_annotation: ^4.7.0
   url_launcher: ^6.3.2
   collection: ^1.16.0
+  crypto: ^3.0.3
   package_info_plus: ^8.0.2
   github: ^9.5.0
   font_awesome_flutter: ^10.2.1
+  supabase_flutter: ^2.12.2
 
 dependency_overrides:
   win32: ^5.5.0

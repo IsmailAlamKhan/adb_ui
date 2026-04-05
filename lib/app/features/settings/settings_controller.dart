@@ -26,4 +26,6 @@ class SettingsController extends StateNotifier<SettingsModel> with NavigationCon
   void setThemeMode(ThemeMode themeMode) => save(state.copyWith(themeMode: themeMode));
 
   void aboutApp() => adaptivePush((context) => const AboutView());
+
+  void openAccount() => adaptivePush((context) => const AccountView());
 }
