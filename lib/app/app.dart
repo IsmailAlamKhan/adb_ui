@@ -83,7 +83,7 @@ class App {
       },
       (error, stack) async {
         WidgetsFlutterBinding.ensureInitialized();
-        NavigatorService.init();
+        // NavigatorService.init();
         AppLogger.init();
         await LogFile.init();
         if (error is AppInitializationException) {
@@ -122,8 +122,7 @@ class AppWrapper extends ConsumerWidget {
             context,
             settings.themeMode,
             AppTheme.themeDataFrom(colorScheme: lightDynamic, brightness: Brightness.light),
-            AppTheme.themeDataFrom(colorScheme: darkDynamic, brightness: Brightness.dark),
-            (context, child) {
+            AppTheme.themeDataFrom(colorScheme: darkDynamic, brightness: Brightness.dark), (context, child) {
           if (Platform.isWindows) {
             child = virtualWindowFrameBuilder(context, child);
           }
@@ -295,10 +294,9 @@ class __AppThemeBuilderState extends State<_AppThemeBuilder> with WidgetsBinding
   void _updateThemeMode([bool inital = false]) {
     ThemeMode themeMode = widget.themeMode;
     if (themeMode == ThemeMode.system) {
-      themeMode =
-          SchedulerBinding.instance.platformDispatcher.platformBrightness == Brightness.dark //
-              ? ThemeMode.dark
-              : ThemeMode.light;
+      themeMode = SchedulerBinding.instance.platformDispatcher.platformBrightness == Brightness.dark //
+          ? ThemeMode.dark
+          : ThemeMode.light;
     }
     if (themeMode != this.themeMode) {
       if (!inital) {
