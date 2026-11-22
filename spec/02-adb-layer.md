@@ -59,8 +59,12 @@ Builds argv as: `[-s <device.id>]? [shell]? [command]? ...arguments` and calls
 | `inputText(device, text)` | `adb -s ID shell input text <escaped>` | stdout empty | `Text sent` |
 | `runCustomCommand(device, cmd)` | `adb -s ID <cmd split on spaces>` | exit code 0 | stdout; non-zero → `CommandFailedException` with stdout + stderr |
 | `scrcpy(device)` | `scrcpy -s ID` | stdout contains `INFO: Device` | `Scrcpy started` |
-| `ls(device, path)` | `adb -s ID shell ls -i "<path or />"` | stderr empty | returns `List<AdbFileSystem>`; `No such file or directory` → `NotFoundException`, `Permission denied` → `PermissionDeniedException` |
+| `ls(device, path)` | `adb -s ID shell ls -1 -p -L "<path or />"` (`parseLsOutput`: `/` suffix = folder, folders first A–Z) | stderr empty | returns `List<AdbFileSystem>`; `No such file or directory` → `NotFoundException`, `Permission denied` → `PermissionDeniedException` |
 | `deviceProperties(device)` *(redesign)* | `adb -s ID shell getprop` (not logged) | exit code 0 | returns `DeviceProperties` |
+| `startProcess(args, {device})` | long-running process with the user's env (logcat, mirror server); not in Activity | — | caller kills it |
+| `pidsOf(device, pkg)` | `adb -s ID shell pidof <pkg>` (not logged) | — | `Set<int>` |
+| `foregroundPackage(device)` | `adb -s ID shell dumpsys activity activities` (not logged) | — | package of the resumed activity |
+| `clearLogcat(device)` | `adb -s ID logcat -c` | exit 0 | `Cleared the device log` |
 | `listPackages(device, {includeSystem})` *(redesign)* | `adb -s ID shell pm list packages [-3]` (not logged) | exit code 0 | sorted package names (`package:` prefix stripped) |
 
 `inputText` escaping: `'` → `\'`, `"` → `\"`, space → `%s`.
@@ -82,6 +86,7 @@ Builds argv as: `[-s <device.id>]? [shell]? [command]? ...arguments` and calls
 | `pair` | `pair(arguments.last, host, port)` with host/port from `arguments.first` |
 | `disconnect` / `install` / `push` / `pull` / `scrcpy` | same method with stored args |
 | `tcpip` | `tcpip()` |
+| `logcat` | `clearLogcat(device)` |
 | `shell` | `input text …` → `inputText`; otherwise `runCustomCommand` |
 | `''` (custom command) | `runCustomCommand(device, arguments.join(' '))` |
 | other | throws `AppException('Command not found')` |

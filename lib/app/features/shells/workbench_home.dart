@@ -26,8 +26,16 @@ class WorkbenchHome extends ConsumerWidget {
         appBar: AppBar(
           title: Text(device?.displayName ?? 'ADB UI'),
           actions: [
-            IconButton(tooltip: 'Search actions', onPressed: adb.openPalette, icon: const Icon(Icons.search_rounded)),
-            IconButton(tooltip: 'Activity', onPressed: adb.openActivity, icon: const Icon(Icons.history_rounded)),
+            IconButton(
+              tooltip: 'Search actions',
+              onPressed: adb.openPalette,
+              icon: const Icon(Icons.search_rounded),
+            ),
+            IconButton(
+              tooltip: 'Activity',
+              onPressed: adb.openActivity,
+              icon: const Icon(Icons.history_rounded),
+            ),
           ],
         ),
         drawer: const Drawer(child: _Sidebar(inDrawer: true)),
@@ -61,15 +69,15 @@ class _Sidebar extends ConsumerWidget {
     }
 
     Widget item(IconData icon, String label, VoidCallback onTap, {Widget? trailing}) => ListTile(
-          dense: true,
-          leading: Icon(icon, size: 18),
-          title: Text(label),
-          trailing: trailing,
-          onTap: () {
-            close();
-            onTap();
-          },
-        );
+      dense: true,
+      leading: Icon(icon, size: 18),
+      title: Text(label),
+      trailing: trailing,
+      onTap: () {
+        close();
+        onTap();
+      },
+    );
 
     return Material(
       color: t.surfaceAlt,
@@ -137,18 +145,30 @@ class _Sidebar extends ConsumerWidget {
                 'Activity',
                 adb.openActivity,
                 trailing: counts.running > 0
-                    ? SizedBox.square(dimension: 14, child: CircularProgressIndicator(strokeWidth: 2, color: t.accent))
+                    ? SizedBox.square(
+                        dimension: 14,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: t.accent),
+                      )
                     : counts.errors > 0
-                        ? Tooltip(
-                            message: '${counts.errors} failed',
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                              decoration: BoxDecoration(color: t.dangerSoft, borderRadius: BorderRadius.circular(999)),
-                              child: Text('${counts.errors}',
-                                  style: TextStyle(color: t.onDangerSoft, fontSize: 11, fontWeight: FontWeight.w600)),
+                    ? Tooltip(
+                        message: '${counts.errors} failed',
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: t.dangerSoft,
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Text(
+                            '${counts.errors}',
+                            style: TextStyle(
+                              color: t.onDangerSoft,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
                             ),
-                          )
-                        : null,
+                          ),
+                        ),
+                      )
+                    : null,
               ),
               item(Icons.settings_outlined, 'Settings', adb.openSettings),
             ],
@@ -173,7 +193,7 @@ class _DevicePage extends ConsumerWidget {
     final compact = WindowSize.of(context).isCompact;
     final pad = compact ? 16.0 : 32.0;
     final tabs = device.isOnline
-        ? const ['Overview', 'Apps', 'Files', 'Shell', 'Type text']
+        ? const ['Overview', 'Screen', 'Logcat', 'Apps', 'Files', 'Shell', 'Type text']
         : const ['Overview'];
     final mirrorReason = DeviceAction.mirror.unavailableReason(device, scrcpyAvailable: scrcpy);
 
@@ -197,9 +217,11 @@ class _DevicePage extends ConsumerWidget {
                   DeviceStatusLine(device: device),
                   const SizedBox(width: 8),
                   Flexible(
-                    child: Text(device.id,
-                        style: AppThemeFactory.mono(t, size: 12, color: t.textMuted),
-                        overflow: TextOverflow.ellipsis),
+                    child: Text(
+                      device.id,
+                      style: AppThemeFactory.mono(t, size: 12, color: t.textMuted),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ],
               ),
@@ -208,12 +230,16 @@ class _DevicePage extends ConsumerWidget {
           Wrap(
             spacing: 8,
             children: [
-              Tooltip(
-                message: mirrorReason ?? DeviceAction.mirror.shortcutText,
-                child: OutlinedButton.icon(
-                  onPressed: mirrorReason == null ? () => adb.runScrcpy(device) : null,
-                  icon: const Icon(Icons.cast_rounded, size: 18),
-                  label: const Text('Mirror screen'),
+              Builder(
+                builder: (tabContext) => Tooltip(
+                  message: mirrorReason ?? 'Show the Screen tab',
+                  child: OutlinedButton.icon(
+                    onPressed: mirrorReason == null
+                        ? () => DefaultTabController.of(tabContext).animateTo(1)
+                        : null,
+                    icon: const Icon(Icons.cast_rounded, size: 18),
+                    label: const Text('Mirror screen'),
+                  ),
                 ),
               ),
               if (device.isWireless)
@@ -236,7 +262,10 @@ class _DevicePage extends ConsumerWidget {
         children: [
           header,
           if (!device.isOnline)
-            Padding(padding: EdgeInsets.fromLTRB(pad, 16, pad, 0), child: DeviceStateBanner(device: device)),
+            Padding(
+              padding: EdgeInsets.fromLTRB(pad, 16, pad, 0),
+              child: DeviceStateBanner(device: device),
+            ),
           const SizedBox(height: 12),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: pad - 12),
@@ -249,13 +278,35 @@ class _DevicePage extends ConsumerWidget {
           Divider(height: 1, color: t.borderSubtle),
           Expanded(
             child: TabBarView(
+              // Desktop: tabs change by click/keyboard; swiping would fight with lists and selection.
+              physics: const NeverScrollableScrollPhysics(),
               children: [
                 _Overview(device: device, sideActivity: sideActivity, pad: pad),
                 if (device.isOnline) ...[
-                  Padding(padding: EdgeInsets.all(pad), child: DeviceAppsView(device: device)),
-                  Padding(padding: EdgeInsets.all(pad), child: _ExcludedFromApkDrop(child: DeviceFilesView(device: device))),
-                  Padding(padding: EdgeInsets.all(pad), child: DeviceShellView(device: device)),
-                  SingleChildScrollView(padding: EdgeInsets.all(pad), child: DeviceTypeTextView(device: device)),
+                  Padding(
+                    padding: EdgeInsets.all(pad),
+                    child: MirrorView(device: device),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(pad),
+                    child: LogcatView(device: device),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(pad),
+                    child: DeviceAppsView(device: device),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(pad),
+                    child: _ExcludedFromApkDrop(child: DeviceFilesView(device: device)),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(pad),
+                    child: DeviceShellView(device: device),
+                  ),
+                  SingleChildScrollView(
+                    padding: EdgeInsets.all(pad),
+                    child: DeviceTypeTextView(device: device),
+                  ),
                 ],
               ],
             ),
@@ -322,7 +373,10 @@ class _Overview extends ConsumerWidget {
       children: [
         const SectionLabel('Quick actions'),
         const SizedBox(height: 10),
-        DeviceActionGrid(device: device, exclude: const {DeviceAction.mirror, DeviceAction.disconnect}),
+        DeviceActionGrid(
+          device: device,
+          exclude: const {DeviceAction.mirror, DeviceAction.disconnect, DeviceAction.logcat},
+        ),
         const SizedBox(height: 24),
         const SectionLabel('Device'),
         const SizedBox(height: 10),

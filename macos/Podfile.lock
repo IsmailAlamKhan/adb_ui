@@ -2,6 +2,10 @@ PODS:
   - device_info_plus (0.0.1):
     - FlutterMacOS
   - FlutterMacOS (1.0.0)
+  - media_kit_libs_macos_video (1.0.4):
+    - FlutterMacOS
+  - media_kit_video (0.0.1):
+    - FlutterMacOS
   - network_info_plus (0.0.1):
     - FlutterMacOS
   - package_info_plus (0.0.1):
@@ -12,6 +16,8 @@ PODS:
 DEPENDENCIES:
   - device_info_plus (from `Flutter/ephemeral/.symlinks/plugins/device_info_plus/macos`)
   - FlutterMacOS (from `Flutter/ephemeral`)
+  - media_kit_libs_macos_video (from `Flutter/ephemeral/.symlinks/plugins/media_kit_libs_macos_video/macos`)
+  - media_kit_video (from `Flutter/ephemeral/.symlinks/plugins/media_kit_video/macos`)
   - network_info_plus (from `Flutter/ephemeral/.symlinks/plugins/network_info_plus/macos`)
   - package_info_plus (from `Flutter/ephemeral/.symlinks/plugins/package_info_plus/macos`)
   - screen_retriever_macos (from `Flutter/ephemeral/.symlinks/plugins/screen_retriever_macos/macos`)
@@ -21,6 +27,10 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral/.symlinks/plugins/device_info_plus/macos
   FlutterMacOS:
     :path: Flutter/ephemeral
+  media_kit_libs_macos_video:
+    :path: Flutter/ephemeral/.symlinks/plugins/media_kit_libs_macos_video/macos
+  media_kit_video:
+    :path: Flutter/ephemeral/.symlinks/plugins/media_kit_video/macos
   network_info_plus:
     :path: Flutter/ephemeral/.symlinks/plugins/network_info_plus/macos
   package_info_plus:
@@ -31,10 +41,12 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   device_info_plus: a56e6e74dbbd2bb92f2da12c64ddd4f67a749041
   FlutterMacOS: c232990155153907050900a2e175c7773903ba4e
+  media_kit_libs_macos_video: 85a23e549b5f480e72cae3e5634b5514bc692f65
+  media_kit_video: fa6564e3799a0a28bff39442334817088b7ca758
   network_info_plus: f52abf61c7a311ecf3ac1b482be8a28908b4604d
   package_info_plus: a8a591e70e87ce97ce5d21b2594f69cea9e0312f
   screen_retriever_macos: 452e51764a9e1cdb74b3c541238795849f21557f
 
-PODFILE CHECKSUM: 2812daa425b205eb83a916d275b810bc2c6e869a
+PODFILE CHECKSUM: a64ce2e680f14e56f615888e9c57f8f987ce142b
 
 COCOAPODS: 1.16.2

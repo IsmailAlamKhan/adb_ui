@@ -5,7 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 enum LocalStorageKeys {
   commands('commands'),
-  settings('settings');
+  settings('settings'),
+  aiModel('ai_model');
 
   final String key;
   const LocalStorageKeys(this.key);

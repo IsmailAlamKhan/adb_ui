@@ -108,6 +108,7 @@ File: `shared/services/local_storage.dart`. Keys are the enum `LocalStorageKeys`
 |-----|-------|-----------|
 | `commands` | JSON string: `List<CommandModelLocalStorage>` (newest first is **not** guaranteed; appended) | `LocalStorageCommandQueueServiceImpl` |
 | `settings` | JSON string: `SettingsModel` | `LocalStorageSettingsServiceImpl` |
+| `ai_model` | `fast` / `accurate` | `AiController` |
 
 `set<T>` supports `bool/int/double/String` natively and JSON-encodes `Map`, `List`, or any
 `LocalStorageModel`. `get<T>(key, defaultValue:, fromJson:)` decodes with `fromJson` when given.
@@ -126,3 +127,15 @@ shape of an existing key needs a migration or tolerant `fromJson` — old instal
 | `…/stdout-log-<day>.txt` | adb stdout **and** stderr |
 | `…/stderr-log-<day>.txt` | (created; currently unused) |
 | `~/.adb_ui` (user-created, optional) | sourced by env.sh to customise PATH etc. |
+
+## Logcat, AI and mirror (2026-11-22)
+- `logcat/logcat_model.dart`: `LogLevel`, `LogcatEntry` (threadtime parser, `CrashMark`), `LogPreset`,
+  `LogcatFilter` (AND of preset, package/pids, foreground, min level, tags, text/regex; `aiFields`),
+  `CrashTracker`, `parseForegroundPackage`, `parsePids`. Not persisted.
+- `logcatControllerProvider` — `StateNotifierProvider.autoDispose.family<LogcatController, LogcatState, AdbDevice>`.
+- `ai/ai_service.dart`: `AiModelChoice` (fast/accurate, hf sources, sizes), `AiModelStatus`, `AiState`;
+  `aiControllerProvider` (`StateNotifierProvider<AiController, AiState>`). Persisted: `LocalStorageKeys.aiModel`
+  (`ai_model`) = choice name.
+- `mirror/`: `MirrorMode`, `MirrorStatus`, `MirrorQuality`, `MirrorState`;
+  `mirrorControllerProvider` (`autoDispose.family` by `AdbDevice`). Protocol: `ScrcpyControl`,
+  `ScrcpyStreamParser`, `LiveMatroska`.

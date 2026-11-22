@@ -57,18 +57,14 @@ class AboutController extends AutoDisposeAsyncNotifier<AboutModel> with Navigati
       showLoading();
       await LogFile.instance.getAllLogsAndReset(device: device);
       hideLoading();
-      showAlert(
-        const Alert.success(
-          title: 'Logs are successfully generated.',
-          messege:
-              'Please attact that file to the issue on the page that will be opened after this alert closes',
-        ),
+      showSuccess(
+        'Log file saved',
+        message: 'GitHub is opening. Attach the saved zip to the new issue.',
       );
-      await Future.delayed(Alert.duration);
-      launchUrlString(bugReportUrl);
-    } on AppException catch (e) {
+      await launchUrlString(bugReportUrl);
+    } catch (e) {
       hideLoading();
-      showSnackbar(text: e.message);
+      showError(e);
     }
   }
 

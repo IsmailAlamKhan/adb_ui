@@ -57,7 +57,7 @@ const featureRequestUrl =
 
 const appRepoUrl = 'https://github.com/IsmailAlamKhan/adb_ui';
 
-const changelogUrl = 'https://github.com/IsmailAlamKhan/adb_ui/CHANGELOG.md';
+const changelogUrl = 'https://github.com/IsmailAlamKhan/adb_ui/blob/master/CHANGELOG-ALL.md';
 final githubRepoSlug = RepositorySlug.full('IsmailAlamKhan/adb_ui');
 
 

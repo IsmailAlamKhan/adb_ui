@@ -100,6 +100,10 @@ class AdbController with NavigationController {
   Future<void> openCommandDetails(String id) =>
       showDialog<void>(pageBuilder: (_) => CommandDetailsDialog(commandId: id));
 
+  Future<void> openMirror(AdbDevice device) => push<void>((_) => MirrorPage(device: device));
+
+  Future<void> openLogcat(AdbDevice device) => push<void>((_) => LogcatPage(device: device));
+
   Future<void> openActivity() => adaptivePush<void>((_) => const ActivityView());
 
   Future<void> openSettings() => adaptivePush<void>((_) => const SettingsView());

@@ -1,158 +1,267 @@
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import '../../../shared/widgets/async_value_builder.dart';
 import '../../../design/design.dart';
-import '../../../utils/utils.dart';
 import '../../features.dart';
 
 enum AdbFileExplorerOpenReason { pickFile, pickFolder }
 
+/// Common places on Android storage, shown as shortcuts.
+const deviceQuickPlaces = [
+  ('Internal storage', '/sdcard', Icons.smartphone_rounded),
+  ('Download', '/sdcard/Download', Icons.download_rounded),
+  ('DCIM', '/sdcard/DCIM', Icons.photo_camera_outlined),
+  ('Pictures', '/sdcard/Pictures', Icons.image_outlined),
+  ('Documents', '/sdcard/Documents', Icons.description_outlined),
+];
+
+/// Chooses a folder (push destination) or files (pull) on the device.
+/// Pops a `String` folder path, or a `List<String>` of file paths; null on cancel.
+/// State is local, so selections never leak between openings (spec/08-redesign.md).
 class AdbFileExplorerView extends HookConsumerWidget {
   const AdbFileExplorerView({
     super.key,
-    this.title = 'File Explorer',
+    this.title = 'Choose files',
     required this.device,
     this.openReason = AdbFileExplorerOpenReason.pickFile,
+    this.initialPath = '/sdcard',
   });
   final AdbDevice device;
   final String title;
   final AdbFileExplorerOpenReason openReason;
+  final String initialPath;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final controller = ref.watch(adbFileExplorerControllerProvider);
+    final path = useState(initialPath);
+    final history = useState<List<String>>([]);
+    final selected = useState<Set<String>>({});
+    final pathController = useTextEditingController(text: initialPath);
+    useEffect(() {
+      pathController.text = path.value;
+      return null;
+    }, [path.value]);
 
-    final files = ref.watch(adbFilesProvider((device: device, path: controller.currentPath)));
-    useEffect(() {
-      controller.open(openReason);
-    }, [openReason, device]);
-    useEffect(() {
-      return controller.clearSelectedFiles;
-    }, []);
+    final t = AppTokens.of(context);
+    final text = Theme.of(context).textTheme;
+    final pickFolder = openReason == AdbFileExplorerOpenReason.pickFolder;
+    final query = (device: device, path: path.value);
+    final files = ref.watch(adbFilesProvider(query));
     final screen = MediaQuery.sizeOf(context);
     final compact = WindowSize.of(context).isCompact;
-    return Center(
+
+    void go(String next) {
+      var normalized = next.trim().replaceAll(RegExp(r'/+'), '/');
+      if (normalized.isEmpty) normalized = '/';
+      if (!normalized.startsWith('/')) normalized = '/$normalized';
+      if (normalized.length > 1 && normalized.endsWith('/')) {
+        normalized = normalized.substring(0, normalized.length - 1);
+      }
+      if (normalized == path.value) return;
+      history.value = [...history.value, path.value];
+      path.value = normalized;
+    }
+
+    void up() {
+      if (path.value == '/') return;
+      final parent = path.value.substring(0, path.value.lastIndexOf('/'));
+      go(parent.isEmpty ? '/' : parent);
+    }
+
+    String child(String name) => path.value == '/' ? '/$name' : '${path.value}/$name';
+
+    final crumbs = path.value.split('/').where((e) => e.isNotEmpty).toList();
+
+    final places = Wrap(
+      spacing: 6,
+      runSpacing: 6,
+      children: [
+        for (final (label, target, icon) in deviceQuickPlaces)
+          ChoiceChip(
+            avatar: Icon(icon, size: 16),
+            label: Text(label),
+            selected: path.value == target,
+            showCheckmark: false,
+            onSelected: (_) => go(target),
+          ),
+      ],
+    );
+
+    final list = files.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => ErrorPanel(
+        error: e,
+        compact: true,
+        onRetry: () async => ref.invalidate(adbFilesProvider(query)),
+      ),
+      data: (entries) {
+        final visible = pickFolder ? entries.whereType<AdbDirectory>().toList() : entries;
+        if (visible.isEmpty) {
+          return Center(
+            child: Text(
+              pickFolder ? 'No folders here. Choose this folder, or go up.' : 'This folder is empty.',
+              style: TextStyle(color: t.textMuted),
+            ),
+          );
+        }
+        return ListView.builder(
+          itemCount: visible.length,
+          itemBuilder: (context, index) {
+            final entry = visible[index];
+            final isDir = entry is AdbDirectory;
+            final full = child(entry.name);
+            final isSelected = selected.value.contains(full);
+            void toggle() {
+              final next = {...selected.value};
+              if (!next.remove(full)) next.add(full);
+              selected.value = next;
+            }
+
+            return ListTile(
+              selected: isSelected,
+              leading: isDir
+                  ? Icon(Icons.folder_rounded, color: t.accent)
+                  : Checkbox(value: isSelected, onChanged: (_) => toggle()),
+              title: Text(entry.name, overflow: TextOverflow.ellipsis),
+              trailing: isDir ? const Icon(Icons.chevron_right_rounded) : null,
+              onTap: isDir ? () => go(full) : toggle,
+            );
+          },
+        );
+      },
+    );
+
+    final count = selected.value.length;
+    final primaryLabel = pickFolder
+        ? 'Push here'
+        : count == 0
+            ? 'Pull'
+            : 'Pull $count ${count == 1 ? 'file' : 'files'}';
+    final primary = FilledButton(
+      onPressed: pickFolder
+          ? () => Navigator.of(context).pop(path.value)
+          : count == 0
+              ? null
+              : () => Navigator.of(context).pop(selected.value.toList()),
+      child: Text(primaryLabel),
+    );
+
+    return Dialog(
+      insetPadding: compact ? EdgeInsets.zero : const EdgeInsets.all(24),
       child: SizedBox(
-        // Fits the window (spec/08-redesign.md, surface 12); full window when compact.
-        height: compact ? screen.height : (screen.height - 80).clamp(360.0, 760.0),
-        width: compact ? screen.width : (screen.width - 80).clamp(320.0, 640.0),
-        child: Dialog(
-          insetPadding: compact ? EdgeInsets.zero : const EdgeInsets.all(8),
-          clipBehavior: Clip.antiAlias,
-          child: Scaffold(
-            appBar: AppBar(
-              title: Text(title),
-              bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(50),
-                child: ListTile(
-                  leading: controller.history.isNotEmpty
-                      ? BackButton(onPressed: controller.goBack)
-                      : null,
-                  title: _DirTextField(
-                    value: '/${controller.history.join('/')}',
-                    onSubmit: controller.goToPath,
-                  ),
-                ),
-              ),
-              actions: [
-                if (openReason == AdbFileExplorerOpenReason.pickFile)
+        width: compact ? screen.width : (screen.width - 80).clamp(360.0, 720.0),
+        height: compact ? screen.height : (screen.height - 80).clamp(420.0, 780.0),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Expanded(child: Text(title, style: text.headlineSmall)),
                   IconButton(
-                    icon: Text('Selected (${controller.selectedFiles.length})'),
-                    onPressed: null,
+                    tooltip: 'Close',
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.close_rounded),
                   ),
-              ],
-            ),
-            body: AsyncValueBuilder(
-              value: files,
-              onTryAgain: () async =>
-                  ref.invalidate(adbFilesProvider((device: device, path: controller.currentPath))),
-              builder: (_, files) {
-                if (files.isEmpty) {
-                  return const Center(child: Text('Empty'));
-                }
-                return ListView.builder(
-                  itemCount: files.length,
-                  itemBuilder: (context, index) {
-                    final file = files[index];
-                    final fileSelected = controller.selectedFiles.firstWhereOrNull(
-                          (element) => element.endsWith(file.name),
-                        ) !=
-                        null;
-                    return ListTile(
-                      title: Text(file.name),
-                      selected: fileSelected,
-                      leading: SizedBox(
-                        width: 30,
-                        child: AnimatedSwitcher(
-                          duration: AppTheme.defaultDuration,
-                          child: Icon(
-                            fileSelected
-                                ? Icons.check_box
-                                : file is AdbFile
-                                    ? Icons.insert_drive_file
-                                    : Icons.folder,
-                            key: ValueKey(fileSelected),
-                          ),
-                        ),
+                ],
+              ),
+              Text(
+                pickFolder
+                    ? 'Open the folder on ${device.displayName} where the files should go.'
+                    : 'Tick the files on ${device.displayName} to copy to this computer.',
+                style: TextStyle(color: t.textMuted),
+              ),
+              const SizedBox(height: 14),
+              places,
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  IconButton(
+                    tooltip: 'Back',
+                    onPressed: history.value.isEmpty
+                        ? null
+                        : () {
+                            final h = [...history.value];
+                            path.value = h.removeLast();
+                            history.value = h;
+                          },
+                    icon: const Icon(Icons.arrow_back_rounded),
+                  ),
+                  IconButton(
+                    tooltip: 'Up one folder',
+                    onPressed: path.value == '/' ? null : up,
+                    icon: const Icon(Icons.arrow_upward_rounded),
+                  ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: TextField(
+                      controller: pathController,
+                      style: AppThemeFactory.mono(t, size: 13),
+                      onSubmitted: go,
+                      decoration: const InputDecoration(
+                        prefixIcon: Icon(Icons.folder_open_rounded, size: 18),
+                        hintText: '/sdcard',
                       ),
-                      onTap: () => controller.onTap(file),
-                    );
-                  },
-                );
-              },
-            ),
-            bottomNavigationBar: SizedBox(
-              height: 50,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Center(
-                  child: ElevatedButton(
-                    onPressed: controller.selectPath(),
-                    style: ElevatedButton.styleFrom().filled(context),
-                    child: const Text('Select'),
+                    ),
                   ),
+                  IconButton(
+                    tooltip: 'Refresh',
+                    onPressed: () => ref.invalidate(adbFilesProvider(query)),
+                    icon: const Icon(Icons.refresh_rounded),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              // Breadcrumbs: click any part to jump there.
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    TextButton(onPressed: () => go('/'), child: const Text('/')),
+                    for (var i = 0; i < crumbs.length; i++) ...[
+                      Icon(Icons.chevron_right_rounded, size: 16, color: t.textMuted),
+                      TextButton(
+                        onPressed: () => go('/${crumbs.sublist(0, i + 1).join('/')}'),
+                        child: Text(crumbs[i]),
+                      ),
+                    ],
+                  ],
                 ),
               ),
-            ),
+              const SizedBox(height: 6),
+              Expanded(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: t.surface,
+                    borderRadius: t.borderRadiusLarge,
+                    border: Border.fromBorderSide(t.subtleSide),
+                  ),
+                  child: ClipRRect(borderRadius: t.borderRadiusLarge, child: list),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      pickFolder ? 'Destination: ${path.value}' : (count == 0 ? 'No files selected' : '$count selected'),
+                      style: AppThemeFactory.mono(t, size: 12, color: t.textMuted),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  if (!pickFolder && count > 0)
+                    TextButton(onPressed: () => selected.value = {}, child: const Text('Clear')),
+                  const SizedBox(width: 8),
+                  OutlinedButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
+                  const SizedBox(width: 8),
+                  primary,
+                ],
+              ),
+            ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _DirTextField extends HookConsumerWidget {
-  const _DirTextField({
-    required this.value,
-    required this.onSubmit,
-  });
-  final String value;
-  final ValueChanged<String> onSubmit;
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final tec = useTextEditingController(text: value);
-    useEffect(() {
-      tec.text = value;
-    }, [value]);
-    return AnimatedTheme(
-      data: Theme.of(context).copyWith(
-        inputDecorationTheme: Theme.of(context).inputDecorationTheme.copyWith(
-              border: InputBorder.none,
-              disabledBorder: InputBorder.none,
-              enabledBorder: InputBorder.none,
-              focusedBorder: InputBorder.none,
-              focusedErrorBorder: InputBorder.none,
-              errorBorder: InputBorder.none,
-            ),
-      ),
-      child: TextField(
-        controller: tec,
-        decoration: const InputDecoration.collapsed(
-          hintText: 'Enter directory',
-        ),
-        onSubmitted: onSubmit,
       ),
     );
   }

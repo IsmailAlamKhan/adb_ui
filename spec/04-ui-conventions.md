@@ -11,7 +11,7 @@ SplashView ──(init ok)──► MaterialApp (theme = AppThemeFactory(style, 
                             ├─ settings.style == null → StylePickerView (first run)
                             └─ UpdateChecker
                                  └─ HomeShell  (AppShortcuts + ApkDropZone)
-                                      ├─ WorkbenchHome  sidebar │ device page (tabs: Overview, Apps, Files, Shell, Type text)
+                                      ├─ WorkbenchHome  sidebar │ device page (tabs: Overview, Screen, Logcat, Apps, Files, Shell, Type text)
                                       ├─ ConsoleHome    title row │ device list │ action grid │ docked activity terminal
                                       └─ LauncherHome   device cards · inline CommandPalette · "Today" chips
            ──(init fails)──► AppInitErrorView (explained error, Try again)
@@ -21,6 +21,7 @@ Shared dialogs/pages (all styles):
   CommandPaletteDialog (⌘K)  ·  CommandDetailsDialog  ·  ActivityView  ·  SettingsView → AboutView
   UninstallPickerDialog  ·  AdbFileExplorerView (pick on device)  ·  FilePickerView (pick local)
   AdbInputDialog  ·  ConfirmActionDialog  ·  ErrorDetailsDialog
+  LogcatPage (⌘L)  ·  MirrorPage (⇧⌘M)  ·  AboutView  ·  UpdateAvailableDialog
 macOS menu "About Adb ui" ► AboutView
 ```
 
@@ -80,7 +81,7 @@ macOS menu "About Adb ui" ► AboutView
 ## Keyboard (`AppShortcuts`, ⌘ on macOS, Ctrl elsewhere)
 
 ⌘K palette · ⌘N add device · ⌘, settings · ⇧⌘A activity · device actions: ⌘I install,
-⌘U uninstall, ⌘P push, ⇧⌘P pull, ⌘R run command, ⌘T type text, ⇧⌘M mirror, ⇧⌘C copy id,
+⌘U uninstall, ⌘P push, ⇧⌘P pull, ⌘R run command, ⌘T type text, ⇧⌘M mirror (in-app), ⌘L logcat, ⇧⌘C copy id,
 ⇧⌘D disconnect. Palette: ↑/↓, ↵, Esc. Style picker cards: arrow keys.
 
 ## Shared widgets (`lib/app/shared/widgets/`, older)

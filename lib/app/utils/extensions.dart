@@ -368,11 +368,25 @@ extension MyNavigatorState on NavigatorState {
   }
 
   void showLoading() => showDialog(
-        pageBuilder: (_) => WillPopScope(
-          child: const Center(child: CircularProgressIndicator()),
-          onWillPop: () => Future.value(kDebugMode),
+        pageBuilder: (context) => PopScope(
+          canPop: kDebugMode,
+          child: Center(
+            child: Card(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 22),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+                    const SizedBox(width: 14),
+                    Text('Working…', style: Theme.of(context).textTheme.bodyMedium),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ),
-        barrierColor: Colors.black87,
+        barrierColor: Colors.black54,
         routeSettings: const RouteSettings(name: 'loading'),
       );
   void hideLoading() => popUntil((route) => route.settings.name != 'loading');

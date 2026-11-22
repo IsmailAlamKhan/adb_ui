@@ -18,7 +18,7 @@ dependencies:
   validators: ^3.0.0
   google_fonts: ^6.2.1
   freezed_annotation: ^3.0.0
-  lottie: ^1.4.3
+  lottie: ^3.3.1
   network_info_plus: ^6.0.0
   file_picker: ^5.3.1
   desktop_drop: ^0.7.0
@@ -28,7 +28,7 @@ dependencies:
   window_manager: ^0.5.1
   uuid: ^3.0.6
   device_info_plus: ^10.1.2
-  archive: ^3.6.1
+  archive: ^4.0.7
   path_provider: ^2.1.5
   path: ^1.8.2
   shared_preferences: ^2.5.4
@@ -39,12 +39,19 @@ dependencies:
   github: ^9.5.0
   font_awesome_flutter: ^10.2.1
   qr_flutter: ^4.1.0
+  llamadart: ^0.20.5
+  llamadart_llama_cpp_flutter: ^0.20.5
+  media_kit: ^1.2.6
+  media_kit_video: ^2.0.1
+  media_kit_libs_video: ^1.0.7
 
 dependency_overrides:
   win32: ^5.5.0
 
 
 dev_dependencies:
+  integration_test:
+    sdk: flutter
   flutter_test:
     sdk: flutter
   flutter_lints: ^2.0.0

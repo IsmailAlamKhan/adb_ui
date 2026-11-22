@@ -47,6 +47,12 @@ class SettingsView extends ConsumerWidget {
             const SizedBox(height: 28),
             const Divider(),
             const SizedBox(height: 16),
+            Text('AI', style: text.titleLarge),
+            const SizedBox(height: 12),
+            const AiModelSetupCard(),
+            const SizedBox(height: 28),
+            const Divider(),
+            const SizedBox(height: 16),
             Text('About', style: text.titleLarge),
             const SizedBox(height: 8),
             ListTile(

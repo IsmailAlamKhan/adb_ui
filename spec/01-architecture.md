@@ -50,8 +50,8 @@ lib/
 ```
 
 Features: `about`, `adb` (+ `adb_file_explorer/`), `add_device`, `app_init_error`,
-`command_queue` (Activity), `device` (host machine info), `device_page`, `errors`,
-`file_picker`, `menubar`, `package_info`, `palette`, `qr_pair`, `settings`, `shells`,
+`ai`, `command_queue` (Activity), `device` (host machine info), `device_page`, `errors`,
+`file_picker`, `logcat`, `menubar`, `mirror`, `package_info`, `palette`, `qr_pair`, `settings`, `shells`,
 `splash`, `style_picker`, `update_checker`.
 
 `lib/app/design/` (not a feature): styles, tokens, theme factory, width classes, shared
@@ -73,6 +73,8 @@ and `../../utils/utils.dart`. When you add a file, add it to its folder's barrel
 | `selectedDeviceIdProvider` / `selectedDeviceProvider` | `StateProvider<String?>` / `Provider<AdbDevice?>` | adb/adb_providers.dart |
 | `devicePropertiesProvider(device)` | `FutureProvider.autoDispose.family<DeviceProperties, AdbDevice>` | adb/adb_providers.dart |
 | `installedPackagesProvider((device:, includeSystem:))` | `FutureProvider.autoDispose.family<List<String>, PackagesQuery>` | adb/adb_providers.dart |
+| `logcatControllerProvider(device)` / `mirrorControllerProvider(device)` | `StateNotifierProvider.autoDispose.family` | logcat/, mirror/ |
+| `aiControllerProvider` | `StateNotifierProvider<AiController, AiState>` (on-device model) | ai/ai_service.dart |
 | `activityCountsProvider` | `Provider<({int running, int errors})>` | shells/home_shell.dart |
 | `adbFileExplorerControllerProvider` | `ChangeNotifierProvider` | adb/adb_file_explorer/… |
 | `qrPairControllerProvider` | `StateNotifierProvider.autoDispose<QrPairController, QrPairState>` | qr_pair/qr_pair_controller.dart |
@@ -93,7 +95,7 @@ Providers are global and kept alive by default (Riverpod 2 non-`autoDispose`); u
 
 1. `runZonedGuarded` wraps everything.
 2. `NavigatorService.init()`, `AppLogger.init()`, `await LogFile.init()`.
-3. `FlutterError.onError` → log file. (Steps 2–3 run once, so Try again on the error screen can call `App.run()` again.)
+3. `FlutterError.onError` → log file; `MediaKit.ensureInitialized()` (mirror video). (Steps 2–3 run once, so Try again on the error screen can call `App.run()` again.)
 4. `App.init(container)`:
    1. `runApp(SplashView)` (logo + "Starting adb…", Workbench tokens, OS brightness).
    2. **Windows only:** `windowManager` init — hidden title bar, min size 480×560 (`WindowSize.minimum`), show + focus.

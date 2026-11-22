@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import '../../utils/constants.dart';
+import '../../utils/exception.dart';
 import '../adb/adb_service.dart';
 import 'errors_model.dart';
 
@@ -73,6 +74,19 @@ class ErrorCatalogue {
         "Your adb can't discover phones on the network (mDNS).",
         ['Update Android SDK Platform-Tools to version 31 or newer.', 'Or use a pairing code instead.'],
         false,
+      );
+    }
+    if (error.runtimeType.toString() == 'AiModelException' ||
+        text.contains('llama') && (text.contains('load') || text.contains('memory'))) {
+      return make(
+        ErrorKind.aiModel,
+        "The AI filter didn't work",
+        error is AppException ? error.message : 'The on-device model failed.',
+        [
+          'Try again, or rephrase the request more simply.',
+          'If the model fails to load, switch to the Fast model in Settings → AI.',
+          'You can always use the presets and search instead.',
+        ],
       );
     }
     if (error is CommandFailedException) {

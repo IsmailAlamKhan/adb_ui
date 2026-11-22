@@ -1,13 +1,16 @@
 export 'about/about.dart';
 export 'adb/adb.dart';
 export 'add_device/add_device.dart';
+export 'ai/ai.dart';
 export 'app_init_error/app_init_error.dart';
 export 'command_queue/command_queue.dart';
 export 'device/device.dart';
 export 'device_page/device_page.dart';
 export 'errors/errors.dart';
 export 'file_picker/file_picker.dart';
+export 'logcat/logcat.dart';
 export 'menubar/menubar.dart';
+export 'mirror/mirror.dart';
 export 'package_info/package_info.dart';
 export 'palette/palette.dart';
 export 'qr_pair/qr_pair.dart';

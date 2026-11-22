@@ -196,6 +196,18 @@ changes, and how we'll check it.
 Remembered recent IPs (U3, part) and undo for disconnect (U7, part) — tracked in
 `07-roadmap.md`.
 
+## Second pass (2026-11-22): screens still on the old design
+
+| Surface | Redesign |
+|---------|----------|
+| Device folder/file chooser (`AdbFileExplorerView`, used by Push and Pull) | Same look as the Files tab: title + close, **starts in `/sdcard`** (not `/`), breadcrumb path bar with Up and an editable path, Refresh, quick places (Internal storage `/sdcard`, Download, DCIM, Pictures, Documents), folders first then files sorted A–Z, file sizes hidden, checkbox selection for files with "N selected", footer **Cancel** + primary button "Push here" / "Pull N files", explained errors via `ErrorPanel`. Local state (no global controller), so selection never leaks (fixes 06 #5). Full window at compact. |
+| About | Page in `AdaptiveDialog`: logo, name, version, update status row (checking / up to date / "Version X is available" + Download), buttons Changelog · Licenses · GitHub, "Report a bug or request a feature" card. |
+| Report a bug / feature request | Dialog with two choice cards (Bug report / Feature request), "Include device details in the log file" switch for bugs, explanation that a log zip is saved and GitHub opens; success uses a toast, not the Lottie alert. |
+| Update available (startup) | Themed dialog: "ADB UI X is available", the release's changelog text, **Download** / **Later**. |
+| Loading overlay | Themed spinner card instead of the default dialog. |
+
+`Alert` (Lottie) and `confirmDialog`'s old `ConfirmDialog` are no longer used by redesigned code.
+
 ## Built (2026-11-22)
 
 Checked on macOS with a Pixel 10 Pro over Wi-Fi: first-run picker (live re-theme, Continue),

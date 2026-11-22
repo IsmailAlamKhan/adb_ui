@@ -6,6 +6,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:media_kit/media_kit.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'design/design.dart';
@@ -64,6 +65,7 @@ class App {
           AppLogger.init();
           await LogFile.init();
           FlutterError.onError = LogFile.instance.dispatchFlutterErrorLogs;
+          MediaKit.ensureInitialized(); // video decoding for the in-app mirror
           _loggingReady = true;
         }
         await init(container);

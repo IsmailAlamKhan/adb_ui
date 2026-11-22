@@ -11,7 +11,7 @@ flutter analyze
 
 - Requires `adb` on PATH or the app stops at the init-error screen.
 - Verified toolchain: **Flutter 3.47 stable**. `pubspec.yaml` requires Dart **>=3.8** (freezed 3's generated code needs it).
-- macOS deployment target **12.0**; plugins that support it are linked through Swift Package
+- macOS deployment target **14.0** (llamadart needs it; was 12.0); plugins that support it are linked through Swift Package
   Manager (`FlutterGeneratedPluginSwiftPackage`), the rest through CocoaPods. Both were set by
   Flutter's automatic project migration — commit them, don't revert.
 - macOS: the App Sandbox is **off** in both `DebugProfile.entitlements` and
@@ -19,7 +19,7 @@ flutter analyze
   `env.sh`, which the sandbox forbids ("Operation not permitted"). The app is distributed as
   a DMG outside the Mac App Store, so the sandbox isn't required. Don't re-enable it.
 - macOS: CocoaPods (`macos/Podfile`). Entitlements in `macos/Runner/*.entitlements`.
-- Unit tests live in `test/` (`flutter test`). Start with pure parsing/model logic; there are no widget tests yet.
+- Unit tests live in `test/` (`flutter test`). On-device AI test: `flutter test integration_test/ai_model_test.dart -d macos` (needs a model downloaded from the app). Start with pure parsing/model logic; there are no widget tests yet.
 
 ## Toolchain / codegen versions
 
@@ -30,6 +30,9 @@ flutter analyze
 | `json_serializable` / `json_annotation` | 6.9+ / 4.9+ | matches analyzer 8 |
 | `hooks_riverpod` / `flutter_hooks` | 2.6 / 0.20 | latest Riverpod 2 line |
 | `google_fonts` | 6.x | 5.1.0 fails constant evaluation on current Flutter |
+| `llamadart` (+ `llamadart_llama_cpp_flutter`) | 0.20.x | on-device AI filter; its build hook downloads the native llama.cpp runtime on first build; needs Dart ≥ 3.10.7, Flutter ≥ 3.38.6 |
+| `media_kit` / `media_kit_video` / `media_kit_libs_video` | 1.2 / 2.0 / 1.0 | in-app mirror video (libmpv) |
+| `archive` / `lottie` | 4.x / 3.x | archive 4 is required by llamadart; lottie 3 depends on archive 4 |
 | `riverpod_generator` / `riverpod_annotation` | **removed** | 2.6 needs an older analyzer than freezed 3; its 3 providers are hand-written |
 
 freezed 3 rules: every `@freezed` class is declared `abstract class` (single constructor) or

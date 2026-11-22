@@ -14,13 +14,14 @@ Overview and Console center), palette rows (all styles; Launcher's main UI) and 
 | Pull files | `pullFile(device, {files, destination})` | `pull` per file | Pull `<file>` | ⇧⌘P | files on device → local save location |
 | Run command | `runCommand(device, [cmd])` | `<cmd split on spaces>` | `adb <cmd>` | ⌘R | `AdbInputDialog` (prefix `adb `) or Shell tab |
 | Type text | `inputText(device, [text])` | `shell input text` | Type text | ⌘T | `AdbInputDialog` or Type text tab |
-| Mirror screen | `runScrcpy` | `scrcpy -s ID` | Mirror `<model>` | ⇧⌘M | — |
+| Logcat | `openLogcat` | `logcat` stream | — | ⌘L | `LogcatPage` (Workbench: Logcat tab) |
+| Mirror screen | `openMirror` (in-app); `runScrcpy` for the separate window | scrcpy server / screencap | Mirror `<model>` (window only) | ⇧⌘M | `MirrorPage` (Workbench: Screen tab) |
 | Copy device id | `copyId` | — (clipboard) | — | ⇧⌘C | — |
 | Disconnect | `disconnect` | `disconnect ID` | Disconnect `<model>` | ⇧⌘D | `ConfirmActionDialog` |
 
 - `DeviceAction.unavailableReason(device, scrcpyAvailable:)` disables an action with a reason
-  shown as tooltip / toast: device not online (unauthorized, offline), scrcpy missing,
-  Disconnect on a USB device.
+  shown as tooltip / toast: device not online (unauthorized, offline), Disconnect on a USB
+  device. Without scrcpy, the mirror falls back to snapshot mode.
 - Every adb action runs through `AdbController.runForResult`: it appears in Activity and ends
   with a success or error toast ([error-handling.md](error-handling.md)). Multi-file push/pull
   shows one "Pushing N files…" toast and one summary toast.

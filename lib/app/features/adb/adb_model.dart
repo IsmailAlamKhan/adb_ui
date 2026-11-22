@@ -207,3 +207,30 @@ String? validatePairingCode(String? input) {
   if (!RegExp(r'^\d{6}$').hasMatch(value)) return 'The pairing code is 6 digits';
   return null;
 }
+
+/// Root folders that only hold system files; hidden when listing `/`.
+const _hiddenRootEntries = {
+  'metadata', 'oem', 'odm', 'lost+found', 'bugreports', 'sys', 'system', 'apex', 'vendor',
+  'bin', 'acct', 'config', 'debug_ramdisk', 'default.prop', 'd', 'cache', 'system_ext',
+};
+
+/// Parses `ls -1 -p -L` output: names ending in `/` are folders. Folders first, then files,
+/// each A–Z ignoring case. Lines with errors (`ls: …`) are skipped.
+List<AdbFileSystem> parseLsOutput(String output, {bool root = false}) {
+  final dirs = <AdbDirectory>[];
+  final files = <AdbFile>[];
+  for (final raw in output.split('\n')) {
+    final line = raw.trimRight();
+    if (line.isEmpty || line.startsWith('ls:') || line == './' || line == '../') continue;
+    if (line.endsWith('/')) {
+      final name = line.substring(0, line.length - 1);
+      if (root && _hiddenRootEntries.contains(name)) continue;
+      dirs.add(AdbDirectory(name));
+    } else {
+      if (root && _hiddenRootEntries.contains(line)) continue;
+      files.add(AdbFile(line));
+    }
+  }
+  int byName(AdbFileSystem a, AdbFileSystem b) => a.name.toLowerCase().compareTo(b.name.toLowerCase());
+  return [...(dirs..sort(byName)), ...(files..sort(byName))];
+}

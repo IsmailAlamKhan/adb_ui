@@ -9,6 +9,7 @@ import 'package:path_provider/path_provider.dart' as p;
 
 import '../../utils/utils.dart';
 import '../errors/errors_model.dart';
+import '../logcat/logcat_model.dart';
 import 'adb_model.dart';
 
 final adbServiceProvider = Provider<AdbService>(ProccessAdbServiceImpl.new);
@@ -106,6 +107,19 @@ abstract class AdbService {
   Future<Result> inputText(AdbDevice device, String text);
 
   Future<Result> uninstallApp(AdbDevice device, String packageName);
+
+  /// Starts a long-running adb process (logcat, screen mirror server) with the user's
+  /// environment. Not recorded in Activity; the caller must kill it.
+  Future<io.Process> startProcess(List<String> arguments, {AdbDevice? device, String executable = 'adb'});
+
+  /// Pids of [package] (`pidof`), empty when it isn't running.
+  Future<Set<int>> pidsOf(AdbDevice device, String package);
+
+  /// Package of the activity in front (`dumpsys activity activities`).
+  Future<String?> foregroundPackage(AdbDevice device);
+
+  /// `adb logcat -c`.
+  Future<Result> clearLogcat(AdbDevice device);
 
   /// All `getprop` values of a device.
   Future<DeviceProperties> deviceProperties(AdbDevice device);
@@ -409,77 +423,24 @@ class ProccessAdbServiceImpl implements AdbService {
   Future<List<AdbFileSystem>> ls(AdbDevice device, String? path) => run(
         'ls',
         shell: true,
-        arguments: ['-i', '"${path ?? '/'}"'],
+        // -1 one per line, -p marks directories with '/', -L follows symlinks (e.g. /sdcard).
+        arguments: ['-1', '-p', '-L', '"${path ?? '/'}"'],
         device: device,
+        addToLogs: false,
       ).then((result) async {
         final stdErr = await result.stderr;
         final out = await result.stdout;
         final combined = '$out\n$stdErr';
-        if (combined.contains('No such file or directory')) {
+        if (out.trim().isEmpty && combined.contains('No such file or directory')) {
           throw NotFoundException(path);
         }
-        if (combined.contains('Permission denied') && out.trim().isEmpty) {
+        if (out.trim().isEmpty && combined.contains('Permission denied')) {
           throw PermissionDeniedException();
         }
         if (stdErr.trim().isNotEmpty && out.trim().isEmpty) {
           throw AppException('Failed to list files: $stdErr');
         }
-
-        return Future.value(out).then((output) async {
-          final files = output.split('\n').toList().map((e) => e.trim()).toList();
-          files.forEach(logInfo);
-          final result = <AdbFileSystem>[];
-          for (var element in files) {
-            if (element == '') {
-              continue;
-            }
-            List<String> parts = element.split(' ')..removeWhere((element) => element.isEmpty);
-
-            final inode = parts.first;
-
-            if (inode == '?') {
-              continue;
-            }
-            parts.removeAt(0);
-            final name = parts.join(' ').trim();
-            // result.add(name);
-            AdbFileSystem file;
-            if (name.contains('.')) {
-              file = AdbFile(name);
-            } else {
-              file = AdbDirectory(name);
-            }
-            result.add(file);
-          }
-          //TODO: have to find a better way to remove the unneccery files
-          result.removeWhere(
-            (element) =>
-                element.name == 'metadata' ||
-                element.name == 'oem' ||
-                element.name == 'odm' ||
-                element.name == 'lost+found' ||
-                element.name == 'bugreports' ||
-                element.name == 'sys' ||
-                element.name == 'system' ||
-                element.name == 'apex' ||
-                element.name == 'vendor' ||
-                element.name == 'bin' ||
-                element.name == 'acct' ||
-                element.name == 'config' ||
-                element.name == 'debug_ramdisk' ||
-                element.name == 'default.prop' ||
-                element.name == 'd' ||
-                element.name == 'cache' ||
-                element.name == 'system_ext',
-          );
-          return result.toList()
-            ..sort((a, b) {
-              if (a is AdbDirectory) {
-                return -1;
-              }
-              return 1;
-            });
-        });
+        return parseLsOutput(out, root: path == null || path == '/');
       });
 
   @override
@@ -660,6 +621,9 @@ class ProccessAdbServiceImpl implements AdbService {
 
       case 'tcpip':
         return tcpip();
+      case 'logcat':
+        assert(device != null, 'Device cannot be null');
+        return clearLogcat(device!);
 
       case 'shell':
         if (arguments.first == 'input' && arguments[1] == 'text') {
@@ -694,6 +658,55 @@ class ProccessAdbServiceImpl implements AdbService {
       );
     });
   }
+
+  @override
+  Future<io.Process> startProcess(
+    List<String> arguments, {
+    AdbDevice? device,
+    String executable = 'adb',
+  }) async {
+    if (io.Platform.isLinux || io.Platform.isMacOS) {
+      _unixEnvironmentMap ??= await _loadUnixEnvironment();
+    }
+    try {
+      return await io.Process.start(
+        executable,
+        [if (device != null) ...['-s', device.id], ...arguments],
+        environment: _unixEnvironmentMap,
+        runInShell: true,
+      );
+    } on ProcessException catch (e) {
+      if (executable == 'adb') throw AdbNotFoundException();
+      throw AppException('ProcessException: ${e.message}', e.errorCode.toString());
+    }
+  }
+
+  @override
+  Future<Set<int>> pidsOf(AdbDevice device, String package) async {
+    final result = await run('pidof', shell: true, device: device, arguments: [package], addToLogs: false);
+    return parsePids(await result.stdout);
+  }
+
+  @override
+  Future<String?> foregroundPackage(AdbDevice device) async {
+    final result = await run(
+      'dumpsys',
+      shell: true,
+      device: device,
+      arguments: ['activity', 'activities'],
+      addToLogs: false,
+    );
+    return parseForegroundPackage(await result.stdout);
+  }
+
+  @override
+  Future<Result> clearLogcat(AdbDevice device) =>
+      run('logcat', arguments: ['-c'], device: device).then((result) => result.copyWith(
+            messege: Future.wait([result.exitCode, result.stderr]).then((v) {
+              if (v[0] != 0) throw AppException('Failed to clear logcat: ${v[1]}');
+              return 'Cleared the device log';
+            }),
+          ));
 
   @override
   Future<DeviceProperties> deviceProperties(AdbDevice device) async {

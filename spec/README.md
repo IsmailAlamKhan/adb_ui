@@ -32,6 +32,9 @@ app without opening the code first.
 | Pair & connect with QR code | [features/qr-pairing.md](features/qr-pairing.md) | Implemented (unreleased) |
 | App styles (first-run picker, Settings) | [features/app-styles.md](features/app-styles.md) | Implemented (unreleased) |
 | Error handling & display | [features/error-handling.md](features/error-handling.md) | Implemented (unreleased) |
+| Logcat (follow app, foreground, presets) | [features/logcat.md](features/logcat.md) | Implemented (unreleased) |
+| AI log filter (on-device model) | [features/ai-log-filter.md](features/ai-log-filter.md) | Implemented (unreleased) |
+| In-app screen mirror | [features/screen-mirror.md](features/screen-mirror.md) | Implemented (unreleased) |
 | Device actions | [features/device-actions.md](features/device-actions.md) | Shipped |
 | Device file explorer & file transfer | [features/file-explorer-transfer.md](features/file-explorer-transfer.md) | Shipped |
 | Command queue & output | [features/command-queue.md](features/command-queue.md) | Shipped |

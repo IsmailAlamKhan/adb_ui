@@ -24,6 +24,8 @@ enum ErrorKind {
   mdns,
   invalidInput,
   commandFailed,
+  aiModel,
+  mirror,
   unknown,
 }
 

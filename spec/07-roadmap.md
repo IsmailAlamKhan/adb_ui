@@ -5,7 +5,8 @@ feature spec under `features/` (status `Proposed` → `In progress`), link it he
 
 | Idea | Status | Spec |
 |------|--------|------|
-| Logcat viewer with filters (tag, level, package), search, export | Proposed | — |
+| Logcat viewer with filters, follow app/foreground, presets, AI filter, export | Implemented (unreleased) | [features/logcat.md](features/logcat.md) |
+| In-app screen mirror with controls | Implemented (unreleased) | [features/screen-mirror.md](features/screen-mirror.md) |
 | Intent & deep-link builder (`am start`, broadcasts) with saved presets | Proposed | — |
 | Better device file explorer (real file/dir detection, sizes, delete/rename, drag-drop) | Proposed | — |
 | Macro / automation recorder (record & replay command sequences) | Proposed | — |

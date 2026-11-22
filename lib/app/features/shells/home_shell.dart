@@ -1,4 +1,6 @@
 import 'package:desktop_drop/desktop_drop.dart';
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -7,11 +9,21 @@ import '../../design/design.dart';
 import '../features.dart';
 
 /// Home in the user's style, with app shortcuts and drop-an-APK-anywhere (U8, U9).
-class HomeShell extends ConsumerWidget {
+class HomeShell extends HookConsumerWidget {
   const HomeShell({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Free the on-device AI model before the app quits (llamadart lifecycle rule).
+    useEffect(() {
+      final listener = AppLifecycleListener(
+        onExitRequested: () async {
+          await ref.read(aiControllerProvider.notifier).shutdown();
+          return AppExitResponse.exit;
+        },
+      );
+      return listener.dispose;
+    }, const []);
     final style = ref.watch(settingsControllerProvider.select((s) => s.style)) ?? AppStyle.workbench;
     final child = switch (style) {
       AppStyle.workbench => const WorkbenchHome(),

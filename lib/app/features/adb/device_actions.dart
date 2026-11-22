@@ -12,6 +12,7 @@ enum DeviceAction {
   uninstallApp(Icons.delete_outline_rounded, 'Uninstall app', 'adb uninstall', LogicalKeyboardKey.keyU),
   pushFiles(Icons.upload_file_rounded, 'Push files', 'adb push', LogicalKeyboardKey.keyP),
   pullFiles(Icons.file_download_rounded, 'Pull files', 'adb pull', LogicalKeyboardKey.keyP, shift: true),
+  logcat(Icons.subject_rounded, 'Logcat', 'adb logcat', LogicalKeyboardKey.keyL),
   runCommand(Icons.terminal_rounded, 'Run command', 'adb shell', LogicalKeyboardKey.keyR),
   typeText(Icons.keyboard_rounded, 'Type text', 'input text', LogicalKeyboardKey.keyT),
   mirror(Icons.cast_rounded, 'Mirror screen', 'scrcpy', LogicalKeyboardKey.keyM, shift: true),
@@ -38,7 +39,6 @@ enum DeviceAction {
     if (this == copyId) return null;
     if (this == disconnect) return device.isWireless ? null : 'Only Wi-Fi devices can be disconnected';
     if (!device.isOnline) return 'The device is ${device.state.label.toLowerCase()}';
-    if (this == mirror && !scrcpyAvailable) return 'Install scrcpy to mirror the screen';
     return null;
   }
 
@@ -49,9 +49,10 @@ enum DeviceAction {
       uninstallApp => adb.uninstallApp(device),
       pushFiles => adb.pushFile(device),
       pullFiles => adb.pullFile(device),
+      logcat => adb.openLogcat(device),
       runCommand => adb.runCommand(device),
       typeText => adb.inputText(device),
-      mirror => adb.runScrcpy(device),
+      mirror => adb.openMirror(device),
       copyId => Future.sync(() => adb.copyId(device)),
       disconnect => adb.disconnect(device),
     };
