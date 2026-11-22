@@ -55,3 +55,7 @@ There are 2 ways to install this.
 Huge thanks goes to these people for helping me with this project, the ones who make the issues and feature requests and testing the app out and giving feedback.
 
 ### Special thanks to goes [@roipeker](!https://www.github.com/roipeker/) for running the app on mac os and helping me with the mac os build.
+
+## Contributing
+
+The app is fully specified in [`spec/`](spec/README.md). Changes are spec-first: update the spec, then the code. See [`spec/WORKFLOW.md`](spec/WORKFLOW.md).
