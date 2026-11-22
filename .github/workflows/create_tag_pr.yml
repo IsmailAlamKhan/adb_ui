@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Read Version
         id: version
@@ -34,4 +34,4 @@ jobs:
              ref: "refs/tags/v${{ steps.fixed-version.outputs.version }}",
               sha: context.sha
             })
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4

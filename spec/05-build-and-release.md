@@ -59,6 +59,17 @@ freezed 3 rules: every `@freezed` class is declared `abstract class` (single con
 3. `.github/workflows/build_and_release.yml` on tag `v*`: creates a GitHub Release with
    `CHANGELOG.md` as body, then calls `build_windows.yml`, `build_linux.yml`, `build_macos.yml`.
 
+## CI build setup (updated 2026-11-22)
+
+- `subosito/flutter-action@v2` with `channel: stable` and `cache: true` (v2.4.0 used the
+  retired `actions/cache@v2`, which GitHub now rejects). `actions/checkout@v4`.
+- Linux runs `apt-get update` before installing GTK deps.
+- Windows output is `build\windows\x64\runner\Release` (Flutter ≥ 3.15); the workflow and
+  `Installers/installer.iss` use that path. Inno Setup is installed with Chocolatey first.
+- The tag step needs `secrets.PAT` (a token with `contents: write`). If it fails with
+  "Bad credentials", renew the token; meanwhile the tag can be pushed by hand
+  (`git tag vX.Y.Z <commit> && git push origin vX.Y.Z`).
+
 ## Release assets (names matter — the in-app updater matches `setup-<os>`)
 
 | OS | Asset | Built by |
