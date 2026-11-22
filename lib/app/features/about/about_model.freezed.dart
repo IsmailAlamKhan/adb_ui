@@ -1,7 +1,7 @@
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
-// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target
+// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'about_model.dart';
 
@@ -9,146 +9,266 @@ part of 'about_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
-
 /// @nodoc
 mixin _$AboutModel {
-  bool get updateAvailable => throw _privateConstructorUsedError;
-  String? get updateAvailableVersion => throw _privateConstructorUsedError;
 
-  @JsonKey(ignore: true)
-  $AboutModelCopyWith<AboutModel> get copyWith =>
-      throw _privateConstructorUsedError;
+ bool get updateAvailable; String? get updateAvailableVersion;
+/// Create a copy of AboutModel
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$AboutModelCopyWith<AboutModel> get copyWith => _$AboutModelCopyWithImpl<AboutModel>(this as AboutModel, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is AboutModel&&(identical(other.updateAvailable, updateAvailable) || other.updateAvailable == updateAvailable)&&(identical(other.updateAvailableVersion, updateAvailableVersion) || other.updateAvailableVersion == updateAvailableVersion));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,updateAvailable,updateAvailableVersion);
+
+@override
+String toString() {
+  return 'AboutModel(updateAvailable: $updateAvailable, updateAvailableVersion: $updateAvailableVersion)';
+}
+
+
 }
 
 /// @nodoc
-abstract class $AboutModelCopyWith<$Res> {
-  factory $AboutModelCopyWith(
-          AboutModel value, $Res Function(AboutModel) then) =
-      _$AboutModelCopyWithImpl<$Res, AboutModel>;
-  @useResult
-  $Res call({bool updateAvailable, String? updateAvailableVersion});
-}
+abstract mixin class $AboutModelCopyWith<$Res>  {
+  factory $AboutModelCopyWith(AboutModel value, $Res Function(AboutModel) _then) = _$AboutModelCopyWithImpl;
+@useResult
+$Res call({
+ bool updateAvailable, String? updateAvailableVersion
+});
 
+
+
+
+}
 /// @nodoc
-class _$AboutModelCopyWithImpl<$Res, $Val extends AboutModel>
+class _$AboutModelCopyWithImpl<$Res>
     implements $AboutModelCopyWith<$Res> {
-  _$AboutModelCopyWithImpl(this._value, this._then);
+  _$AboutModelCopyWithImpl(this._self, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+  final AboutModel _self;
+  final $Res Function(AboutModel) _then;
 
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? updateAvailable = null,
-    Object? updateAvailableVersion = freezed,
-  }) {
-    return _then(_value.copyWith(
-      updateAvailable: null == updateAvailable
-          ? _value.updateAvailable
-          : updateAvailable // ignore: cast_nullable_to_non_nullable
-              as bool,
-      updateAvailableVersion: freezed == updateAvailableVersion
-          ? _value.updateAvailableVersion
-          : updateAvailableVersion // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
-  }
+/// Create a copy of AboutModel
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? updateAvailable = null,Object? updateAvailableVersion = freezed,}) {
+  return _then(_self.copyWith(
+updateAvailable: null == updateAvailable ? _self.updateAvailable : updateAvailable // ignore: cast_nullable_to_non_nullable
+as bool,updateAvailableVersion: freezed == updateAvailableVersion ? _self.updateAvailableVersion : updateAvailableVersion // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [AboutModel].
+extension AboutModelPatterns on AboutModel {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _AboutModel value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _AboutModel() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _AboutModel value)  $default,){
+final _that = this;
+switch (_that) {
+case _AboutModel():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _AboutModel value)?  $default,){
+final _that = this;
+switch (_that) {
+case _AboutModel() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( bool updateAvailable,  String? updateAvailableVersion)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _AboutModel() when $default != null:
+return $default(_that.updateAvailable,_that.updateAvailableVersion);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( bool updateAvailable,  String? updateAvailableVersion)  $default,) {final _that = this;
+switch (_that) {
+case _AboutModel():
+return $default(_that.updateAvailable,_that.updateAvailableVersion);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( bool updateAvailable,  String? updateAvailableVersion)?  $default,) {final _that = this;
+switch (_that) {
+case _AboutModel() when $default != null:
+return $default(_that.updateAvailable,_that.updateAvailableVersion);case _:
+  return null;
+
+}
+}
+
 }
 
 /// @nodoc
-abstract class _$$_AboutModelCopyWith<$Res>
-    implements $AboutModelCopyWith<$Res> {
-  factory _$$_AboutModelCopyWith(
-          _$_AboutModel value, $Res Function(_$_AboutModel) then) =
-      __$$_AboutModelCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({bool updateAvailable, String? updateAvailableVersion});
+
+
+class _AboutModel implements AboutModel {
+  const _AboutModel({required this.updateAvailable, this.updateAvailableVersion});
+  
+
+@override final  bool updateAvailable;
+@override final  String? updateAvailableVersion;
+
+/// Create a copy of AboutModel
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$AboutModelCopyWith<_AboutModel> get copyWith => __$AboutModelCopyWithImpl<_AboutModel>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _AboutModel&&(identical(other.updateAvailable, updateAvailable) || other.updateAvailable == updateAvailable)&&(identical(other.updateAvailableVersion, updateAvailableVersion) || other.updateAvailableVersion == updateAvailableVersion));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,updateAvailable,updateAvailableVersion);
+
+@override
+String toString() {
+  return 'AboutModel(updateAvailable: $updateAvailable, updateAvailableVersion: $updateAvailableVersion)';
+}
+
+
 }
 
 /// @nodoc
-class __$$_AboutModelCopyWithImpl<$Res>
-    extends _$AboutModelCopyWithImpl<$Res, _$_AboutModel>
-    implements _$$_AboutModelCopyWith<$Res> {
-  __$$_AboutModelCopyWithImpl(
-      _$_AboutModel _value, $Res Function(_$_AboutModel) _then)
-      : super(_value, _then);
+abstract mixin class _$AboutModelCopyWith<$Res> implements $AboutModelCopyWith<$Res> {
+  factory _$AboutModelCopyWith(_AboutModel value, $Res Function(_AboutModel) _then) = __$AboutModelCopyWithImpl;
+@override @useResult
+$Res call({
+ bool updateAvailable, String? updateAvailableVersion
+});
 
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? updateAvailable = null,
-    Object? updateAvailableVersion = freezed,
-  }) {
-    return _then(_$_AboutModel(
-      updateAvailable: null == updateAvailable
-          ? _value.updateAvailable
-          : updateAvailable // ignore: cast_nullable_to_non_nullable
-              as bool,
-      updateAvailableVersion: freezed == updateAvailableVersion
-          ? _value.updateAvailableVersion
-          : updateAvailableVersion // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
-  }
+
+
+
 }
-
 /// @nodoc
+class __$AboutModelCopyWithImpl<$Res>
+    implements _$AboutModelCopyWith<$Res> {
+  __$AboutModelCopyWithImpl(this._self, this._then);
 
-class _$_AboutModel implements _AboutModel {
-  const _$_AboutModel(
-      {required this.updateAvailable, this.updateAvailableVersion});
+  final _AboutModel _self;
+  final $Res Function(_AboutModel) _then;
 
-  @override
-  final bool updateAvailable;
-  @override
-  final String? updateAvailableVersion;
-
-  @override
-  String toString() {
-    return 'AboutModel(updateAvailable: $updateAvailable, updateAvailableVersion: $updateAvailableVersion)';
-  }
-
-  @override
-  bool operator ==(dynamic other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$_AboutModel &&
-            (identical(other.updateAvailable, updateAvailable) ||
-                other.updateAvailable == updateAvailable) &&
-            (identical(other.updateAvailableVersion, updateAvailableVersion) ||
-                other.updateAvailableVersion == updateAvailableVersion));
-  }
-
-  @override
-  int get hashCode =>
-      Object.hash(runtimeType, updateAvailable, updateAvailableVersion);
-
-  @JsonKey(ignore: true)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$_AboutModelCopyWith<_$_AboutModel> get copyWith =>
-      __$$_AboutModelCopyWithImpl<_$_AboutModel>(this, _$identity);
+/// Create a copy of AboutModel
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? updateAvailable = null,Object? updateAvailableVersion = freezed,}) {
+  return _then(_AboutModel(
+updateAvailable: null == updateAvailable ? _self.updateAvailable : updateAvailable // ignore: cast_nullable_to_non_nullable
+as bool,updateAvailableVersion: freezed == updateAvailableVersion ? _self.updateAvailableVersion : updateAvailableVersion // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
 }
 
-abstract class _AboutModel implements AboutModel {
-  const factory _AboutModel(
-      {required final bool updateAvailable,
-      final String? updateAvailableVersion}) = _$_AboutModel;
 
-  @override
-  bool get updateAvailable;
-  @override
-  String? get updateAvailableVersion;
-  @override
-  @JsonKey(ignore: true)
-  _$$_AboutModelCopyWith<_$_AboutModel> get copyWith =>
-      throw _privateConstructorUsedError;
 }
+
+// dart format on

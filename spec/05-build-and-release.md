@@ -4,14 +4,36 @@
 
 ```bash
 flutter pub get
-dart run build_runner build --delete-conflicting-outputs   # after model/provider changes
+dart run build_runner build   # after model/provider changes
 flutter run -d macos        # or windows / linux
 flutter analyze
 ```
 
 - Requires `adb` on PATH or the app stops at the init-error screen.
+- Verified toolchain: **Flutter 3.47 stable**. `pubspec.yaml` requires Dart **>=3.8** (freezed 3's generated code needs it).
+- macOS deployment target **12.0**; plugins that support it are linked through Swift Package
+  Manager (`FlutterGeneratedPluginSwiftPackage`), the rest through CocoaPods. Both were set by
+  Flutter's automatic project migration — commit them, don't revert.
+- macOS: the App Sandbox is **off** in both `DebugProfile.entitlements` and
+  `Release.entitlements`. The app must spawn `adb`/`scrcpy` from the user's PATH and run
+  `env.sh`, which the sandbox forbids ("Operation not permitted"). The app is distributed as
+  a DMG outside the Mac App Store, so the sandbox isn't required. Don't re-enable it.
 - macOS: CocoaPods (`macos/Podfile`). Entitlements in `macos/Runner/*.entitlements`.
-- There is **no `test/` directory** yet.
+- Unit tests live in `test/` (`flutter test`). Start with pure parsing/model logic; there are no widget tests yet.
+
+## Toolchain / codegen versions
+
+| Package | Version | Why |
+|---------|---------|-----|
+| `freezed` / `freezed_annotation` | 3.x | 2.x depends on the `macros` SDK package, removed from current Dart |
+| `build_runner` | 2.10+ (2.15 locked) | ≤2.6 precompile via a `frontend_server` snapshot current SDKs don't ship. `--delete-conflicting-outputs` no longer exists (it's the default) |
+| `json_serializable` / `json_annotation` | 6.9+ / 4.9+ | matches analyzer 8 |
+| `hooks_riverpod` / `flutter_hooks` | 2.6 / 0.20 | latest Riverpod 2 line |
+| `google_fonts` | 6.x | 5.1.0 fails constant evaluation on current Flutter |
+| `riverpod_generator` / `riverpod_annotation` | **removed** | 2.6 needs an older analyzer than freezed 3; its 3 providers are hand-written |
+
+freezed 3 rules: every `@freezed` class is declared `abstract class` (single constructor) or
+`sealed class` (unions). `when`/`map`/`whenOrNull` are still generated (re-added in 3.1).
 
 ## Lints (`analysis_options.yaml`)
 

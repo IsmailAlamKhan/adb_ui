@@ -7,7 +7,7 @@ part 'command_queue_model.freezed.dart';
 part 'command_queue_model.g.dart';
 
 @freezed
-class CommandModel with _$CommandModel {
+sealed class CommandModel with _$CommandModel {
   const CommandModel._();
   const factory CommandModel.adding({
     required String id,
@@ -136,7 +136,7 @@ class CommandModel with _$CommandModel {
 }
 
 @freezed
-class CommandModelLocalStorage with _$CommandModelLocalStorage, LocalStorageModel {
+abstract class CommandModelLocalStorage with _$CommandModelLocalStorage, LocalStorageModel {
   const CommandModelLocalStorage._();
   const factory CommandModelLocalStorage({
     required String id,

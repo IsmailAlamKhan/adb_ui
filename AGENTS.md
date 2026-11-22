@@ -33,6 +33,6 @@ A change is not complete until `spec/` matches the code.
 - Every adb command goes through `ProccessAdbServiceImpl.run` and is wrapped by
   `AdbController.run` so it appears in the command queue; add a `rerunCommand` case.
 - After editing `@freezed` / `@riverpod` / JSON models run
-  `dart run build_runner build --delete-conflicting-outputs`. Generated files are committed.
+  `dart run build_runner build`. Generated files are committed.
 - Keep existing typo'd API names (`messege`, `dispath`) unless doing a deliberate rename.
 - Run `flutter analyze` before finishing.

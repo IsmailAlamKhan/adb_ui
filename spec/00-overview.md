@@ -18,7 +18,7 @@ re-run.
 | Platform | Supported | Notes |
 |----------|-----------|-------|
 | Windows  | Yes | Custom title bar via `window_manager`; Inno Setup installer + zip |
-| macOS    | Yes | Native `PlatformMenuBar`; DMG; loads shell env so `adb` on `PATH` is found |
+| macOS    | Yes (12.0+) | Native `PlatformMenuBar`; DMG; **not sandboxed**; loads shell env so `adb` on `PATH` is found |
 | Linux    | Yes | Plain system window; zip with `.desktop` template |
 | Android/iOS/Web | No | Some host-device code paths exist (`DeviceService`) but are not targets |
 
@@ -48,13 +48,13 @@ re-run.
 
 ## Tech stack
 
-- **Flutter** (Dart SDK `>=3.0.0 <4.0.0`), Material 3
-- **State / DI:** `hooks_riverpod` 2 + `flutter_hooks`, some `riverpod_generator` (`@riverpod`)
-- **Models:** `freezed` + `json_serializable`
+- **Flutter** 3.47+ (Dart SDK `>=3.8.0 <4.0.0`), Material 3
+- **State / DI:** `hooks_riverpod` 2.6 + `flutter_hooks` (providers hand-written, no `riverpod_generator`)
+- **Models:** `freezed` 3 + `json_serializable`
 - **Persistence:** `shared_preferences` (wrapped by `LocalStorage`)
-- **Desktop:** `window_manager`, `desktop_drop`, `file_picker`, `dynamic_color`
+- **Desktop:** `window_manager`, `desktop_drop`, `file_picker`, `qr_flutter`
 - **Other:** `github` (release API), `url_launcher`, `package_info_plus`, `device_info_plus`,
-  `archive` (log zip), `logging`, `google_fonts` (Poppins), `lottie`, `uuid`, `sliver_tools`
+  `archive` (log zip), `logging`, `google_fonts` (Inter, Space Grotesk, JetBrains Mono, IBM Plex), `lottie`, `uuid`, `sliver_tools`
 
 ## Non-goals (current)
 

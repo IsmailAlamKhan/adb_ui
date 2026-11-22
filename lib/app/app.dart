@@ -2,14 +2,13 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 
-import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:window_manager/window_manager.dart';
 
+import 'design/design.dart';
 import 'features/features.dart';
 import 'shared/shared.dart';
 import 'utils/utils.dart';
@@ -23,10 +22,10 @@ class App {
       if (Platform.isWindows) {
         await windowManager.ensureInitialized();
 
-        WindowOptions windowOptions = const WindowOptions(
+        const windowOptions = WindowOptions(
           backgroundColor: Colors.transparent,
           skipTaskbar: false,
-          minimumSize: Size(400, 600),
+          minimumSize: WindowSize.minimum,
           titleBarStyle: TitleBarStyle.hidden,
         );
         windowManager.waitUntilReadyToShow(windowOptions, () async {
@@ -37,9 +36,10 @@ class App {
 
       await container.read(packageInfoControllerProvider.notifier).init();
       await container.read(localStorageProvider).init();
+      // Settings first, so even the startup error screen uses the user's style.
+      await container.read(settingsControllerProvider.notifier).init();
       await container.read(deviceControllerProvider.notifier).init();
       await container.read(adbServiceProvider).verifyAdb();
-      await container.read(settingsControllerProvider.notifier).init();
       await container.read(commandQueueControllerProvider.notifier).init();
     } on Exception catch (e, stackTrace) {
       Exception exception = e;
@@ -52,29 +52,31 @@ class App {
     }
   }
 
+  static bool _loggingReady = false;
+
   static Future<void> run() async {
     final container = ProviderContainer();
     runZonedGuarded(
       () async {
         WidgetsFlutterBinding.ensureInitialized();
-        NavigatorService.init();
-        AppLogger.init();
-        await LogFile.init();
-
-        GoogleFonts.pendingFonts([GoogleFonts.poppinsTextTheme()]);
-
-        FlutterError.onError = LogFile.instance.dispatchFlutterErrorLogs;
+        if (!_loggingReady) {
+          NavigatorService.init();
+          AppLogger.init();
+          await LogFile.init();
+          FlutterError.onError = LogFile.instance.dispatchFlutterErrorLogs;
+          _loggingReady = true;
+        }
         await init(container);
-        runApp(UncontrolledProviderScope(
-          container: container,
-          child: const _App(),
-        ));
+        runApp(UncontrolledProviderScope(container: container, child: const _App()));
       },
       (error, stack) async {
         WidgetsFlutterBinding.ensureInitialized();
-        NavigatorService.init();
-        AppLogger.init();
-        await LogFile.init();
+        if (!_loggingReady) {
+          NavigatorService.init();
+          AppLogger.init();
+          await LogFile.init();
+          _loggingReady = true;
+        }
         if (error is AppInitializationException) {
           runApp(UncontrolledProviderScope(
             container: container,
@@ -87,6 +89,8 @@ class App {
   }
 }
 
+/// Builds `MaterialApp` themes from the user's style (or Workbench before one is chosen)
+/// and wraps every route in the window chrome, navigation listener and macOS insets.
 class AppWrapper extends ConsumerWidget {
   const AppWrapper({super.key, required this.builder});
 
@@ -101,48 +105,44 @@ class AppWrapper extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(settingsControllerProvider);
+    final style = settings.style ?? AppStyle.workbench;
+    final light = AppThemeFactory.build(style, Brightness.light);
+    final dark = AppThemeFactory.build(style, Brightness.dark);
     final virtualWindowFrameBuilder = VirtualWindowFrameInit();
-    return DynamicColorBuilder(
-      builder: (lightDynamic, darkDynamic) => WindowTitleBar(
-        darkDynamic: darkDynamic,
-        lightDynamic: lightDynamic,
-        themeMode: settings.themeMode,
-        child: builder(
-            context,
-            settings.themeMode,
-            AppTheme.themeDataFrom(colorScheme: lightDynamic, brightness: Brightness.light),
-            AppTheme.themeDataFrom(colorScheme: darkDynamic, brightness: Brightness.dark),
-            (context, child) {
-          if (Platform.isWindows) {
-            child = virtualWindowFrameBuilder(context, child);
-          }
-          var data = MediaQuery.of(context);
-          if (Platform.isMacOS) {
-            data = data.copyWith(padding: const EdgeInsets.only(top: 22));
-          }
-          return MediaQuery(
-            data: data,
-            child: GestureDetector(
-              onTap: () {
-                FocusManager.instance.primaryFocus?.unfocus();
-              },
-              child: NavigationEventListener(
-                navigator: NavigatorService.instance.navigatorKey(false),
-                child: child ?? const SizedBox.shrink(),
-              ),
+    return WindowTitleBar(
+      light: light,
+      dark: dark,
+      themeMode: settings.themeMode,
+      child: builder(context, settings.themeMode, light, dark, (context, child) {
+        if (Platform.isWindows) {
+          child = virtualWindowFrameBuilder(context, child);
+        }
+        var data = MediaQuery.of(context);
+        if (Platform.isMacOS) {
+          data = data.copyWith(padding: const EdgeInsets.only(top: 22));
+        }
+        return MediaQuery(
+          data: data,
+          child: GestureDetector(
+            onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+            behavior: HitTestBehavior.translucent,
+            child: NavigationEventListener(
+              navigator: NavigatorService.instance.navigatorKey(false),
+              child: child ?? const SizedBox.shrink(),
             ),
-          );
-        }),
-      ),
+          ),
+        );
+      }),
     );
   }
 }
 
 class _App extends ConsumerWidget {
-  const _App({super.key});
+  const _App();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final chosen = ref.watch(settingsControllerProvider.select((s) => s.style != null));
     return AppWrapper(
       builder: (context, themeMode, light, dark, builder) => MaterialApp(
         themeMode: themeMode,
@@ -152,7 +152,7 @@ class _App extends ConsumerWidget {
         debugShowCheckedModeBanner: false,
         navigatorKey: NavigatorService.instance.navigatorKey(false),
         builder: builder,
-        home: const UpdateChecker(child: HomeView()),
+        home: chosen ? const UpdateChecker(child: HomeShell()) : const StylePickerView(),
       ),
     );
   }
@@ -162,14 +162,14 @@ class WindowTitleBar extends StatelessWidget {
   const WindowTitleBar({
     super.key,
     required this.child,
-    this.lightDynamic,
-    this.darkDynamic,
+    required this.light,
+    required this.dark,
     required this.themeMode,
   });
 
   final Widget child;
-  final ColorScheme? lightDynamic;
-  final ColorScheme? darkDynamic;
+  final ThemeData light;
+  final ThemeData dark;
   final ThemeMode themeMode;
 
   @override
@@ -179,14 +179,12 @@ class WindowTitleBar extends StatelessWidget {
         child: MediaQuery.fromView(
           view: View.of(context),
           child: Builder(
-            builder: (context) {
-              return MediaQuery(
-                data: MediaQuery.of(context).copyWith(
-                  padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 24),
-                ),
-                child: child,
-              );
-            },
+            builder: (context) => MediaQuery(
+              data: MediaQuery.of(context).copyWith(
+                padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 24),
+              ),
+              child: child,
+            ),
           ),
         ),
       );
@@ -198,22 +196,22 @@ class WindowTitleBar extends StatelessWidget {
     return Directionality(
       textDirection: TextDirection.ltr,
       child: _AppThemeBuilder(
-        darkDynamic: darkDynamic,
-        lightDynamic: lightDynamic,
+        light: light,
+        dark: dark,
         themeMode: themeMode,
-        child: Material(
-          child: Column(
-            children: [
-              SizedBox(
-                height: 30,
-                child: Builder(builder: (context) {
-                  return Listener(
+        child: Builder(builder: (context) {
+          final t = AppTokens.of(context);
+          return Material(
+            color: t.canvas,
+            child: Column(
+              children: [
+                SizedBox(
+                  height: 30,
+                  child: Listener(
                     onPointerDown: (event) {
-                      if (event.kind == PointerDeviceKind.mouse) {
-                        final mouseEvent = event;
-                        if (mouseEvent.buttons == kSecondaryMouseButton) {
-                          windowManager.popUpWindowMenu();
-                        }
+                      if (event.kind == PointerDeviceKind.mouse &&
+                          event.buttons == kSecondaryMouseButton) {
+                        windowManager.popUpWindowMenu();
                       }
                     },
                     child: WindowCaption(
@@ -222,21 +220,17 @@ class WindowTitleBar extends StatelessWidget {
                       title: DefaultTextStyle(
                         style: Theme.of(context).textTheme.bodyMedium!,
                         child: const Row(
-                          children: [
-                            AppLogo(size: 20),
-                            Gap(4),
-                            Text(appName),
-                          ],
+                          children: [AppLogo(size: 20), Gap(6), Text(appName)],
                         ),
                       ),
                     ),
-                  );
-                }),
-              ),
-              Expanded(child: child),
-            ],
-          ),
-        ),
+                  ),
+                ),
+                Expanded(child: child),
+              ],
+            ),
+          );
+        }),
       ),
     );
   }
@@ -246,56 +240,34 @@ class NoScrollBarScrollBehavior extends MaterialScrollBehavior {
   const NoScrollBarScrollBehavior();
 
   @override
-  Widget buildScrollbar(BuildContext context, Widget child, ScrollableDetails details) {
-    return child;
-  }
+  Widget buildScrollbar(BuildContext context, Widget child, ScrollableDetails details) => child;
 }
 
+/// Theme for the Windows caption, which sits outside `MaterialApp`.
 class _AppThemeBuilder extends StatefulWidget {
   const _AppThemeBuilder({
-    super.key,
     required this.child,
-    this.lightDynamic,
-    this.darkDynamic,
+    required this.light,
+    required this.dark,
     required this.themeMode,
   });
 
   final Widget child;
-  final ColorScheme? lightDynamic;
-  final ColorScheme? darkDynamic;
+  final ThemeData light;
+  final ThemeData dark;
   final ThemeMode themeMode;
 
   @override
-  State<_AppThemeBuilder> createState() => __AppThemeBuilderState();
+  State<_AppThemeBuilder> createState() => _AppThemeBuilderState();
 }
 
-class __AppThemeBuilderState extends State<_AppThemeBuilder> with WidgetsBindingObserver {
-  ThemeMode themeMode = ThemeMode.light;
-
+class _AppThemeBuilderState extends State<_AppThemeBuilder> with WidgetsBindingObserver {
   WidgetsBinding get _binding => WidgetsBinding.instance;
 
   @override
   void initState() {
     super.initState();
     _binding.addObserver(this);
-    _updateThemeMode(true);
-  }
-
-  void _updateThemeMode([bool inital = false]) {
-    ThemeMode themeMode = widget.themeMode;
-    if (themeMode == ThemeMode.system) {
-      themeMode =
-          SchedulerBinding.instance.platformDispatcher.platformBrightness == Brightness.dark //
-              ? ThemeMode.dark
-              : ThemeMode.light;
-    }
-    if (themeMode != this.themeMode) {
-      if (!inital) {
-        setState(() => this.themeMode = themeMode);
-      } else {
-        this.themeMode = themeMode;
-      }
-    }
   }
 
   @override
@@ -306,27 +278,18 @@ class __AppThemeBuilderState extends State<_AppThemeBuilder> with WidgetsBinding
 
   @override
   void didChangePlatformBrightness() {
-    _updateThemeMode();
+    setState(() {});
     super.didChangePlatformBrightness();
   }
 
-  @override
-  void didUpdateWidget(covariant _AppThemeBuilder oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    _updateThemeMode();
-  }
+  bool get _dark => switch (widget.themeMode) {
+        ThemeMode.dark => true,
+        ThemeMode.light => false,
+        ThemeMode.system =>
+          SchedulerBinding.instance.platformDispatcher.platformBrightness == Brightness.dark,
+      };
 
   @override
-  Widget build(BuildContext context) {
-    final darkTheme = AppTheme.themeDataFrom(
-      colorScheme: widget.darkDynamic,
-      brightness: Brightness.dark,
-    );
-    final lightTheme = AppTheme.themeDataFrom(
-      colorScheme: widget.lightDynamic,
-      brightness: Brightness.light,
-    );
-    final theme = themeMode == ThemeMode.dark ? darkTheme : lightTheme;
-    return AnimatedTheme(data: theme, child: widget.child);
-  }
+  Widget build(BuildContext context) =>
+      AnimatedTheme(data: _dark ? widget.dark : widget.light, child: widget.child);
 }

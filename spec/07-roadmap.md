@@ -10,9 +10,13 @@ feature spec under `features/` (status `Proposed` → `In progress`), link it he
 | Better device file explorer (real file/dir detection, sizes, delete/rename, drag-drop) | Proposed | — |
 | Macro / automation recorder (record & replay command sequences) | Proposed | — |
 | Performance dashboard (CPU, memory, battery, network via `dumpsys`) | Proposed | — |
-| Wireless ADB manager (auto-detect IP, remember devices, QR pairing) | Proposed | — |
+| Full UI redesign: three selectable styles | Implemented (unreleased) | [08-redesign.md](08-redesign.md) |
+| Error handling & display overhaul | Implemented (unreleased) | [features/error-handling.md](features/error-handling.md) |
+| Remember recent IPs; undo disconnect | Planned (after redesign) | [08-redesign.md](08-redesign.md) |
+| QR code pairing + auto-connect | Implemented (unreleased) | [features/qr-pairing.md](features/qr-pairing.md) |
+| Wireless ADB manager (auto-detect IP, remember devices, list discovered devices to connect) | Proposed | — |
 | Installed-package picker for Uninstall (instead of typing the package name) | Proposed | — |
 | Screenshot / screen recording | Proposed | — |
-| Automated tests (service output parsing first) | Proposed | — |
+| Automated tests (more parsers: `devices`, `ls`; widget tests) | Started | `test/` |
 
 Fixes for items in [06-known-issues.md](06-known-issues.md) don't need a roadmap entry.

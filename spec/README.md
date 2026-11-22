@@ -21,6 +21,7 @@ app without opening the code first.
 | 7 | [features/](features/) | One spec per user-facing feature |
 | 8 | [06-known-issues.md](06-known-issues.md) | Bugs and tech debt seen in the current code |
 | 9 | [07-roadmap.md](07-roadmap.md) | Planned / proposed work, not yet built |
+| 10 | [08-redesign.md](08-redesign.md) | Full UI redesign: scope, directions, decisions (in progress) |
 
 ### Feature specs
 
@@ -28,7 +29,10 @@ app without opening the code first.
 |---------|------|--------|
 | Device list (home) | [features/device-list.md](features/device-list.md) | Shipped |
 | Wireless connect & pair | [features/wireless-connect-pair.md](features/wireless-connect-pair.md) | Shipped |
-| Device actions menu | [features/device-actions.md](features/device-actions.md) | Shipped |
+| Pair & connect with QR code | [features/qr-pairing.md](features/qr-pairing.md) | Implemented (unreleased) |
+| App styles (first-run picker, Settings) | [features/app-styles.md](features/app-styles.md) | Implemented (unreleased) |
+| Error handling & display | [features/error-handling.md](features/error-handling.md) | Implemented (unreleased) |
+| Device actions | [features/device-actions.md](features/device-actions.md) | Shipped |
 | Device file explorer & file transfer | [features/file-explorer-transfer.md](features/file-explorer-transfer.md) | Shipped |
 | Command queue & output | [features/command-queue.md](features/command-queue.md) | Shipped |
 | Settings (theme) | [features/settings.md](features/settings.md) | Shipped |

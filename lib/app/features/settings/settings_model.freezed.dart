@@ -1,7 +1,7 @@
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
-// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target
+// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'settings_model.dart';
 
@@ -9,149 +9,274 @@ part of 'settings_model.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
-
-SettingsModel _$SettingsModelFromJson(Map<String, dynamic> json) {
-  return _SettingsModel.fromJson(json);
-}
 
 /// @nodoc
 mixin _$SettingsModel {
-  @ThemeModeJsonConverter()
-  ThemeMode get themeMode => throw _privateConstructorUsedError;
 
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
-  $SettingsModelCopyWith<SettingsModel> get copyWith =>
-      throw _privateConstructorUsedError;
+@ThemeModeJsonConverter() ThemeMode get themeMode;/// Chosen layout; null until the first-run style picker is completed.
+@AppStyleJsonConverter() AppStyle? get style;
+/// Create a copy of SettingsModel
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$SettingsModelCopyWith<SettingsModel> get copyWith => _$SettingsModelCopyWithImpl<SettingsModel>(this as SettingsModel, _$identity);
+
+  /// Serializes this SettingsModel to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SettingsModel&&(identical(other.themeMode, themeMode) || other.themeMode == themeMode)&&(identical(other.style, style) || other.style == style));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,themeMode,style);
+
+@override
+String toString() {
+  return 'SettingsModel(themeMode: $themeMode, style: $style)';
+}
+
+
 }
 
 /// @nodoc
-abstract class $SettingsModelCopyWith<$Res> {
-  factory $SettingsModelCopyWith(
-          SettingsModel value, $Res Function(SettingsModel) then) =
-      _$SettingsModelCopyWithImpl<$Res, SettingsModel>;
-  @useResult
-  $Res call({@ThemeModeJsonConverter() ThemeMode themeMode});
-}
+abstract mixin class $SettingsModelCopyWith<$Res>  {
+  factory $SettingsModelCopyWith(SettingsModel value, $Res Function(SettingsModel) _then) = _$SettingsModelCopyWithImpl;
+@useResult
+$Res call({
+@ThemeModeJsonConverter() ThemeMode themeMode,@AppStyleJsonConverter() AppStyle? style
+});
 
+
+
+
+}
 /// @nodoc
-class _$SettingsModelCopyWithImpl<$Res, $Val extends SettingsModel>
+class _$SettingsModelCopyWithImpl<$Res>
     implements $SettingsModelCopyWith<$Res> {
-  _$SettingsModelCopyWithImpl(this._value, this._then);
+  _$SettingsModelCopyWithImpl(this._self, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+  final SettingsModel _self;
+  final $Res Function(SettingsModel) _then;
 
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? themeMode = null,
-  }) {
-    return _then(_value.copyWith(
-      themeMode: null == themeMode
-          ? _value.themeMode
-          : themeMode // ignore: cast_nullable_to_non_nullable
-              as ThemeMode,
-    ) as $Val);
-  }
+/// Create a copy of SettingsModel
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? themeMode = null,Object? style = freezed,}) {
+  return _then(_self.copyWith(
+themeMode: null == themeMode ? _self.themeMode : themeMode // ignore: cast_nullable_to_non_nullable
+as ThemeMode,style: freezed == style ? _self.style : style // ignore: cast_nullable_to_non_nullable
+as AppStyle?,
+  ));
 }
 
-/// @nodoc
-abstract class _$$_SettingsModelCopyWith<$Res>
-    implements $SettingsModelCopyWith<$Res> {
-  factory _$$_SettingsModelCopyWith(
-          _$_SettingsModel value, $Res Function(_$_SettingsModel) then) =
-      __$$_SettingsModelCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({@ThemeModeJsonConverter() ThemeMode themeMode});
 }
 
-/// @nodoc
-class __$$_SettingsModelCopyWithImpl<$Res>
-    extends _$SettingsModelCopyWithImpl<$Res, _$_SettingsModel>
-    implements _$$_SettingsModelCopyWith<$Res> {
-  __$$_SettingsModelCopyWithImpl(
-      _$_SettingsModel _value, $Res Function(_$_SettingsModel) _then)
-      : super(_value, _then);
 
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? themeMode = null,
-  }) {
-    return _then(_$_SettingsModel(
-      themeMode: null == themeMode
-          ? _value.themeMode
-          : themeMode // ignore: cast_nullable_to_non_nullable
-              as ThemeMode,
-    ));
-  }
+/// Adds pattern-matching-related methods to [SettingsModel].
+extension SettingsModelPatterns on SettingsModel {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _SettingsModel value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _SettingsModel() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _SettingsModel value)  $default,){
+final _that = this;
+switch (_that) {
+case _SettingsModel():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _SettingsModel value)?  $default,){
+final _that = this;
+switch (_that) {
+case _SettingsModel() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@ThemeModeJsonConverter()  ThemeMode themeMode, @AppStyleJsonConverter()  AppStyle? style)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _SettingsModel() when $default != null:
+return $default(_that.themeMode,_that.style);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@ThemeModeJsonConverter()  ThemeMode themeMode, @AppStyleJsonConverter()  AppStyle? style)  $default,) {final _that = this;
+switch (_that) {
+case _SettingsModel():
+return $default(_that.themeMode,_that.style);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@ThemeModeJsonConverter()  ThemeMode themeMode, @AppStyleJsonConverter()  AppStyle? style)?  $default,) {final _that = this;
+switch (_that) {
+case _SettingsModel() when $default != null:
+return $default(_that.themeMode,_that.style);case _:
+  return null;
+
+}
+}
+
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$_SettingsModel implements _SettingsModel {
-  const _$_SettingsModel({@ThemeModeJsonConverter() required this.themeMode});
 
-  factory _$_SettingsModel.fromJson(Map<String, dynamic> json) =>
-      _$$_SettingsModelFromJson(json);
+class _SettingsModel extends SettingsModel {
+  const _SettingsModel({@ThemeModeJsonConverter() required this.themeMode, @AppStyleJsonConverter() this.style}): super._();
+  factory _SettingsModel.fromJson(Map<String, dynamic> json) => _$SettingsModelFromJson(json);
 
-  @override
-  @ThemeModeJsonConverter()
-  final ThemeMode themeMode;
+@override@ThemeModeJsonConverter() final  ThemeMode themeMode;
+/// Chosen layout; null until the first-run style picker is completed.
+@override@AppStyleJsonConverter() final  AppStyle? style;
 
-  @override
-  String toString() {
-    return 'SettingsModel(themeMode: $themeMode)';
-  }
+/// Create a copy of SettingsModel
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$SettingsModelCopyWith<_SettingsModel> get copyWith => __$SettingsModelCopyWithImpl<_SettingsModel>(this, _$identity);
 
-  @override
-  bool operator ==(dynamic other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$_SettingsModel &&
-            (identical(other.themeMode, themeMode) ||
-                other.themeMode == themeMode));
-  }
-
-  @JsonKey(ignore: true)
-  @override
-  int get hashCode => Object.hash(runtimeType, themeMode);
-
-  @JsonKey(ignore: true)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$_SettingsModelCopyWith<_$_SettingsModel> get copyWith =>
-      __$$_SettingsModelCopyWithImpl<_$_SettingsModel>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$_SettingsModelToJson(
-      this,
-    );
-  }
+@override
+Map<String, dynamic> toJson() {
+  return _$SettingsModelToJson(this, );
 }
 
-abstract class _SettingsModel implements SettingsModel {
-  const factory _SettingsModel(
-          {@ThemeModeJsonConverter() required final ThemeMode themeMode}) =
-      _$_SettingsModel;
-
-  factory _SettingsModel.fromJson(Map<String, dynamic> json) =
-      _$_SettingsModel.fromJson;
-
-  @override
-  @ThemeModeJsonConverter()
-  ThemeMode get themeMode;
-  @override
-  @JsonKey(ignore: true)
-  _$$_SettingsModelCopyWith<_$_SettingsModel> get copyWith =>
-      throw _privateConstructorUsedError;
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SettingsModel&&(identical(other.themeMode, themeMode) || other.themeMode == themeMode)&&(identical(other.style, style) || other.style == style));
 }
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,themeMode,style);
+
+@override
+String toString() {
+  return 'SettingsModel(themeMode: $themeMode, style: $style)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$SettingsModelCopyWith<$Res> implements $SettingsModelCopyWith<$Res> {
+  factory _$SettingsModelCopyWith(_SettingsModel value, $Res Function(_SettingsModel) _then) = __$SettingsModelCopyWithImpl;
+@override @useResult
+$Res call({
+@ThemeModeJsonConverter() ThemeMode themeMode,@AppStyleJsonConverter() AppStyle? style
+});
+
+
+
+
+}
+/// @nodoc
+class __$SettingsModelCopyWithImpl<$Res>
+    implements _$SettingsModelCopyWith<$Res> {
+  __$SettingsModelCopyWithImpl(this._self, this._then);
+
+  final _SettingsModel _self;
+  final $Res Function(_SettingsModel) _then;
+
+/// Create a copy of SettingsModel
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? themeMode = null,Object? style = freezed,}) {
+  return _then(_SettingsModel(
+themeMode: null == themeMode ? _self.themeMode : themeMode // ignore: cast_nullable_to_non_nullable
+as ThemeMode,style: freezed == style ? _self.style : style // ignore: cast_nullable_to_non_nullable
+as AppStyle?,
+  ));
+}
+
+
+}
+
+// dart format on

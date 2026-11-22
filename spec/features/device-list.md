@@ -1,21 +1,24 @@
-# Feature: Device list (home)
+# Feature: Devices (list and selection)
 
-**Status:** Shipped · **Code:** `features/home/`, `adb/adb_providers.dart`
+**Status:** Shipped; redesigned 2026-11-22 (unreleased) · **Code:** `adb/adb_providers.dart`, `device_page/device_widgets.dart`, `shells/`
 
-## Behaviour
+- `connectedDevicesProvider` polls `adb devices` every second (models cached per device).
+- The user **selects** a device (`selectedDeviceIdProvider`); `selectedDeviceProvider` resolves
+  it against the live list and falls back to the first connected device. All actions target it.
+- Each device shows a status (`AdbDeviceState`: Online / Offline / Unauthorized / Unavailable,
+  dot + label, read by screen readers), its model (or id when unknown), id, and USB vs Wi-Fi.
 
-- `HomeView` = AppBar titled **"ADB"** with actions **Command Queue** (list icon) and
-  **Settings** (gear), both opened with `adaptivePush`.
-- Body: sidebar (`HomeViewSideBar`: "Connect wireless", "Pair") + `HomeViewContent`.
-  Below 500 px the sidebar is in a `Drawer`.
-- `HomeViewContent` watches `connectedDevicesProvider` (polls `adb devices` every 1 s).
-  - Empty → centred "No connected devices".
-  - Otherwise pinned header "`N` Connected device(s)" and one `ListTile` per device:
-    title = `model` (+ " (Offline)" when `isOffline`), subtitle = `id`.
-  - Tap → `AdbDeviceDialog(device)` (see [device-actions.md](device-actions.md)).
-- Loading/error states via `AsyncValueBuilder`.
+| Style | Device list |
+|-------|-------------|
+| Workbench | Sidebar "Devices" (`DeviceListTile`); compact: in the drawer, selected name in the app bar |
+| Console | Left column "Devices · N"; compact: dropdown in the title row |
+| Launcher | Device cards (status line, big name, id); selecting focuses the palette |
 
-## Acceptance
-
-- Plugging/unplugging a device updates the list within ~1 s without user action.
-- Offline devices are listed and labelled; their dialog shows only Copy id / Disconnect.
+- **Loading:** "Looking for devices…" until the first poll returns.
+- **None connected:** `NoDeviceState` — "Connect an Android device", how to, and buttons
+  Pair with QR code / Pairing code / IP address.
+- **adb failed while polling:** `ErrorPanel` with the explained error and Try again.
+- **Unauthorized / offline:** `DeviceStateBanner` with the catalogue steps (e.g. "Accept
+  'Allow USB debugging?'"); actions are disabled with that reason.
+- Device details (Overview / Console center): `devicePropertiesProvider` (`getprop`) → model,
+  manufacturer, Android version + API, ABI, connection, serial.

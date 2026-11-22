@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
@@ -9,10 +9,10 @@ import '../../shared/shared.dart';
 import '../../utils/utils.dart';
 import '../features.dart';
 
-part 'about_controller.g.dart';
+final aboutControllerProvider =
+    AsyncNotifierProvider.autoDispose<AboutController, AboutModel>(AboutController.new);
 
-@riverpod
-class AboutController extends _$AboutController with NavigationController {
+class AboutController extends AutoDisposeAsyncNotifier<AboutModel> with NavigationController {
   late AboutService service;
 
   late PackageInfo? packageInfo;

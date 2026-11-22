@@ -4,7 +4,7 @@ part 'device_model.codegen.freezed.dart';
 part 'device_model.codegen.g.dart';
 
 @freezed
-class Device with _$Device {
+abstract class Device with _$Device {
   const Device._();
   const factory Device({
     @JsonKey(name: 'device') required String name,

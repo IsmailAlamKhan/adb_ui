@@ -20,7 +20,8 @@
 
 - Two-field input "Enter your pair code and ip": `Pair code`, `host:port`.
 - Both required; runs `adb pair host:port code` (label `Pair to host:port`).
-- Output message is raw stdout (no success parsing).
+- Succeeds only when stdout contains `Successfully paired`; message is raw stdout.
+- For pairing without typing codes, see [qr-pairing.md](qr-pairing.md).
 
 ## Notes
 

@@ -48,17 +48,20 @@ Builds argv as: `[-s <device.id>]? [shell]? [command]? ...arguments` and calls
 | `verifyAdb()` | `adb version` | stderr empty and stdout contains `Android Debug Bridge version` | else throws `AdbNotFoundException` |
 | `scrcpyAvailable()` | `scrcpy --version` | exit code 0 | `false` on any `AppException` |
 | `connect(host, port)` | `adb connect host:port` | stdout contains `connected to` | `Connected to host:port` |
-| `pair(code, host, port)` | `adb pair host:port code` | always (message = stdout) | stdout |
+| `pair(code, host, port)` | `adb pair host:port code` | stdout contains `Successfully paired` | stdout |
+| `mdnsServices()` | `adb mdns services` (not logged) | stderr empty, or stdout non-empty | returns `List<AdbMdnsService>` via `AdbMdnsService.parseList`; else throws `AdbMdnsUnavailableException` |
 | `tcpip()` | `adb tcpip 5555` | stdout contains `restarting in TCP mode port: 5555` | `Restarted in TCP mode` |
 | `disconnect(device)` | `adb -s ID disconnect ID` | stdout contains `disconnected` | `Disconnected from ID` |
-| `installApk(device, path)` | `adb -s ID install path` | stderr empty and stdout contains `Success` | `Installed path` |
+| `installApk(device, path)` | `adb -s ID install path` | stdout contains `Success` (stderr warnings allowed) | `Installed <file name>` |
 | `uninstallApp(device, pkg)` | `adb -s ID uninstall pkg` | stdout contains `Success` | `Uninstalled pkg` |
 | `pushFile(device, file, dest)` | `adb -s ID push file dest` | stdout contains `pushed` | `Pushed file` |
 | `pullFile(device, file, dest)` | `adb -s ID pull file dest` | stdout contains `pulled` | `Pulled file` |
 | `inputText(device, text)` | `adb -s ID shell input text <escaped>` | stdout empty | `Text sent` |
-| `runCustomCommand(device, cmd)` | `adb -s ID <cmd split on spaces>` | always | stdout |
+| `runCustomCommand(device, cmd)` | `adb -s ID <cmd split on spaces>` | exit code 0 | stdout; non-zero → `CommandFailedException` with stdout + stderr |
 | `scrcpy(device)` | `scrcpy -s ID` | stdout contains `INFO: Device` | `Scrcpy started` |
-| `ls(device, path)` | `adb -s ID shell ls -i "<path or />"` | stderr empty | returns `List<AdbFileSystem>` |
+| `ls(device, path)` | `adb -s ID shell ls -i "<path or />"` | stderr empty | returns `List<AdbFileSystem>`; `No such file or directory` → `NotFoundException`, `Permission denied` → `PermissionDeniedException` |
+| `deviceProperties(device)` *(redesign)* | `adb -s ID shell getprop` (not logged) | exit code 0 | returns `DeviceProperties` |
+| `listPackages(device, {includeSystem})` *(redesign)* | `adb -s ID shell pm list packages [-3]` (not logged) | exit code 0 | sorted package names (`package:` prefix stripped) |
 
 `inputText` escaping: `'` → `\'`, `"` → `\"`, space → `%s`.
 
@@ -76,6 +79,7 @@ Builds argv as: `[-s <device.id>]? [shell]? [command]? ...arguments` and calls
 | rawCommand | Re-runs |
 |------------|---------|
 | `connect` | `connect(host, port)` parsed from `arguments.first` |
+| `pair` | `pair(arguments.last, host, port)` with host/port from `arguments.first` |
 | `disconnect` / `install` / `push` / `pull` / `scrcpy` | same method with stored args |
 | `tcpip` | `tcpip()` |
 | `shell` | `input text …` → `inputText`; otherwise `runCustomCommand` |
@@ -87,23 +91,30 @@ Builds argv as: `[-s <device.id>]? [shell]? [command]? ...arguments` and calls
 can be re-run from the queue, add a controller method in `AdbController` that wraps it in
 `run(...)`, and update this table.
 
-## `AdbController.run()` — wrapping a command for the UI
+## `AdbController.run()` / `runForResult()` — wrapping a command for the UI
 
 File: `lib/app/features/adb/adb_controller.dart`.
 
 ```dart
 Future<void> run({required Future<Result> Function() function, required String command,
-  bool autoCloseOutput = true, bool isRerun = false, bool showOutput = true})
+  bool isRerun = false, bool showOutput = true})
 ```
 
 1. Generates a UUID id (prefixed `rerun-` when `isRerun`), records `startedAt`.
-2. Closes any open output dialog and cancels the auto-close timer.
-3. Awaits `function()` → `Result`; adds `CommandModel.adding(...)` to the command queue.
-4. If `showOutput`, opens `CurrentCommandOutput(commandId)` dialog (non-dismissable,
-   `CurrentCommandOutput.routeSettings`).
-5. Awaits `result.messege`; on throw, updates the queue entry to `CommandModel.error`
-   with `exceptionToString(e)` and logs.
-6. If `autoCloseOutput && showOutput`, closes the output dialog after **2 s**.
-7. An `AppException` thrown by `function()` itself (e.g. "No apk selected", adb not found) → snackbar.
+2. Awaits `function()` → `Result`. If that throws (e.g. no APK chosen, adb missing), the error
+   is explained and shown with `showError` (when `showOutput`), and `null` is returned.
+3. Adds `CommandModel.adding(...)` to Activity (live output starts streaming).
+4. Awaits `result.messege`: success → `CommandQueueController.complete` and a success toast
+   ("Show output"); throw → `fail`, log, and an error toast (Details → `CommandDetailsDialog`,
+   Retry re-runs the same function).
+5. With `showOutput: false` nothing is announced (used for multi-file transfers and QR pairing).
+
+`runForResult(...)` takes the same arguments and returns `Future<String?>`: the success
+message from `Result.messege`, or `null` if the command failed (queue entry marked error)
+or `function()` threw. `run(...)` is `runForResult(...)` with the result ignored. Use
+`runForResult` when a flow must continue after a command (e.g. QR pairing).
+
+Input (addresses, pairing codes) is validated before `function()` runs (`validateHostPort`,
+`validatePairingCode`). See [features/error-handling.md](features/error-handling.md).
 
 `command` is the **human label** shown in the queue (e.g. `'Install apk'`, `'Connect to 1.2.3.4:5555'`).

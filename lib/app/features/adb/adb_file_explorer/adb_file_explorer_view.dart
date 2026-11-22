@@ -4,6 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../shared/widgets/async_value_builder.dart';
+import '../../../design/design.dart';
 import '../../../utils/utils.dart';
 import '../../features.dart';
 
@@ -23,18 +24,22 @@ class AdbFileExplorerView extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = ref.watch(adbFileExplorerControllerProvider);
 
-    final files = ref.watch(adbFilesProvider(device: device, path: controller.currentPath));
+    final files = ref.watch(adbFilesProvider((device: device, path: controller.currentPath)));
     useEffect(() {
       controller.open(openReason);
     }, [openReason, device]);
     useEffect(() {
       return controller.clearSelectedFiles;
     }, []);
+    final screen = MediaQuery.sizeOf(context);
+    final compact = WindowSize.of(context).isCompact;
     return Center(
       child: SizedBox(
-        height: 700,
-        width: 500,
+        // Fits the window (spec/08-redesign.md, surface 12); full window when compact.
+        height: compact ? screen.height : (screen.height - 80).clamp(360.0, 760.0),
+        width: compact ? screen.width : (screen.width - 80).clamp(320.0, 640.0),
         child: Dialog(
+          insetPadding: compact ? EdgeInsets.zero : const EdgeInsets.all(8),
           clipBehavior: Clip.antiAlias,
           child: Scaffold(
             appBar: AppBar(
@@ -62,7 +67,7 @@ class AdbFileExplorerView extends HookConsumerWidget {
             body: AsyncValueBuilder(
               value: files,
               onTryAgain: () async =>
-                  ref.invalidate(adbFilesProvider(device: device, path: controller.currentPath)),
+                  ref.invalidate(adbFilesProvider((device: device, path: controller.currentPath))),
               builder: (_, files) {
                 if (files.isEmpty) {
                   return const Center(child: Text('Empty'));
@@ -120,7 +125,6 @@ class AdbFileExplorerView extends HookConsumerWidget {
 
 class _DirTextField extends HookConsumerWidget {
   const _DirTextField({
-    super.key,
     required this.value,
     required this.onSubmit,
   });

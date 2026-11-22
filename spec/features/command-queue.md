@@ -1,41 +1,46 @@
-# Feature: Command queue & command output
+# Feature: Activity (command queue) and command output
 
-**Status:** Shipped · **Code:** `command_queue/`, `terminal_outputs/terminal_outputs_view.dart`
+**Status:** Shipped; redesigned 2026-11-22 (unreleased) · **Code:** `command_queue/` (`CommandQueueController`, `command_queue_view.dart`)
+
+Every command run through `AdbController.runForResult` is recorded here, newest first, and
+persisted (`commands` key, see 03-data-models).
 
 ## Controller — `CommandQueueController` (`StateNotifier<List<CommandModel>>`)
 
-- `init()` loads persisted commands (all `done`/`error`).
-- `addCommand(c)` prepends and wires streams:
-  - `adding`: creates a broadcast `StreamController`, pipes stdout → data, stderr → **error**,
-    emits `"Running: <label>"`, emits `"Done"` when stdout closes; state → `running`.
-  - `running`: buffers every event; an event containing `Done` → `done(buffer)`;
-    any stream error → `error(buffer)`.
-  - On `done`/`error`: cancels subscriptions and **persists** via `CommandQueueService.saveCommand`.
-- `updateCommand(c)` replaces by id (also used by `AdbController.run` to force `error`
-  when `Result.messege` throws).
-- `removeCommand(c)` removes from state + storage. `clear()` empties both and cancels all streams.
+- `init()` loads persisted commands (all `done`/`error`), sorted newest first.
+- `addCommand(adding)` subscribes to stdout and stderr into a live buffer
+  (`liveOutput(id)` → `ValueListenable<String>`) and stores the entry as `running`.
+- `complete(id, message)` → `done` with the buffered output (or `message` if nothing was
+  printed); `fail(id, error)` → `error` with the exception text followed by the output.
+  Both persist the entry. **Streams never decide the final state** — `Result.messege` does
+  (so stderr warnings and the word "Done" in output no longer end or fail a command).
+- `removeCommand(c)`; `clear()` removes finished entries (running ones stay).
+- `byId(id)`.
 
-> Note: any stderr output marks a command as **error** even if adb succeeded.
+## Where it's shown (all share `ActivityList` / `ActivityTile` / `CommandStatusIcon`)
 
-## CommandQueueView
+| Style | Surface |
+|-------|---------|
+| Workbench | Sidebar **Activity** (spinner while running, red count of failures) → `ActivityView`; "Recent activity" column / card on Overview (this device, 6 items); Shell tab shows the latest shell command's output |
+| Console | Docked terminal: list (filter All / Errors, Clear finished) + live output of the selected entry, resizable 140 px–60 %, collapsible strip showing the latest entry; compact: list only, tap opens details |
+| Launcher | "Today" chips (✓ / ✕ with explained error title / spinner) and **Activity** in the header |
 
-Opened from the home AppBar via `adaptivePush`, wrapped in `AdaptiveDialog`.
+Row: status icon, label, explained error title (red) for failures, device · time ago ·
+duration · "re-run", and a **Run again** button. Tap → `CommandDetailsDialog`.
 
-- SliverAppBar "Command Queue" with **clear all** action.
-- Empty → "No commands in queue".
-- Row: leading icon (✓ done, ⚠ error, spinner running), title = label (+ " (rerun)"),
-  subtitle = `Started <time ago> | Finished in <ms>ms` + device model,
-  trailing **remove** (✕) and, when finished, **Re-run** (↻ → `AdbController.rerunCommand`).
-- Tap → `CurrentCommandOutput(commandId)`.
+`ActivityView` (⇧⌘A, palette): `AdaptiveDialog` page with filters All / Running / Errors and
+**Clear finished**.
 
-## CurrentCommandOutput
+## CommandDetailsDialog
 
-Dialog (max 500×600), title = label + " on <model>". Content is selectable:
-running → latest stream event (or "Running..."), done → full output, error → error text.
-"Close" button. Route identified by `CurrentCommandOutput.routeSettings`
-(`/terminal_outputs/current_command_output`) so the controller can close it.
+Status icon, label, `Running/Done/Failed · device · duration · time ago`, the raw command line,
+the explained error (title, message, numbered steps) for failures, then **Output** (live while
+running, mono, selectable, copy button). Buttons: **Copy output**, **Run again**, **Close**.
+Opened from activity rows and from the toasts ("Show output", "Details").
+
+The old `CurrentCommandOutput` popup (auto-closing after 2 s) is removed.
 
 ## Re-run
 
-Uses stored `rawCommand` + `arguments` + `device` (see 02-adb-layer re-run mapping).
-New entry gets id `rerun-<uuid>`, output dialog stays open.
+Uses stored `rawCommand` + `arguments` + `device` (see 02-adb-layer re-run mapping). The new
+entry gets id `rerun-<uuid>`.

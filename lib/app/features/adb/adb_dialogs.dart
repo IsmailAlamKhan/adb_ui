@@ -1,17 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import '../../shared/shared.dart';
-import '../features.dart';
+import '../../design/design.dart';
 
+/// Dialog padding that becomes small on compact windows.
+EdgeInsets dialogInset(BuildContext context) =>
+    EdgeInsets.all(WindowSize.of(context).isCompact ? 12 : 40);
+
+/// One-field input dialog. Pops the entered text, or null on cancel.
 class AdbInputDialog extends HookWidget {
   const AdbInputDialog({
     super.key,
     required this.title,
+    required this.label,
     this.info,
-    required this.inputs,
+    this.hint,
+    this.prefix,
+    this.validator,
+    this.confirmLabel = 'Run',
+    this.multiline = false,
   });
 
   factory AdbInputDialog.single({
@@ -19,180 +26,153 @@ class AdbInputDialog extends HookWidget {
     required String title,
     required String label,
     String? info,
-  }) {
-    return AdbInputDialog(
-      key: key,
-      title: title,
-      info: info,
-      inputs: {
-        'input': (controller) => AdbInputDialogInput(
-              controller: controller,
-              label: label,
-            ),
-      },
-    );
-  }
+    String? hint,
+    String? prefix,
+    String? Function(String?)? validator,
+    String confirmLabel = 'Run',
+  }) =>
+      AdbInputDialog(
+        key: key,
+        title: title,
+        label: label,
+        info: info,
+        hint: hint,
+        prefix: prefix,
+        validator: validator,
+        confirmLabel: confirmLabel,
+      );
+
   final String title;
-  final String? info;
-
-  final Map<String, Widget Function(TextEditingController)> inputs;
-  @override
-  Widget build(BuildContext context) {
-    final inputs = this.inputs.values.toList();
-    final tec = inputs.map((_) => useTextEditingController()).toList();
-    return AlertDialog(
-      title: Text.rich(
-        TextSpan(
-          text: title,
-          children: [
-            if (info != null)
-              WidgetSpan(
-                child: Tooltip(
-                  message: info!,
-                  child: const Icon(Icons.info_outline),
-                ),
-              ),
-          ],
-        ),
-      ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (var i = 0; i < inputs.length; i++) ...[
-            inputs[i](tec[i]),
-            if (i < inputs.length - 1) const Gap(10),
-          ]
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () {
-            if (inputs.length == 1) {
-              Navigator.of(context).pop(tec[0].text);
-            } else {
-              final map = <String, String>{
-                for (var i = 0; i < this.inputs.keys.length; i++)
-                  if (tec[i].text.isNotEmpty) this.inputs.keys.elementAt(i): tec[i].text,
-              };
-              Navigator.of(context).pop(map);
-            }
-          },
-          child: const Text('OK'),
-        ),
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
-        ),
-      ],
-    );
-  }
-}
-
-class AdbInputDialogInput extends StatelessWidget {
-  const AdbInputDialogInput({super.key, required this.controller, required this.label});
-
-  final TextEditingController controller;
   final String label;
+  final String? info;
+  final String? hint;
+  final String? prefix;
+  final String? Function(String?)? validator;
+  final String confirmLabel;
+  final bool multiline;
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      decoration: InputDecoration(labelText: label),
+    final controller = useTextEditingController();
+    final error = useState<String?>(null);
+    final t = AppTokens.of(context);
+
+    void submit() {
+      final value = controller.text;
+      final message = validator?.call(value) ??
+          (value.trim().isEmpty ? 'Enter ${label.toLowerCase()}' : null);
+      if (message != null) {
+        error.value = message;
+        return;
+      }
+      Navigator.of(context).pop(value);
+    }
+
+    return Dialog(
+      insetPadding: dialogInset(context),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 520),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: Theme.of(context).textTheme.headlineSmall),
+              if (info != null) ...[
+                const SizedBox(height: 6),
+                Text(info!, style: TextStyle(color: t.textMuted)),
+              ],
+              const SizedBox(height: 16),
+              TextField(
+                controller: controller,
+                autofocus: true,
+                minLines: multiline ? 3 : 1,
+                maxLines: multiline ? 6 : 1,
+                textInputAction: multiline ? TextInputAction.newline : TextInputAction.done,
+                onSubmitted: multiline ? null : (_) => submit(),
+                onChanged: (_) => error.value = null,
+                style: prefix != null ? AppThemeFactory.mono(t, size: 13) : null,
+                decoration: InputDecoration(
+                  labelText: label,
+                  hintText: hint,
+                  prefixText: prefix,
+                  prefixStyle: prefix != null ? AppThemeFactory.mono(t, size: 13, color: t.textMuted) : null,
+                  errorText: error.value,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  OutlinedButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('Cancel'),
+                  ),
+                  const SizedBox(width: 8),
+                  FilledButton(onPressed: submit, child: Text(confirmLabel)),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
 
-class AdbDeviceDialog extends ConsumerWidget {
-  const AdbDeviceDialog({super.key, required this.device});
-  final AdbDevice device;
+/// Confirmation that names what will be affected. Pops true to go ahead.
+class ConfirmActionDialog extends StatelessWidget {
+  const ConfirmActionDialog({
+    super.key,
+    required this.title,
+    required this.message,
+    required this.confirmLabel,
+    this.destructive = false,
+  });
+  final String title;
+  final String message;
+  final String confirmLabel;
+  final bool destructive;
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final controller = ref.watch(adbControllerProvider);
-    final scrcpyAvailable = ref.watch(scrcpyAvailableProvider).whenOrNull<bool>(
-              data: (value) => value,
-            ) ??
-        false;
-    return Center(
+  Widget build(BuildContext context) {
+    final t = AppTokens.of(context);
+    return Dialog(
+      insetPadding: dialogInset(context),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 400),
-        child: AlertDialog(
-          contentPadding: const EdgeInsets.all(0),
-          clipBehavior: Clip.antiAlias,
-          content: Column(
+        constraints: const BoxConstraints(maxWidth: 460),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (!device.isOffline) ...[
-                ListTile(
-                  title: const Text('Install apk'),
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    controller.installApk(device);
-                  },
-                ),
-                ListTile(
-                  title: const Text('Uninstall app'),
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    controller.uninstallApp(device);
-                  },
-                ),
-                ListTile(
-                  title: const Text('Push file'),
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    controller.pushFile(device);
-                  },
-                ),
-                ListTile(
-                  title: const Text('Pull file'),
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    controller.pullFile(device);
-                  },
-                ),
-                ListTile(
-                  title: const Text('Input text'),
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    controller.inputText(device);
-                  },
-                ),
-                ListTile(
-                  title: const Text('Run command'),
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    controller.runCommand(device);
-                  },
-                ),
-                ListTile(
-                  title: const Text('Scrcpy'),
-                  enabled: scrcpyAvailable,
-                  subtitle: ref.watch(scrcpyAvailableProvider).when(
-                        data: (available) => available ? null : const Text('Not available'),
-                        loading: () => const Text('Loading...'),
-                        error: (e, s) => Text('Error: $e'),
-                      ),
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    controller.runScrcpy(device);
-                  },
-                ),
-              ],
-              ListTile(
-                title: const Text('Copy id'),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  Clipboard.setData(ClipboardData(text: device.id));
-                },
-              ),
-              ListTile(
-                title: const Text('Disconnect'),
-                subtitle: const Text('Only available for WIFI devices'),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  controller.disconnect(device);
-                },
+              Text(title, style: Theme.of(context).textTheme.headlineSmall),
+              const SizedBox(height: 8),
+              Text(message, style: TextStyle(color: t.textMuted)),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  OutlinedButton(
+                    autofocus: destructive,
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: const Text('Cancel'),
+                  ),
+                  const SizedBox(width: 8),
+                  FilledButton(
+                    autofocus: !destructive,
+                    style: destructive
+                        ? FilledButton.styleFrom(
+                            backgroundColor: t.danger,
+                            foregroundColor: t.isDark ? t.dangerSoft : Colors.white,
+                          )
+                        : null,
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: Text(confirmLabel),
+                  ),
+                ],
               ),
             ],
           ),

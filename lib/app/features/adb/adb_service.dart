@@ -8,6 +8,7 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart' as p;
 
 import '../../utils/utils.dart';
+import '../errors/errors_model.dart';
 import 'adb_model.dart';
 
 final adbServiceProvider = Provider<AdbService>(ProccessAdbServiceImpl.new);
@@ -76,6 +77,9 @@ abstract class AdbService {
 
   Future<Result> pair(String pair, String host, int port);
 
+  /// Services currently advertised over mDNS (`adb mdns services`).
+  Future<List<AdbMdnsService>> mdnsServices();
+
   Future<Result> rerunCommand(
     String command,
     AdbDevice? device,
@@ -102,6 +106,12 @@ abstract class AdbService {
   Future<Result> inputText(AdbDevice device, String text);
 
   Future<Result> uninstallApp(AdbDevice device, String packageName);
+
+  /// All `getprop` values of a device.
+  Future<DeviceProperties> deviceProperties(AdbDevice device);
+
+  /// Installed package names; third-party only unless [includeSystem].
+  Future<List<String>> listPackages(AdbDevice device, {bool includeSystem = false});
 
   /// -connnected device commands-
 
@@ -177,7 +187,11 @@ Future<Map<String, String>?> _loadUnixEnvironment() async {
       final value = parts.length > 1 ? parts[1] : '';
       envMap[key] = value;
     });
-    LogFile.instance.dispath("Source System Environment result:\n$envMap");
+    // Never log values: the environment holds tokens and passwords, and logs are attached
+    // to bug reports. Only PATH matters for finding adb.
+    LogFile.instance.dispath(
+      'Loaded ${envMap.length} environment variables. PATH=${envMap['PATH'] ?? '(not set)'}',
+    );
   } else {
     logError("ERROR: ${result.stderr} // ${result.exitCode}");
     throw AppException(
@@ -258,6 +272,8 @@ class ProccessAdbServiceImpl implements AdbService {
     return result;
   }
 
+  final _modelCache = <String, String>{};
+
   @override
   Future<List<AdbDevice>> getConnectedDevices() async {
     final process = await run('devices', addToLogs: false);
@@ -272,18 +288,25 @@ class ProccessAdbServiceImpl implements AdbService {
         break;
       }
       var device = AdbDevice(
-        type: parts.last,
-        id: parts.first,
+        type: parts.last.trim(),
+        id: parts.first.trim(),
         model: '',
       );
-      final model = await (await run(
-        'getprop',
-        arguments: ['ro.product.model'],
-        device: device,
-        shell: true,
-      ))
-          .stdout;
-      devices.add(device.copyWith(model: model.trim()));
+      // Models don't change while connected: only ask once per device (06 #6).
+      var model = _modelCache[device.id];
+      if (model == null && device.isOnline) {
+        model = (await (await run(
+          'getprop',
+          arguments: ['ro.product.model'],
+          device: device,
+          shell: true,
+          addToLogs: false,
+        ))
+                .stdout)
+            .trim();
+        if (model.isNotEmpty) _modelCache[device.id] = model;
+      }
+      devices.add(device.copyWith(model: model ?? ''));
     }
     return devices;
   }
@@ -318,7 +341,26 @@ class ProccessAdbServiceImpl implements AdbService {
         'pair',
         arguments: ['$host:$port', pairCode],
       ).then((result) async {
-        return result.copyWith(messege: result.stdout);
+        return result.copyWith(
+          messege: result.stdout.then((output) {
+            if (output.contains('Successfully paired')) {
+              return output.trim();
+            }
+            logError('Failed to pair with $host:$port', error: output);
+            throw AppException('Failed to pair cause $output');
+          }),
+        );
+      });
+
+  @override
+  Future<List<AdbMdnsService>> mdnsServices() =>
+      run('mdns', arguments: ['services'], addToLogs: false).then((result) async {
+        final output = await result.stdout;
+        final error = (await result.stderr).trim();
+        if (error.isNotEmpty && output.trim().isEmpty) {
+          throw AdbMdnsUnavailableException(error);
+        }
+        return AdbMdnsService.parseList(output);
       });
 
   @override
@@ -352,14 +394,12 @@ class ProccessAdbServiceImpl implements AdbService {
         messege: Future.wait([result.stdout, result.stderr]).then((output) {
           final stdout = output.first;
           final stderr = output.last;
-          if (stderr != '') {
-            throw AppException("Failed to install cause $stderr");
-          }
+          // stderr may hold warnings on success; stdout's "Success" decides.
           if (stdout.contains('Success')) {
-            return 'Installed $path';
+            return 'Installed ${basename(path)}';
           }
           logError('Failed to install $path', error: output);
-          throw AppException('Failed to install cause $output');
+          throw AppException('Failed to install ${basename(path)}\n$stdout\n$stderr'.trim());
         }),
       );
     });
@@ -373,17 +413,19 @@ class ProccessAdbServiceImpl implements AdbService {
         device: device,
       ).then((result) async {
         final stdErr = await result.stderr;
-        if (stdErr != '') {
-          throw AppException("Failed to list files $stdErr");
+        final out = await result.stdout;
+        final combined = '$out\n$stdErr';
+        if (combined.contains('No such file or directory')) {
+          throw NotFoundException(path);
+        }
+        if (combined.contains('Permission denied') && out.trim().isEmpty) {
+          throw PermissionDeniedException();
+        }
+        if (stdErr.trim().isNotEmpty && out.trim().isEmpty) {
+          throw AppException('Failed to list files: $stdErr');
         }
 
-        return result.stdout.then((output) async {
-          if (output.contains('Permission denied')) {
-            throw PermissionDeniedException();
-          }
-          if (output.contains('No such file or directory')) {
-            throw PermissionDeniedException();
-          }
+        return Future.value(out).then((output) async {
           final files = output.split('\n').toList().map((e) => e.trim()).toList();
           files.forEach(logInfo);
           final result = <AdbFileSystem>[];
@@ -490,7 +532,18 @@ class ProccessAdbServiceImpl implements AdbService {
       device: device,
       executable: executable,
     ).then((result) {
-      return result.copyWith(messege: result.stdout);
+      return result.copyWith(
+        messege: Future.wait([result.stdout, result.stderr, result.exitCode]).then((values) {
+          final stdout = values[0] as String;
+          final stderr = values[1] as String;
+          final exitCode = values[2] as int;
+          final output = [stdout.trim(), stderr.trim()].where((e) => e.isNotEmpty).join('\n');
+          if (exitCode != 0) {
+            throw CommandFailedException(exitCode, output);
+          }
+          return output;
+        }),
+      );
     });
   }
 
@@ -581,6 +634,14 @@ class ProccessAdbServiceImpl implements AdbService {
         final host = ip.first;
         final port = ip.last.toInt()!;
         return connect(host, port);
+      case 'pair':
+        final address = arguments.first;
+        final separator = address.lastIndexOf(':');
+        return pair(
+          arguments.last,
+          address.substring(0, separator),
+          address.substring(separator + 1).toInt()!,
+        );
       case 'disconnect':
         assert(device != null, 'Device cannot be null');
         return disconnect(device!);
@@ -633,6 +694,34 @@ class ProccessAdbServiceImpl implements AdbService {
       );
     });
   }
+
+  @override
+  Future<DeviceProperties> deviceProperties(AdbDevice device) async {
+    final result = await run('getprop', shell: true, device: device, addToLogs: false);
+    final output = await result.stdout;
+    final stderr = (await result.stderr).trim();
+    if (await result.exitCode != 0) {
+      throw AppException(stderr.isEmpty ? 'getprop failed' : stderr);
+    }
+    return DeviceProperties.parse(output);
+  }
+
+  @override
+  Future<List<String>> listPackages(AdbDevice device, {bool includeSystem = false}) async {
+    final result = await run(
+      'pm',
+      shell: true,
+      device: device,
+      arguments: ['list', 'packages', if (!includeSystem) '-3'],
+      addToLogs: false,
+    );
+    final output = await result.stdout;
+    final stderr = (await result.stderr).trim();
+    if (await result.exitCode != 0) {
+      throw AppException(stderr.isEmpty ? 'pm list packages failed' : stderr);
+    }
+    return parsePackageList(output);
+  }
 }
 
 class PermissionDeniedException extends AppException {
@@ -646,6 +735,13 @@ class NotDirException extends AppException {
 class AdbNotFoundException extends AppException {
   AdbNotFoundException()
       : super('Adb not found please install it, Adb is required for this app to run');
+}
+
+class AdbMdnsUnavailableException extends AppException {
+  AdbMdnsUnavailableException(String details)
+      : super(
+          "mDNS discovery isn't available in your adb. Update Android platform-tools.\n$details",
+        );
 }
 
 class ScrcpyNotFoundException extends AppException {

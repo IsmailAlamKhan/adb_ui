@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../features/errors/errors_view.dart';
 import '../../utils/utils.dart';
 import '../shared.dart';
 
@@ -23,18 +24,13 @@ abstract class AsyncValueBuilderBase<T> extends StatelessWidget {
 
   static Widget _defaultLoadingBuilder(BuildContext context) => const AppLoadingIndicator();
 
+  /// Explained error (error catalogue) with Try again. See spec/features/error-handling.md.
   Widget _defaultErrorBuilder(
     BuildContext context,
     Object error,
     StackTrace? stackTrace,
-  ) {
-    final message = exceptionToString(error);
-    if (isCompact) {
-      return AppExceptionIndicatorCompact(message: message, onTryAgain: onTryAgain);
-    } else {
-      return AppExceptionIndicator(message: message, onTryAgain: onTryAgain);
-    }
-  }
+  ) =>
+      ErrorPanel(error: error, onRetry: onTryAgain, compact: isCompact);
 }
 
 class AsyncValueBuilder<T> extends AsyncValueBuilderBase<T> {

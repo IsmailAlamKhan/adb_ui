@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../design/design.dart';
 import '../../utils/utils.dart';
 import '../features.dart';
 
@@ -24,6 +25,12 @@ class SettingsController extends StateNotifier<SettingsModel> with NavigationCon
   }
 
   void setThemeMode(ThemeMode themeMode) => save(state.copyWith(themeMode: themeMode));
+
+  void setStyle(AppStyle style) => save(state.copyWith(style: style));
+
+  /// Finishes the first-run picker.
+  Future<void> completeOnboarding(AppStyle style, ThemeMode themeMode) =>
+      save(state.copyWith(style: style, themeMode: themeMode));
 
   void aboutApp() => adaptivePush((context) => const AboutView());
 }

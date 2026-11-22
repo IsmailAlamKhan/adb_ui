@@ -8,7 +8,8 @@ import '../../utils/utils.dart';
 part 'navigation.freezed.dart';
 
 @freezed
-class NavigationEvent<T> with _$NavigationEvent<T>, Event {
+sealed class NavigationEvent<T> with _$NavigationEvent<T>, Event {
+  const NavigationEvent._();
   const factory NavigationEvent.dialog({
     required Completer<T?> completer,
     required WidgetBuilder pageBuilder,

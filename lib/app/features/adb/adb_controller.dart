@@ -1,368 +1,347 @@
 import 'dart:async';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:path/path.dart' as p;
 import 'package:uuid/uuid.dart';
 
-import '../../shared/shared.dart';
+import '../../design/design.dart';
 import '../../utils/utils.dart';
 import '../features.dart';
 
 final adbControllerProvider = Provider<AdbController>(AdbController.new);
 
+/// UI entry point for every adb command. Each command goes through [runForResult] so it
+/// appears in Activity, and its result is shown as a toast (spec/02-adb-layer.md).
 class AdbController with NavigationController {
   @override
   final EventBus eventBus;
+  final Ref ref;
   final AdbService service;
-  final NetworkInfoService networkInfoService;
   final CommandQueueController commandQueueController;
 
-  AdbController(Ref ref)
+  AdbController(this.ref)
       : eventBus = ref.read(eventBusProvider),
         service = ref.read(adbServiceProvider),
-        networkInfoService = ref.read(networkInfoServiceProvider),
         commandQueueController = ref.read(commandQueueControllerProvider.notifier);
 
-  Timer? _commandOutputCloseTimer;
-  static const _commandOutputCloseTimerDuration = Duration(seconds: 2);
-  void closeCurrentCommandOutput() {
-    popUntil((route) => route.settings != CurrentCommandOutput.routeSettings);
-  }
+  AppStyle get _style => ref.read(settingsControllerProvider).style ?? AppStyle.workbench;
 
   Future<void> run({
     required Future<Result> Function() function,
     required String command,
-    bool autoCloseOutput = true,
+    bool isRerun = false,
+    bool showOutput = true,
+  }) =>
+      runForResult(function: function, command: command, isRerun: isRerun, showOutput: showOutput);
+
+  /// Runs a command and records it in Activity. Returns its success message, or null if it
+  /// failed. With [showOutput] the result is announced with a toast.
+  Future<String?> runForResult({
+    required Future<Result> Function() function,
+    required String command,
     bool isRerun = false,
     bool showOutput = true,
   }) async {
     final startedAt = DateTime.now();
-    String id = const Uuid().v4();
-    if (isRerun) {
-      id = 'rerun-$id';
-    }
-    _commandOutputCloseTimer?.cancel();
-    closeCurrentCommandOutput();
+    final id = '${isRerun ? 'rerun-' : ''}${const Uuid().v4()}';
+
+    final Result result;
     try {
-      return await function().then((value) async {
-        final _command = CommandModel.adding(
-          id: id,
-          command: command,
-          device: value.device,
-          stdout: value.stdoutStream,
-          stderr: value.stderrStream,
-          rawCommand: value.command,
-          arguments: value.arguments,
-          startedAt: startedAt,
-        );
-        commandQueueController.addCommand(_command);
-        if (showOutput) {
-          showDialog(
-            pageBuilder: (context) => CurrentCommandOutput(commandId: id),
-            barrierDismissible: false,
-            barrierLabel: 'adb',
-            routeSettings: CurrentCommandOutput.routeSettings,
-          );
-        }
-        try {
-          await value.messege;
-        } catch (e, s) {
-          String msg = exceptionToString(e);
+      result = await function();
+    } catch (e, s) {
+      if (e is! AppException) logError('Could not start "$command"', error: e, stackTrace: s);
+      if (showOutput) showError(e);
+      return null;
+    }
 
-          commandQueueController.updateCommand(
-            CommandModel.error(
-              id: id,
-              command: command,
-              device: value.device,
-              error: msg,
-              rawCommand: value.command,
-              arguments: value.arguments,
-              startedAt: startedAt,
-              endedAt: DateTime.now(),
-            ),
-          );
-          LogFile.instance.dispath(
-            'Error while running command: $command',
-            error: e,
-            stackTrace: s,
-          );
-        } finally {
-          if (autoCloseOutput && showOutput) {
-            _commandOutputCloseTimer =
-                Timer(_commandOutputCloseTimerDuration, closeCurrentCommandOutput);
-          }
-        }
-      });
-    } on AppException catch (e) {
-      showSnackbar(text: e.message);
+    commandQueueController.addCommand(CommandModel.adding(
+      id: id,
+      command: command,
+      device: result.device,
+      stdout: result.stdoutStream,
+      stderr: result.stderrStream,
+      rawCommand: result.command,
+      arguments: result.arguments,
+      startedAt: startedAt,
+    ));
+
+    try {
+      final message = await result.messege;
+      await commandQueueController.complete(id, message);
+      if (showOutput) {
+        final firstLine = message.trim().split('\n').first;
+        final title = firstLine.isNotEmpty && firstLine.length <= 80 && !message.trim().contains('\n')
+            ? firstLine
+            : '$command finished';
+        showSuccess(title, actions: [('Show output', () => openCommandDetails(id))]);
+      }
+      return message;
+    } catch (e, s) {
+      LogFile.instance.dispath('Error while running command: $command', error: e, stackTrace: s);
+      await commandQueueController.fail(id, e);
+      if (showOutput) {
+        final stored = commandQueueController.byId(id);
+        final output = stored?.whenError((c) => c.error);
+        showError(
+          e,
+          output: output,
+          onDetails: () => openCommandDetails(id),
+          onRetry: () => runForResult(function: function, command: command, isRerun: true),
+        );
+      }
+      return null;
     }
   }
 
-  Future<void> connect() async {
-    final nativeWirelessDebugSupported = await confirmDialog(
-        (context) => 'Do you have android 11 or higher?',
-        title: 'Android 11 or higher required',
-        extraActions: [
-          ConfirmDialogAction(onPressed: () => pop(), text: 'Cancel'),
-        ]);
-    if (nativeWirelessDebugSupported == null) {
+  // ── Navigation ────────────────────────────────────────────────────────────
+
+  Future<void> openCommandDetails(String id) =>
+      showDialog<void>(pageBuilder: (_) => CommandDetailsDialog(commandId: id));
+
+  Future<void> openActivity() => adaptivePush<void>((_) => const ActivityView());
+
+  Future<void> openSettings() => adaptivePush<void>((_) => const SettingsView());
+
+  Future<void> openPalette() async {
+    final inline = LauncherPaletteFocus.node;
+    if (_style == AppStyle.launcher && inline != null && inline.context != null) {
+      inline.requestFocus();
       return;
     }
-    if (!nativeWirelessDebugSupported) {
-      final connectedUsb = await confirmDialog(
-        (context) => 'Please connect your device via USB and confirm',
-        title: 'USB cable required',
-        confirmText: 'Ok',
-        cancelText: 'Cancel',
+    return showDialog<void>(
+        barrierColor: const Color(0x66000000),
+        pageBuilder: (_) => const CommandPaletteDialog(),
       );
-      if (connectedUsb == null) {
-        return;
-      }
-      if (!connectedUsb) {
-        showSnackbar(
-          text:
-              'For older android versions you need to first connect your device via USB and then wirelessly',
-        );
-        return;
-      }
-
-      await run(
-        function: () => service.tcpip(),
-        command: 'adb tcpip 5555',
-      );
-      if (_commandOutputCloseTimer != null) {
-        await Future.delayed(_commandOutputCloseTimerDuration);
-      }
-      final ready = await confirmDialog(
-        (context) =>
-            'Please connect your device to the same wifi network as your computer and confirm.',
-        title: 'Take out the usb cable',
-        confirmText: 'Ok',
-        cancelText: 'Cancel',
-      );
-      if (ready == false) {
-        return;
-      }
-    }
-
-    final ip = await showDialog<String>(
-      pageBuilder: (_) => AdbInputDialog.single(
-        title: nativeWirelessDebugSupported ? 'Enter your ip and port' : 'Enter your ip',
-        label: nativeWirelessDebugSupported ? 'IP:PORT' : 'IP',
-      ),
-    );
-    if (ip == null) {
-      return;
-    }
-    String host;
-    String port;
-    if (nativeWirelessDebugSupported) {
-      final split = ip.split(':');
-      if (split.length != 2) {
-        showSnackbar(text: 'Invalid ip');
-        return;
-      }
-      host = split[0];
-      port = split[1];
-    } else {
-      host = ip;
-      port = '5555';
-    }
-
-    // final parts = ip.split(':');
-    // if (parts.isEmpty) {
-    //   return;
-    // }
-    // if (parts.length == 1) {
-    //   parts.add('5555');
-    // }
-    // host = parts[0];
-    // port = parts[1];
-    return run(
-      function: () => service.connect(host, int.parse(port)),
-      command: 'Connect to $host:$port',
-    );
   }
+
+  /// Opens the add-device flow on [tab]. Launcher shows QR pairing as a full page.
+  Future<void> addDevice([AddDeviceTab tab = AddDeviceTab.qr]) {
+    if (_style == AppStyle.launcher && tab == AddDeviceTab.qr) {
+      return push<void>((_) => const QrPairPage());
+    }
+    return showDialog<void>(pageBuilder: (_) => AddDeviceDialog(initialTab: tab));
+  }
+
+  Future<void> pairWithQr() => addDevice();
+
+  // ── Adding devices ────────────────────────────────────────────────────────
+
+  /// `adb connect`. [address] must pass [validateHostPort].
+  Future<bool> connect(String address) async {
+    final target = parseHostPort(address);
+    if (target == null) {
+      showError(InvalidInputException(validateHostPort(address) ?? 'Invalid address'));
+      return false;
+    }
+    final result = await runForResult(
+      function: () => service.connect(target.host, target.port),
+      command: 'Connect to ${target.host}:${target.port}',
+    );
+    return result != null;
+  }
+
+  /// `adb pair`. [address] must pass [validateHostPort], [code] [validatePairingCode].
+  Future<bool> pair(String address, String code) async {
+    final target = parseHostPort(address);
+    final codeError = validatePairingCode(code);
+    if (target == null || codeError != null) {
+      showError(InvalidInputException(validateHostPort(address) ?? codeError!));
+      return false;
+    }
+    final result = await runForResult(
+      function: () => service.pair(code.replaceAll(' ', ''), target.host, target.port),
+      command: 'Pair with ${target.host}:${target.port}',
+    );
+    return result != null;
+  }
+
+  /// `adb tcpip 5555` for Android 10 and older (device on USB).
+  Future<bool> enableTcpip() async =>
+      await runForResult(function: service.tcpip, command: 'Enable Wi-Fi debugging (tcpip 5555)') !=
+      null;
+
+  // ── Device actions ────────────────────────────────────────────────────────
 
   Future<void> disconnect(AdbDevice device) async {
-    return run(
-      function: () => service.disconnect(device),
-      command: 'Disconnect',
+    final ok = await showDialog<bool>(
+      pageBuilder: (_) => ConfirmActionDialog(
+        title: 'Disconnect ${device.displayName}?',
+        message: device.isWireless
+            ? 'You can reconnect it from Add device → IP address, or by pairing again.'
+            : 'USB devices reconnect when you plug them in again.',
+        confirmLabel: 'Disconnect',
+        destructive: true,
+      ),
+    );
+    if (ok != true) return;
+    await run(function: () => service.disconnect(device), command: 'Disconnect ${device.displayName}');
+  }
+
+  Future<void> installApk(AdbDevice device, [String? path]) async {
+    path ??= await showDialog<String>(pageBuilder: (_) => const FilePickerView.apk());
+    if (path == null) return;
+    final apk = path;
+    await run(
+      function: () => service.installApk(device, apk),
+      command: 'Install ${p.basename(apk)}',
     );
   }
 
-  Future<void> installApk(AdbDevice device) => run(
-        function: () async {
-          final apkPath = await showDialog<String>(pageBuilder: (_) => const FilePickerView.apk());
-          if (apkPath != null) {
-            return service.installApk(device, apkPath);
-          }
-          throw AppException('No apk selected to install');
-        },
-        command: 'Install apk',
+  /// Installs every `.apk` in [paths] on [device], one after another.
+  Future<void> installDropped(AdbDevice device, List<String> paths) async {
+    final apks = paths.where((e) => e.toLowerCase().endsWith('.apk')).toList();
+    if (apks.isEmpty) {
+      showToast(
+        tone: ToastTone.info,
+        title: 'Drop an .apk file to install it',
+        message: 'To copy other files to the device, use Push files.',
       );
+      return;
+    }
+    for (final apk in apks) {
+      await installApk(device, apk);
+    }
+  }
 
-  Future<void> pushFile(AdbDevice device) async {
-    final destinationPath = await showDialog<String>(
+  Future<void> uninstallApp(AdbDevice device, [String? packageName]) async {
+    packageName ??= await showDialog<String>(
+      pageBuilder: (_) => UninstallPickerDialog(device: device),
+    );
+    if (packageName == null || packageName.trim().isEmpty) return;
+    final name = packageName.trim();
+    final ok = await showDialog<bool>(
+      pageBuilder: (_) => ConfirmActionDialog(
+        title: 'Uninstall $name?',
+        message: 'This removes the app and its data from ${device.displayName}.',
+        confirmLabel: 'Uninstall',
+        destructive: true,
+      ),
+    );
+    if (ok != true) return;
+    await run(function: () => service.uninstallApp(device, name), command: 'Uninstall $name');
+    ref.invalidate(installedPackagesProvider);
+  }
+
+  Future<void> pushFile(AdbDevice device, {List<String>? files, String? destination}) async {
+    destination ??= await showDialog<String>(
       pageBuilder: (_) => AdbFileExplorerView(
         device: device,
         openReason: AdbFileExplorerOpenReason.pickFolder,
-        title: 'Select destination folder',
+        title: 'Choose where to put the files',
       ),
     );
-
-    if (destinationPath == null) {
-      showSnackbar(text: 'No destination path selected');
-      return;
-    }
-
-    final files = await showDialog<List<String>>(pageBuilder: (_) => const FilePickerView());
-    if (files == null) {
-      showSnackbar(text: 'No file selected');
-      return;
-    }
-    showSnackbar(text: 'Your files are being pushed check the command queue');
-    for (var file in files) {
-      await run(
-        function: () => service.pushFile(device, file, destinationPath),
-        command: 'Push file',
-        showOutput: false,
-      );
-      if (_commandOutputCloseTimer != null) {
-        await Future.delayed(_commandOutputCloseTimerDuration);
-      }
-    }
+    if (destination == null) return;
+    files ??= await showDialog<List<String>>(pageBuilder: (_) => const FilePickerView());
+    if (files == null || files.isEmpty) return;
+    await _transfer(
+      verb: 'Push',
+      done: 'Pushed',
+      files: files,
+      run: (file) => service.pushFile(device, file, destination!),
+      label: (file) => 'Push ${p.basename(file)}',
+    );
+    ref.invalidate(adbFilesProvider);
   }
 
-  Future<void> pullFile(AdbDevice device) async {
-    final files = await showDialog<List<String>>(
-      pageBuilder: (_) => AdbFileExplorerView(device: device, title: 'Select files to pull'),
+  Future<void> pullFile(AdbDevice device, {List<String>? files, String? destination}) async {
+    files ??= await showDialog<List<String>>(
+      pageBuilder: (_) => AdbFileExplorerView(device: device, title: 'Choose files to pull'),
     );
-    if (files == null) {
-      return;
+    if (files == null || files.isEmpty) return;
+    if (destination == null) {
+      if (files.length == 1) {
+        destination = await FilePicker.platform.saveFile(
+          dialogTitle: 'Save file as',
+          fileName: files.first.split('/').last,
+        );
+      } else {
+        destination = await FilePicker.platform.getDirectoryPath(
+          dialogTitle: 'Choose a folder for the files',
+        );
+      }
     }
-    String? fileName;
+    if (destination == null) return;
+    final target = destination;
+    await _transfer(
+      verb: 'Pull',
+      done: 'Pulled',
+      files: files,
+      run: (file) => service.pullFile(device, file, target),
+      label: (file) => 'Pull ${file.split('/').last}',
+    );
+  }
+
+  Future<void> _transfer({
+    required String verb,
+    required String done,
+    required List<String> files,
+    required Future<Result> Function(String file) run,
+    required String Function(String file) label,
+  }) async {
     if (files.length == 1) {
-      fileName = files.first.split('/').last;
+      await this.run(function: () => run(files.first), command: label(files.first));
+      return;
     }
-
-    String? destinationPath;
-    if (fileName != null) {
-      destinationPath = await FilePicker.platform.saveFile(
-        dialogTitle: 'Pick a folder to save the file',
-        fileName: fileName,
-      );
+    showToast(tone: ToastTone.info, title: '${verb}ing ${files.length} files…', message: 'Progress is in Activity.');
+    var failed = 0;
+    for (final file in files) {
+      final ok = await runForResult(function: () => run(file), command: label(file), showOutput: false);
+      if (ok == null) failed++;
+    }
+    if (failed == 0) {
+      showSuccess('$done ${files.length} files', actions: [('Show activity', openActivity)]);
     } else {
-      destinationPath = await FilePicker.platform.getDirectoryPath(
-        dialogTitle: 'Pick a folder to save the files',
+      showToast(
+        tone: ToastTone.error,
+        title: '$failed of ${files.length} files failed',
+        message: 'Open Activity to see why.',
+        actions: [('Show activity', openActivity)],
       );
     }
-    if (destinationPath == null) {
-      showSnackbar(text: 'No destination path selected');
-      return;
-    }
-    showSnackbar(text: 'Your files are being pulled check the command queue');
-    final _files = files.toList();
-    for (var file in _files) {
-      await run(
-        function: () => service.pullFile(device, file, destinationPath!),
-        command: 'Pull file',
-        showOutput: false,
+  }
+
+  /// Runs `adb -s <id> <command>`. Without [command], asks for one.
+  Future<void> runCommand(AdbDevice device, [String? command]) async {
+    command ??= await showDialog<String>(
+      pageBuilder: (_) => AdbInputDialog.single(
+        title: 'Run an adb command',
+        label: 'Command',
+        hint: 'shell pm list packages',
+        prefix: 'adb ',
+        info: 'Runs on ${device.displayName}. Arguments are split on spaces.',
+      ),
+    );
+    final value = command?.trim();
+    if (value == null || value.isEmpty) return;
+    await run(function: () => service.runCustomCommand(device, value), command: 'adb $value');
+  }
+
+  Future<void> inputText(AdbDevice device, [String? text]) async {
+    text ??= await showDialog<String>(
+      pageBuilder: (_) => AdbInputDialog.single(
+        title: 'Type text on ${device.displayName}',
+        label: 'Text',
+        info: 'Sent to the focused field on the device, as if typed.',
+      ),
+    );
+    if (text == null || text.isEmpty) return;
+    final value = text;
+    await run(function: () => service.inputText(device, value), command: 'Type text');
+  }
+
+  Future<void> runScrcpy(AdbDevice device) =>
+      run(function: () => service.scrcpy(device), command: 'Mirror ${device.displayName}');
+
+  void copyId(AdbDevice device) {
+    Clipboard.setData(ClipboardData(text: device.id));
+    showToast(tone: ToastTone.success, title: 'Copied device id', message: device.id);
+  }
+
+  Future<void> rerunCommand(CommandModel command) => run(
+        function: () => service.rerunCommand(command.rawCommand, command.device, command.arguments),
+        command: command.command,
+        isRerun: true,
       );
-      if (_commandOutputCloseTimer != null) {
-        await Future.delayed(_commandOutputCloseTimerDuration);
-      }
-    }
-  }
-
-  Future<void> pair() async {
-    final pairCodeAndIp = await showDialog<Map<String, String>>(
-      pageBuilder: (_) => AdbInputDialog(
-        title: 'Enter your pair code and ip',
-        inputs: {
-          'pair_code': (controller) => AdbInputDialogInput(
-                controller: controller,
-                label: 'Pair code',
-              ),
-          'host_port': (controller) => AdbInputDialogInput(
-                controller: controller,
-                label: 'host:port',
-              ),
-        },
-      ),
-    );
-    if (pairCodeAndIp == null) return;
-    final pairCode = pairCodeAndIp['pair_code'];
-    final ip = pairCodeAndIp['host_port'];
-    if (pairCode == null || ip == null) return;
-
-    final parts = ip.split(':');
-    if (parts.isEmpty) {
-      return;
-    }
-    final host = parts[0];
-    final port = parts[1];
-    return run(
-      function: () => service.pair(pairCode, host, int.parse(port)),
-      command: 'Pair to $host:$port',
-    );
-  }
-
-  Future<void> runCommand(AdbDevice device) async {
-    final command = await showDialog<String>(
-      pageBuilder: (_) => AdbInputDialog.single(
-        title: 'Enter your command',
-        label: 'command',
-      ),
-    );
-    if (command == null) return;
-    return run(
-      function: () => service.runCustomCommand(device, command),
-      command: 'Run command',
-      autoCloseOutput: false,
-    );
-  }
-
-  Future<void> runScrcpy(AdbDevice device) => run(
-        function: () => service.scrcpy(device),
-        command: 'Run scrcpy',
-      );
-
-  Future<void> rerunCommand(CommandModel command) {
-    return run(
-      function: () => service.rerunCommand(command.rawCommand, command.device, command.arguments),
-      command: command.command,
-      autoCloseOutput: false,
-      isRerun: true,
-    );
-  }
-
-  Future<void> inputText(AdbDevice device) async {
-    final text = await showDialog<String>(
-      pageBuilder: (_) => AdbInputDialog.single(
-        title: 'Enter your text',
-        label: 'text',
-      ),
-    );
-    if (text == null) return;
-    return run(
-      function: () => service.inputText(device, text),
-      command: 'Input text',
-    );
-  }
-
-  Future<void> uninstallApp(AdbDevice device) async {
-    final packageName = await showDialog<String>(
-      pageBuilder: (_) => AdbInputDialog.single(
-        title: 'Enter your package name',
-        label: 'package name',
-      ),
-    );
-
-    if (packageName == null) return;
-    run(
-      function: () => service.uninstallApp(device, packageName),
-      command: 'Uninstall app',
-    );
-  }
 }

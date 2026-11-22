@@ -7,7 +7,7 @@
 - `PackageInfoService.newVersionAvailable()` gets the latest GitHub release of
   `IsmailAlamKhan/adb_ui` (anonymous API), strips `v` from the tag, compares numerically
   (`X*10000+Y*100+Z`) with the running version.
-- **On startup:** `UpdateChecker` (wraps `HomeView`) runs it once; if newer →
+- **On startup:** `UpdateChecker` (wraps `HomeShell`) runs it once; if newer →
   `UpdateAvailableDialog` with **Later** / **Download**.
 - **Download** (`AboutService.downloadUpdates`): opens in the browser the first release
   asset whose name contains `setup-<os>`. No in-app install.

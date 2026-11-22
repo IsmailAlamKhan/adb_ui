@@ -4,6 +4,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../design/design.dart';
+import '../features/errors/errors.dart';
 import '../shared/shared.dart';
 import 'utils.dart';
 
@@ -158,7 +160,59 @@ mixin NavigationController {
         NavigationEvent.snackBar(snackBar),
       );
 
-  void showSnackbar({required String text}) => showCustomSnackbar(AppSnackbar.text(text));
+  void showSnackbar({required String text}) =>
+      showToast(tone: ToastTone.info, title: text);
+
+  /// Toast through the snackbar channel. Errors stay longer than successes.
+  void showToast({
+    required ToastTone tone,
+    required String title,
+    String? message,
+    List<(String, VoidCallback)> actions = const [],
+    Duration? duration,
+  }) =>
+      showCustomSnackbar(AppSnackbar(
+        width: 420,
+        padding: EdgeInsets.zero,
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        duration: duration ??
+            (tone == ToastTone.error ? const Duration(seconds: 8) : const Duration(seconds: 3)),
+        content: Builder(
+          builder: (context) => AppToast(
+            tone: tone,
+            title: title,
+            message: message,
+            actions: actions,
+            onDismiss: () => ScaffoldMessenger.of(context).hideCurrentSnackBar(),
+          ),
+        ),
+      ));
+
+  void showSuccess(String title, {String? message, List<(String, VoidCallback)> actions = const []}) =>
+      showToast(tone: ToastTone.success, title: title, message: message, actions: actions);
+
+  /// Shows an error toast. [error] may be an [AppError] or anything [ErrorCatalogue] explains.
+  /// Details opens [onDetails] if given, else an [ErrorDetailsDialog].
+  void showError(Object error, {VoidCallback? onRetry, VoidCallback? onDetails, String? output}) {
+    final explained = error is AppError ? error : ErrorCatalogue.explain(error, output: output);
+    showToast(
+      tone: ToastTone.error,
+      title: explained.title,
+      message: explained.hint ?? explained.message,
+      actions: [
+        if (explained.details != null || explained.steps.length > 1)
+          (
+            'Details',
+            onDetails ??
+                () => showDialog<void>(
+                      pageBuilder: (_) => ErrorDetailsDialog(error: explained, onRetry: onRetry),
+                    ),
+          ),
+        if (onRetry != null && explained.retryable) ('Retry', onRetry),
+      ],
+    );
+  }
 
   void showLoading() => eventBus.emit(const NavigationEvent.showLoading());
   void hideLoading() => eventBus.emit(const NavigationEvent.hideLoading());
@@ -248,16 +302,14 @@ mixin NavigationController {
       if (showLoading) {
         hideLoading();
       }
-    } on AppException catch (e) {
-      showSnackbar(text: e.message);
-      if (showLoading) {
-        hideLoading();
-      }
     } catch (e, s) {
-      logError('Error while executing $runtimeType.$methodName', error: e, stackTrace: s);
+      if (e is! AppException) {
+        logError('Error while executing $runtimeType.$methodName', error: e, stackTrace: s);
+      }
       if (showLoading) {
         hideLoading();
       }
+      showError(e);
     }
   }
 }

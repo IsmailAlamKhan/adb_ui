@@ -2,7 +2,7 @@ class AppException implements Exception {
   String message;
   String? code;
 
-  AppException(Object? e, [String? code]) : message = e.toString();
+  AppException(Object? e, [this.code]) : message = e.toString();
 
   @override
   String toString() => message;

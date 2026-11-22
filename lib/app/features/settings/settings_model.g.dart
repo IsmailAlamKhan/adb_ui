@@ -6,13 +6,16 @@ part of 'settings_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$_SettingsModel _$$_SettingsModelFromJson(Map<String, dynamic> json) =>
-    _$_SettingsModel(
-      themeMode:
-          const ThemeModeJsonConverter().fromJson(json['themeMode'] as int),
+_SettingsModel _$SettingsModelFromJson(Map<String, dynamic> json) =>
+    _SettingsModel(
+      themeMode: const ThemeModeJsonConverter().fromJson(
+        (json['themeMode'] as num).toInt(),
+      ),
+      style: const AppStyleJsonConverter().fromJson(json['style'] as String?),
     );
 
-Map<String, dynamic> _$$_SettingsModelToJson(_$_SettingsModel instance) =>
+Map<String, dynamic> _$SettingsModelToJson(_SettingsModel instance) =>
     <String, dynamic>{
       'themeMode': const ThemeModeJsonConverter().toJson(instance.themeMode),
+      'style': const AppStyleJsonConverter().toJson(instance.style),
     };
