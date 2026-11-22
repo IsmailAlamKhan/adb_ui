@@ -1,4 +1,4 @@
-## Unreleased
+## 0.0.16
 
 - New look, in three styles you pick on first launch or in Settings: Workbench, Console and Launcher, each in light and dark
 - Pick a device once; actions, a command palette (⌘K) and keyboard shortcuts work on it
@@ -10,12 +10,3 @@
 - Command output stays in Activity instead of a popup that closes after 2 seconds
 - Works down to a 480 × 560 window
 - Logs no longer contain your shell environment
-
-## 0.0.15
-
-- Fixed input text bug
-- Fixed the ui problem on about page
-- Re-arrenged the device options(commands)
-- Added new device options(commands)
-  - Uninstall apk
-- Added cancel button on connect wireless dialog
