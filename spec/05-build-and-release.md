@@ -38,7 +38,8 @@ freezed 3 rules: every `@freezed` class is declared `abstract class` (single con
 ## Lints (`analysis_options.yaml`)
 
 `flutter_lints` plus: `prefer_relative_imports`, `avoid_redundant_argument_values`,
-`type_annotate_public_apis`, `use_super_parameters`. Generated files excluded.
+`type_annotate_public_apis`, `use_super_parameters`. Excluded from analysis: generated
+files (`*.g.dart`, `*.freezed.dart`), `build/`, and the platform folders (`windows/`, `macos/`, `linux/`).
 `invalid_annotation_target`, `body_might_complete_normally_nullable`, `unused_element` are ignored.
 
 ## Versioning

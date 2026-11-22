@@ -26,6 +26,10 @@ analyzer:
   exclude:
     - "**/*.g.dart"
     - "**/*.freezed.dart"
+    - build/**
+    - windows/**
+    - macos/**
+    - linux/**
   errors:
     invalid_annotation_target: ignore
     body_might_complete_normally_nullable: ignore
