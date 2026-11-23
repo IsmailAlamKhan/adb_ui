@@ -64,3 +64,4 @@ flutter:
   assets:
     - assets/lottie/
     - assets/
+    - assets/device/

@@ -10,7 +10,7 @@ Overview and Console center), palette rows (all styles; Launcher's main UI) and 
 |--------|-----------|-----|----------------|----------|-------|
 | Install APK | `installApk(device, [path])` | `install <path>` | Install `<file>` | ⌘I | `FilePickerView.apk()`, or a dropped `.apk` |
 | Uninstall app | `uninstallApp(device, [pkg])` | `uninstall <pkg>` | Uninstall `<pkg>` | ⌘U | `UninstallPickerDialog` (installed packages) → `ConfirmActionDialog` |
-| Push files | `pushFile(device, {files, destination})` | `push` per file | Push `<file>` | ⌘P | folder on device → local files (or Files tab / drop) |
+| Push files | `pushFile(device, {files, destination})` | `push` per file | Push `<file>` | ⌘P | device file browser in push mode at the last folder → **Push files here…** (native picker) or drop; see [file-explorer-transfer.md](file-explorer-transfer.md) |
 | Pull files | `pullFile(device, {files, destination})` | `pull` per file | Pull `<file>` | ⇧⌘P | files on device → local save location |
 | Run command | `runCommand(device, [cmd])` | `<cmd split on spaces>` | `adb <cmd>` | ⌘R | `AdbInputDialog` (prefix `adb `) or Shell tab |
 | Type text | `inputText(device, [text])` | `shell input text` | Type text | ⌘T | `AdbInputDialog` or Type text tab |

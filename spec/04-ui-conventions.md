@@ -19,7 +19,8 @@ SplashView ──(init ok)──► MaterialApp (theme = AppThemeFactory(style, 
 Shared dialogs/pages (all styles):
   AddDeviceDialog (QR code | Pairing code | IP address)  ·  QrPairPage (Launcher's full-page QR)
   CommandPaletteDialog (⌘K)  ·  CommandDetailsDialog  ·  ActivityView  ·  SettingsView → AboutView
-  UninstallPickerDialog  ·  AdbFileExplorerView (pick on device)  ·  FilePickerView (pick local)
+  UninstallPickerDialog  ·  AdbFileExplorerView (pull picker / push browser, with FilePreviewPane)  ·  FilePickerView (APK only)
+  FilePreviewDialog (Space: large preview, ← / →)
   AdbInputDialog  ·  ConfirmActionDialog  ·  ErrorDetailsDialog
   LogcatPage (⌘L)  ·  MirrorPage (⇧⌘M)  ·  AboutView  ·  UpdateAvailableDialog
 macOS menu "About Adb ui" ► AboutView
@@ -34,6 +35,8 @@ macOS menu "About Adb ui" ► AboutView
 | `features/device_page/` | Device building blocks used by all styles: status line, list tile, action grid/tile, details card, state banner, Apps / Files / Shell / Type text views, `NoDeviceState` |
 | `features/palette/` | `CommandPalette` (inline or dialog), `buildPaletteItems` |
 | `features/add_device/` | `AddDeviceDialog`, `AddDeviceTab` |
+| `features/apps/` | `AppIcon`, `AppLetterTile`, `AppInfoController`, `AppInfoService`, `AppInfoDiskCache` |
+| `features/file_preview/` | `FilePreviewPane`, `FilePreviewContent`, `FilePreviewDialog`, `showFilePreview`, `FilePreviewService` |
 | `features/errors/` | `AppError`, `ErrorCatalogue`, `ErrorExplanation`, `ErrorDetailsDialog`, `ErrorPanel` |
 | `features/style_picker/` | `StylePickerView`, `StyleChooser`, `StylePreview`, `ThemeModeChooser` |
 

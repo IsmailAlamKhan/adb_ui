@@ -228,22 +228,40 @@ class AdbController with NavigationController {
     ref.invalidate(installedPackagesProvider);
   }
 
+  /// The folder last pushed to this session; Push opens the device browser here.
+  String lastPushFolder = '/sdcard/Download';
+
+  /// Push files to [device] (spec/features/file-explorer-transfer.md).
+  /// - Nothing given: opens the device file browser in push mode at [lastPushFolder]; the user
+  ///   pushes from there (native picker or drop) and closes it when done.
+  /// - [destination] only: opens the computer's own file picker, then pushes.
+  /// - Both: pushes straight away.
   Future<void> pushFile(AdbDevice device, {List<String>? files, String? destination}) async {
-    destination ??= await showDialog<String>(
-      pageBuilder: (_) => AdbFileExplorerView(
-        device: device,
-        openReason: AdbFileExplorerOpenReason.pickFolder,
-        title: 'Choose where to put the files',
-      ),
-    );
-    if (destination == null) return;
-    files ??= await showDialog<List<String>>(pageBuilder: (_) => const FilePickerView());
+    if (destination == null) {
+      await showDialog<void>(
+        pageBuilder: (_) => AdbFileExplorerView(
+          device: device,
+          openReason: AdbFileExplorerOpenReason.push,
+          title: 'Push files to ${device.displayName}',
+          initialPath: lastPushFolder,
+        ),
+      );
+      return;
+    }
+    if (files == null) {
+      final picked = await FilePicker.platform.pickFiles(
+        allowMultiple: true,
+        dialogTitle: 'Choose files to push to $destination',
+      );
+      files = picked?.files.map((f) => f.path).whereType<String>().toList();
+    }
     if (files == null || files.isEmpty) return;
+    lastPushFolder = destination;
     await _transfer(
       verb: 'Push',
       done: 'Pushed',
       files: files,
-      run: (file) => service.pushFile(device, file, destination!),
+      run: (file) => service.pushFile(device, file, destination),
       label: (file) => 'Push ${p.basename(file)}',
     );
     ref.invalidate(adbFilesProvider);

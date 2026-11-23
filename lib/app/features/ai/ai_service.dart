@@ -198,6 +198,7 @@ class AiController extends StateNotifier<AiState> {
   Future<LogcatFilter> filterFor(
     String request, {
     required List<String> packages,
+    Map<String, String> labels = const {},
     LogcatFilter current = const LogcatFilter(),
   }) async {
     state = state.copyWith(thinking: true, clearError: true);
@@ -206,7 +207,7 @@ class AiController extends StateNotifier<AiState> {
       final messages = [
         LlamaChatMessage.fromText(
           role: LlamaChatRole.system,
-          text: AiFilterMapper.systemPrompt(packages: packages, followedPackage: current.package),
+          text: AiFilterMapper.systemPrompt(packages: packages, labels: labels, followedPackage: current.package),
         ),
         LlamaChatMessage.fromText(role: LlamaChatRole.user, text: request),
       ];
@@ -231,7 +232,7 @@ class AiController extends StateNotifier<AiState> {
       if (json == null) {
         throw AiModelException("The AI couldn't make a filter from that. ${lastError ?? ''}".trim());
       }
-      return AiFilterMapper.toFilter(json, packages: packages, base: current, request: request);
+      return AiFilterMapper.toFilter(json, packages: packages, labels: labels, base: current, request: request);
     } finally {
       if (mounted) state = state.copyWith(thinking: false);
     }

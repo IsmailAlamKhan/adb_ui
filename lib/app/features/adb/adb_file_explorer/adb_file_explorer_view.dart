@@ -1,11 +1,14 @@
+import 'package:desktop_drop/desktop_drop.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../design/design.dart';
 import '../../features.dart';
 
-enum AdbFileExplorerOpenReason { pickFile, pickFolder }
+/// `pickFile` chooses files to pull; `push` browses to a folder and pushes into it.
+enum AdbFileExplorerOpenReason { pickFile, push }
 
 /// Common places on Android storage, shown as shortcuts.
 const deviceQuickPlaces = [
@@ -16,9 +19,11 @@ const deviceQuickPlaces = [
   ('Documents', '/sdcard/Documents', Icons.description_outlined),
 ];
 
-/// Chooses a folder (push destination) or files (pull) on the device.
-/// Pops a `String` folder path, or a `List<String>` of file paths; null on cancel.
-/// State is local, so selections never leak between openings (spec/08-redesign.md).
+/// Browses the device's files (spec/features/file-explorer-transfer.md).
+/// `pickFile` pops a `List<String>` of files to pull (null on cancel); `push` pushes into the
+/// open folder (computer's file picker or drop) and stays open until Done.
+/// Files are previewed in a side pane (spec/features/file-preview.md).
+/// State is local, so selections never leak between openings.
 class AdbFileExplorerView extends HookConsumerWidget {
   const AdbFileExplorerView({
     super.key,
@@ -37,6 +42,17 @@ class AdbFileExplorerView extends HookConsumerWidget {
     final path = useState(initialPath);
     final history = useState<List<String>>([]);
     final selected = useState<Set<String>>({});
+    final previewed = useState<String?>(null);
+    final dragging = useState(false);
+    final pushing = useState(false);
+    final listFocus = useFocusNode(debugLabel: 'device files');
+    // Drops on this browser push here, so the window-wide APK drop zone must ignore them.
+    final dropKey = useMemoized(GlobalKey.new);
+    useEffect(() {
+      if (openReason != AdbFileExplorerOpenReason.push) return null;
+      ApkDropZone.exclude(dropKey);
+      return () => ApkDropZone.include(dropKey);
+    }, const []);
     final pathController = useTextEditingController(text: initialPath);
     useEffect(() {
       pathController.text = path.value;
@@ -45,11 +61,19 @@ class AdbFileExplorerView extends HookConsumerWidget {
 
     final t = AppTokens.of(context);
     final text = Theme.of(context).textTheme;
-    final pickFolder = openReason == AdbFileExplorerOpenReason.pickFolder;
+    final pushMode = openReason == AdbFileExplorerOpenReason.push;
     final query = (device: device, path: path.value);
     final files = ref.watch(adbFilesProvider(query));
     final screen = MediaQuery.sizeOf(context);
     final compact = WindowSize.of(context).isCompact;
+    final adb = ref.read(adbControllerProvider);
+
+    // A remembered push folder may be gone: fall back to /sdcard.
+    final missing = files.hasError && path.value == initialPath && initialPath != '/sdcard';
+    useEffect(() {
+      if (missing) path.value = '/sdcard';
+      return null;
+    }, [missing]);
 
     void go(String next) {
       var normalized = next.trim().replaceAll(RegExp(r'/+'), '/');
@@ -61,6 +85,7 @@ class AdbFileExplorerView extends HookConsumerWidget {
       if (normalized == path.value) return;
       history.value = [...history.value, path.value];
       path.value = normalized;
+      previewed.value = null;
     }
 
     void up() {
@@ -72,6 +97,23 @@ class AdbFileExplorerView extends HookConsumerWidget {
     String child(String name) => path.value == '/' ? '/$name' : '${path.value}/$name';
 
     final crumbs = path.value.split('/').where((e) => e.isNotEmpty).toList();
+
+    void openLarge(String file, List<AdbFileSystem> entries) {
+      final names = [
+        for (final e in entries)
+          if (e is AdbFile) child(e.name),
+      ];
+      showFilePreview(context, device: device, files: names, index: names.indexOf(file).clamp(0, names.length - 1));
+    }
+
+    Future<void> pushInto(List<String>? local) async {
+      pushing.value = true;
+      try {
+        await adb.pushFile(device, files: local, destination: path.value);
+      } finally {
+        if (context.mounted) pushing.value = false;
+      }
+    }
 
     final places = Wrap(
       spacing: 6,
@@ -90,17 +132,14 @@ class AdbFileExplorerView extends HookConsumerWidget {
 
     final list = files.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => ErrorPanel(
-        error: e,
-        compact: true,
-        onRetry: () async => ref.invalidate(adbFilesProvider(query)),
-      ),
+      error: (e, _) =>
+          ErrorPanel(error: e, compact: true, onRetry: () async => ref.invalidate(adbFilesProvider(query))),
       data: (entries) {
-        final visible = pickFolder ? entries.whereType<AdbDirectory>().toList() : entries;
+        final visible = entries;
         if (visible.isEmpty) {
           return Center(
             child: Text(
-              pickFolder ? 'No folders here. Choose this folder, or go up.' : 'This folder is empty.',
+              pushMode ? 'This folder is empty. Push files here, or drop them.' : 'This folder is empty.',
               style: TextStyle(color: t.textMuted),
             ),
           );
@@ -119,13 +158,25 @@ class AdbFileExplorerView extends HookConsumerWidget {
             }
 
             return ListTile(
-              selected: isSelected,
+              selected: isSelected || previewed.value == full,
               leading: isDir
                   ? Icon(Icons.folder_rounded, color: t.accent)
+                  : pushMode
+                  ? Icon(fileKindIcon(full), color: t.textMuted)
                   : Checkbox(value: isSelected, onChanged: (_) => toggle()),
               title: Text(entry.name, overflow: TextOverflow.ellipsis),
               trailing: isDir ? const Icon(Icons.chevron_right_rounded) : null,
-              onTap: isDir ? () => go(full) : toggle,
+              onTap: isDir
+                  ? () => go(full)
+                  : () {
+                      if (!pushMode) toggle();
+                      listFocus.requestFocus();
+                      if (compact) {
+                        openLarge(full, entries);
+                      } else {
+                        previewed.value = full;
+                      }
+                    },
             );
           },
         );
@@ -133,24 +184,23 @@ class AdbFileExplorerView extends HookConsumerWidget {
     );
 
     final count = selected.value.length;
-    final primaryLabel = pickFolder
-        ? 'Push here'
-        : count == 0
-            ? 'Pull'
-            : 'Pull $count ${count == 1 ? 'file' : 'files'}';
-    final primary = FilledButton(
-      onPressed: pickFolder
-          ? () => Navigator.of(context).pop(path.value)
-          : count == 0
-              ? null
-              : () => Navigator.of(context).pop(selected.value.toList()),
-      child: Text(primaryLabel),
-    );
+    final primary = pushMode
+        ? FilledButton.icon(
+            onPressed: pushing.value ? null : () => pushInto(null),
+            icon: pushing.value
+                ? const SizedBox.square(dimension: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                : const Icon(Icons.upload_file_rounded, size: 18),
+            label: const Text('Push files here…'),
+          )
+        : FilledButton(
+            onPressed: count == 0 ? null : () => Navigator.of(context).pop(selected.value.toList()),
+            child: Text(count == 0 ? 'Pull' : 'Pull $count ${count == 1 ? 'file' : 'files'}'),
+          );
 
     return Dialog(
       insetPadding: compact ? EdgeInsets.zero : const EdgeInsets.all(24),
       child: SizedBox(
-        width: compact ? screen.width : (screen.width - 80).clamp(360.0, 720.0),
+        width: compact ? screen.width : (screen.width - 80).clamp(360.0, 1100.0),
         height: compact ? screen.height : (screen.height - 80).clamp(420.0, 780.0),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
@@ -168,9 +218,9 @@ class AdbFileExplorerView extends HookConsumerWidget {
                 ],
               ),
               Text(
-                pickFolder
-                    ? 'Open the folder on ${device.displayName} where the files should go.'
-                    : 'Tick the files on ${device.displayName} to copy to this computer.',
+                pushMode
+                    ? 'Open the folder where the files should go, then push files from your computer or drop them here.'
+                    : 'Tick the files on ${device.displayName} to copy to this computer. Click a file to preview it.',
                 style: TextStyle(color: t.textMuted),
               ),
               const SizedBox(height: 14),
@@ -222,23 +272,77 @@ class AdbFileExplorerView extends HookConsumerWidget {
                     TextButton(onPressed: () => go('/'), child: const Text('/')),
                     for (var i = 0; i < crumbs.length; i++) ...[
                       Icon(Icons.chevron_right_rounded, size: 16, color: t.textMuted),
-                      TextButton(
-                        onPressed: () => go('/${crumbs.sublist(0, i + 1).join('/')}'),
-                        child: Text(crumbs[i]),
-                      ),
+                      TextButton(onPressed: () => go('/${crumbs.sublist(0, i + 1).join('/')}'), child: Text(crumbs[i])),
                     ],
                   ],
                 ),
               ),
               const SizedBox(height: 6),
               Expanded(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: t.surface,
-                    borderRadius: t.borderRadiusLarge,
-                    border: Border.fromBorderSide(t.subtleSide),
+                child: CallbackShortcuts(
+                  bindings: {
+                    const SingleActivator(LogicalKeyboardKey.space): () {
+                      final current = previewed.value;
+                      final entries = files.valueOrNull;
+                      if (current != null && entries != null) openLarge(current, entries);
+                    },
+                  },
+                  child: Focus(
+                    focusNode: listFocus,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(
+                          flex: 11,
+                          child: DropTarget(
+                            key: dropKey,
+                            enable: pushMode,
+                            onDragEntered: (_) => dragging.value = true,
+                            onDragExited: (_) => dragging.value = false,
+                            onDragDone: (details) {
+                              dragging.value = false;
+                              final local = details.files.map((f) => f.path).toList();
+                              if (local.isNotEmpty) pushInto(local);
+                            },
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 150),
+                              decoration: BoxDecoration(
+                                color: dragging.value ? t.accentSoft : t.surface,
+                                borderRadius: t.borderRadiusLarge,
+                                border: dragging.value
+                                    ? Border.all(color: t.accent, width: 2)
+                                    : Border.fromBorderSide(t.subtleSide),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: t.borderRadiusLarge,
+                                child: dragging.value
+                                    ? Center(
+                                        child: Text(
+                                          'Drop to push into ${path.value}',
+                                          style: TextStyle(color: t.onAccentSoft, fontWeight: FontWeight.w600),
+                                        ),
+                                      )
+                                    : list,
+                              ),
+                            ),
+                          ),
+                        ),
+                        if (!compact) ...[
+                          const SizedBox(width: 12),
+                          Expanded(
+                            flex: 9,
+                            child: FilePreviewPane(
+                              device: device,
+                              path: previewed.value,
+                              onExpand: previewed.value == null || files.valueOrNull == null
+                                  ? null
+                                  : () => openLarge(previewed.value!, files.valueOrNull!),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
-                  child: ClipRRect(borderRadius: t.borderRadiusLarge, child: list),
                 ),
               ),
               const SizedBox(height: 14),
@@ -246,15 +350,18 @@ class AdbFileExplorerView extends HookConsumerWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      pickFolder ? 'Destination: ${path.value}' : (count == 0 ? 'No files selected' : '$count selected'),
+                      pushMode ? 'Pushing into ${path.value}' : (count == 0 ? 'No files selected' : '$count selected'),
                       style: AppThemeFactory.mono(t, size: 12, color: t.textMuted),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  if (!pickFolder && count > 0)
+                  if (!pushMode && count > 0)
                     TextButton(onPressed: () => selected.value = {}, child: const Text('Clear')),
                   const SizedBox(width: 8),
-                  OutlinedButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
+                  OutlinedButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text(pushMode ? 'Done' : 'Cancel'),
+                  ),
                   const SizedBox(width: 8),
                   primary,
                 ],
@@ -266,3 +373,12 @@ class AdbFileExplorerView extends HookConsumerWidget {
     );
   }
 }
+
+/// An icon for a file by its preview kind.
+IconData fileKindIcon(String path) => switch (FilePreviewKind.of(path)) {
+  FilePreviewKind.image => Icons.image_outlined,
+  FilePreviewKind.video => Icons.movie_outlined,
+  FilePreviewKind.audio => Icons.music_note_outlined,
+  FilePreviewKind.text => Icons.description_outlined,
+  FilePreviewKind.other => Icons.insert_drive_file_outlined,
+};

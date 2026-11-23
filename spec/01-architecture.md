@@ -50,8 +50,8 @@ lib/
 ```
 
 Features: `about`, `adb` (+ `adb_file_explorer/`), `add_device`, `app_init_error`,
-`ai`, `command_queue` (Activity), `device` (host machine info), `device_page`, `errors`,
-`file_picker`, `logcat`, `menubar`, `mirror`, `package_info`, `palette`, `qr_pair`, `settings`, `shells`,
+`ai`, `apps` (app icons/names via the on-device helper), `command_queue` (Activity), `device` (host machine info), `device_page`, `errors`,
+`file_picker`, `file_preview`, `logcat`, `menubar`, `mirror`, `package_info`, `palette`, `qr_pair`, `settings`, `shells`,
 `splash`, `style_picker`, `update_checker`.
 
 `lib/app/design/` (not a feature): styles, tokens, theme factory, width classes, shared
@@ -75,6 +75,8 @@ and `../../utils/utils.dart`. When you add a file, add it to its folder's barrel
 | `installedPackagesProvider((device:, includeSystem:))` | `FutureProvider.autoDispose.family<List<String>, PackagesQuery>` | adb/adb_providers.dart |
 | `logcatControllerProvider(device)` / `mirrorControllerProvider(device)` | `StateNotifierProvider.autoDispose.family` | logcat/, mirror/ |
 | `aiControllerProvider` | `StateNotifierProvider<AiController, AiState>` (on-device model) | ai/ai_service.dart |
+| `appInfoServiceProvider` / `appInfoProvider(device)` | `Provider<AppInfoService>` / `StateNotifierProvider.family<AppInfoController, Map<String, AppInfo>, AdbDevice>` | apps/ |
+| `filePreviewServiceProvider` / `filePreviewProvider((device:, path:))` | `Provider<FilePreviewService>` / `FutureProvider.autoDispose.family<FilePreviewData, FilePreviewQuery>` | file_preview/file_preview_service.dart |
 | `activityCountsProvider` | `Provider<({int running, int errors})>` | shells/home_shell.dart |
 | `adbFileExplorerControllerProvider` | `ChangeNotifierProvider` | adb/adb_file_explorer/… |
 | `qrPairControllerProvider` | `StateNotifierProvider.autoDispose<QrPairController, QrPairState>` | qr_pair/qr_pair_controller.dart |

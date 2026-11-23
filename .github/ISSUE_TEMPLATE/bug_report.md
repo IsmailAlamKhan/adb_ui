@@ -1,38 +1,31 @@
 ---
 name: Bug report
-about: Create a report to help us improve
+about: Something in ADB UI doesn't work as it should
 title: ''
-labels: ''
+labels: bug
 assignees: ''
 
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+**What happened**
+What you did, what you expected, and what happened instead.
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+**Steps to reproduce**
+1. …
+2. …
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+**Screenshots or the error details**
+If ADB UI showed an error, click **Details** and paste or screenshot it.
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+**Logs**
+Settings → About → *Report a bug or request a feature* saves ADB UI's logs as a zip. Attach it here.
+(See [Troubleshooting](https://github.com/IsmailAlamKhan/adb_ui/blob/master/docs/troubleshooting.md) for common problems.)
 
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
-
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
-
-**Additional context**
-Add any other context about the problem here.
+**Your setup**
+- ADB UI version (Settings → About):
+- Style (Workbench / Console / Launcher):
+- Computer OS and version (e.g. macOS 15.2, Windows 11, Ubuntu 24.04):
+- `adb version` output:
+- `scrcpy --version` (only for screen mirror problems):
+- Phone model and Android version:
+- Connected by: USB / Wi-Fi (QR, pairing code or IP)

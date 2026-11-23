@@ -33,9 +33,13 @@ class AiFilterMapper {
     'additionalProperties': false,
   };
 
-  static String systemPrompt({required List<String> packages, String? followedPackage}) {
+  static String systemPrompt({
+    required List<String> packages,
+    Map<String, String> labels = const {},
+    String? followedPackage,
+  }) {
     // Keep the package list short enough for a small context window.
-    final shown = packages.take(400).join(', ');
+    final shown = packages.take(400).map((p) => labels[p] == null ? p : '$p (${labels[p]})').join(', ');
     return '''
 You turn a request about Android logcat into a filter. Reply with JSON only.
 Fields (all optional except explanation):
@@ -64,6 +68,7 @@ Installed packages: $shown''';
   static LogcatFilter toFilter(
     Map<String, dynamic> json, {
     required List<String> packages,
+    Map<String, String> labels = const {},
     LogcatFilter base = const LogcatFilter(),
     String? request,
   }) {
@@ -75,7 +80,7 @@ Installed packages: $shown''';
     // Rules on the request come first; the model only fills what they didn't find.
     Object? rulesText;
     if (request != null) {
-      final rules = fromRules(request, packages: packages, followed: base.package);
+      final rules = fromRules(request, packages: packages, labels: labels, followed: base.package);
       rulesText = rules['text'];
       json = {...json, ...rules, if (rules['excludeTags'] != null || json['excludeTags'] != null)
         'excludeTags': {...?(json['excludeTags'] as List?)?.whereType<String>(), ...?(rules['excludeTags'] as List?)?.whereType<String>()}.toList()};
@@ -94,7 +99,7 @@ Installed packages: $shown''';
     }
 
     var package = resolvePackage(json['package'], packages);
-    if (package != null && said != null && !_namesApp(said, package)) {
+    if (package != null && said != null && !_namesApp(said, package, labels[package])) {
       package = RegExp(r'\b(my|this|the) app\b').hasMatch(said) ? base.package : null;
     }
     if (package != null && package != base.package) {
@@ -160,7 +165,12 @@ Installed packages: $shown''';
 
   /// Deterministic reading of the request: preset words, a named installed app, and tags to
   /// hide. Returned as model-style JSON so it merges with the model's answer.
-  static Map<String, dynamic> fromRules(String request, {required List<String> packages, String? followed}) {
+  static Map<String, dynamic> fromRules(
+    String request, {
+    required List<String> packages,
+    Map<String, String> labels = const {},
+    String? followed,
+  }) {
     final said = request.toLowerCase();
     final out = <String, dynamic>{};
     if (RegExp(r'\b(crash\w*|anrs?|fatal|exceptions?|tombstones?)\b').hasMatch(said)) {
@@ -170,7 +180,7 @@ Installed packages: $shown''';
     } else if (RegExp(r'\bwarn(ing)?s?\b').hasMatch(said)) {
       out['preset'] = 'warnings';
     }
-    final named = packages.where((p) => _namesApp(said, p)).toList()
+    final named = packages.where((p) => _namesApp(said, p, labels[p])).toList()
       ..sort((a, b) => b.length.compareTo(a.length));
     if (named.isNotEmpty) {
       out['package'] = named.first;
@@ -180,7 +190,9 @@ Installed packages: $shown''';
     final hide = RegExp(r'\b(?:hide|without|exclude|except|ignore|no)\b(.*)', caseSensitive: false).firstMatch(request);
     // Leftover meaningful words (not preset words, the app's name or hidden tags) are searched for.
     final shown = hide == null ? request : request.substring(0, hide.start);
-    final appWords = {for (final p in named.take(1)) ...p.toLowerCase().split('.')};
+    final appWords = {
+      for (final p in named.take(1)) ...[...p.toLowerCase().split('.'), ...?labels[p]?.toLowerCase().split(RegExp(r'\s+'))],
+    };
     final words = shown
         .toLowerCase()
         .split(RegExp(r'[^\w.-]+'))
@@ -209,12 +221,17 @@ Installed packages: $shown''';
 
   static const _genericSegments = {'com', 'org', 'net', 'android', 'google', 'app', 'apps', 'mobile', 'example'};
 
-  /// Whether [said] names [package] (a meaningful segment of it appears in the request).
-  static bool _namesApp(String said, String package) => package
-      .toLowerCase()
-      .split('.')
-      .where((s) => s.length >= 3 && !_genericSegments.contains(s))
-      .any(said.contains);
+  /// Whether [said] names [package]: its app name ([label], as a whole word) or a meaningful
+  /// segment of the package appears in the request.
+  static bool _namesApp(String said, String package, [String? label]) {
+    final name = label?.trim().toLowerCase();
+    if (name != null && name.length >= 3 && RegExp('\\b${RegExp.escape(name)}\\b').hasMatch(said)) return true;
+    return package
+        .toLowerCase()
+        .split('.')
+        .where((s) => s.length >= 3 && !_genericSegments.contains(s))
+        .any(said.contains);
+  }
 
   /// Exact package, or the one whose name or last segment matches case-insensitively.
   static String? resolvePackage(Object? value, List<String> packages) {

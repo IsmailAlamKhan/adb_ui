@@ -7,6 +7,9 @@ feature spec under `features/` (status `Proposed` → `In progress`), link it he
 |------|--------|------|
 | Logcat viewer with filters, follow app/foreground, presets, AI filter, export | Shipped in 0.0.17 | [features/logcat.md](features/logcat.md) |
 | In-app screen mirror with controls | Shipped in 0.0.17 | [features/screen-mirror.md](features/screen-mirror.md) |
+| File preview in the device file browser | Implemented (unreleased) | [features/file-preview.md](features/file-preview.md) |
+| Real app icons and names | Implemented (unreleased) | [features/app-icons.md](features/app-icons.md) |
+| Push opens the device file browser | Implemented (unreleased) | [features/file-explorer-transfer.md](features/file-explorer-transfer.md) |
 | Intent & deep-link builder (`am start`, broadcasts) with saved presets | Proposed | — |
 | Better device file explorer (real file/dir detection, sizes, delete/rename, drag-drop) | Proposed | — |
 | Macro / automation recorder (record & replay command sequences) | Proposed | — |

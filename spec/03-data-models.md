@@ -139,3 +139,12 @@ shape of an existing key needs a migration or tolerant `fromJson` — old instal
 - `mirror/`: `MirrorMode`, `MirrorStatus`, `MirrorQuality`, `MirrorState`;
   `mirrorControllerProvider` (`autoDispose.family` by `AdbDevice`). Protocol: `ScrcpyControl`,
   `ScrcpyStreamParser`, `LiveMatroska`.
+
+## App info and file preview (2026-11-23)
+- `apps/apps_model.dart`: `AppInfo { package, label?, icon? }` (`name` = label or package),
+  `parsePackageVersions` (`pm list packages --show-versioncode`), `parseHelperInfoLine`,
+  `appLetter`, `appHue`. Disk cache `<app support>/app_icons/` (`package@versionCode.png`,
+  `labels.json`). See [features/app-icons.md](features/app-icons.md).
+- `file_preview/file_preview_model.dart`: `FilePreviewKind` (by extension, with size limits),
+  `RemoteFileInfo.parse` (`stat -c '%s|%Y'`), `FilePreviewData`, `formatFileSize`, `shellQuote`,
+  `prettyJsonOrSame`. See [features/file-preview.md](features/file-preview.md).

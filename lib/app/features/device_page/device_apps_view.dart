@@ -19,7 +19,15 @@ class PackagesList extends HookConsumerWidget {
     final includeSystem = useState(false);
     final key = (device: device, includeSystem: includeSystem.value);
     final packages = ref.watch(installedPackagesProvider(key));
+    final infos = ref.watch(appInfoProvider(device));
     final t = AppTokens.of(context);
+    final loaded = packages.valueOrNull;
+    useEffect(() {
+      if (loaded != null) {
+        ref.read(appInfoProvider(device).notifier).ensure(loaded, includeSystem: includeSystem.value);
+      }
+      return null;
+    }, [loaded]);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -37,7 +45,7 @@ class PackagesList extends HookConsumerWidget {
                 onChanged: (v) => query.value = v.trim().toLowerCase(),
                 decoration: const InputDecoration(
                   prefixIcon: Icon(Icons.search_rounded, size: 18),
-                  hintText: 'Search packages',
+                  hintText: 'Search apps',
                 ),
               ),
             ),
@@ -68,13 +76,17 @@ class PackagesList extends HookConsumerWidget {
               onRetry: () async => ref.invalidate(installedPackagesProvider(key)),
             ),
             data: (list) {
-              final filtered =
-                  query.value.isEmpty ? list : list.where((p) => p.toLowerCase().contains(query.value)).toList();
+              bool matches(String p) =>
+                  p.toLowerCase().contains(query.value) ||
+                  (infos[p]?.label?.toLowerCase().contains(query.value) ?? false);
+              // Apps with a known name first, sorted by name; the rest by package.
+              final filtered = (query.value.isEmpty ? [...list] : list.where(matches).toList())
+                ..sort((a, b) => (infos[a]?.name ?? '~$a').toLowerCase().compareTo((infos[b]?.name ?? '~$b').toLowerCase()));
               if (filtered.isEmpty) {
                 return Padding(
                   padding: const EdgeInsets.all(16),
                   child: Text(
-                    list.isEmpty ? 'No apps installed by you.' : 'No package matches "${query.value}".',
+                    list.isEmpty ? 'No apps installed by you.' : 'No app matches "${query.value}".',
                     style: TextStyle(color: t.textMuted),
                   ),
                 );
@@ -92,10 +104,14 @@ class PackagesList extends HookConsumerWidget {
                     separatorBuilder: (_, __) => Divider(height: 1, color: t.borderSubtle),
                     itemBuilder: (context, index) {
                       final package = filtered[index];
+                      final label = infos[package]?.label;
                       return ListTile(
                         onTap: onTap == null ? null : () => onTap!(package),
-                        leading: Icon(Icons.android_rounded, color: t.success),
-                        title: Text(package, style: AppThemeFactory.mono(t)),
+                        leading: AppIcon(device: device, package: package, size: 36),
+                        title: Text(label ?? package, overflow: TextOverflow.ellipsis),
+                        subtitle: label == null
+                            ? null
+                            : Text(package, style: packageTextStyle(context), overflow: TextOverflow.ellipsis),
                         trailing: trailing(package),
                       );
                     },

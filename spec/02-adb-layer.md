@@ -54,8 +54,8 @@ Builds argv as: `[-s <device.id>]? [shell]? [command]? ...arguments` and calls
 | `disconnect(device)` | `adb -s ID disconnect ID` | stdout contains `disconnected` | `Disconnected from ID` |
 | `installApk(device, path)` | `adb -s ID install path` | stdout contains `Success` (stderr warnings allowed) | `Installed <file name>` |
 | `uninstallApp(device, pkg)` | `adb -s ID uninstall pkg` | stdout contains `Success` | `Uninstalled pkg` |
-| `pushFile(device, file, dest)` | `adb -s ID push file dest` | stdout contains `pushed` | `Pushed file` |
-| `pullFile(device, file, dest)` | `adb -s ID pull file dest` | stdout contains `pulled` | `Pulled file` |
+| `pushFile(device, file, dest)` | `adb -s ID push file dest` | exit code 0 (adb 37+ prints "1 file pushed" to **stderr** when not on a terminal, so output isn't checked); error = stderr/stdout | `Pushed file` |
+| `pullFile(device, file, dest)` | `adb -s ID pull file dest` | exit code 0 (summary goes to stderr on adb 37+) | `Pulled file` |
 | `inputText(device, text)` | `adb -s ID shell input text <escaped>` | stdout empty | `Text sent` |
 | `runCustomCommand(device, cmd)` | `adb -s ID <cmd split on spaces>` | exit code 0 | stdout; non-zero → `CommandFailedException` with stdout + stderr |
 | `scrcpy(device)` | `scrcpy -s ID` | stdout contains `INFO: Device` | `Scrcpy started` |

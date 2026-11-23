@@ -39,7 +39,8 @@ process change. They apply to humans and AI agents alike.
 - [ ] New feature folder → `01-architecture.md` feature list + `README.md` feature table
 - [ ] Startup order change → `01-architecture.md` startup sequence
 - [ ] Release asset, version or CI change → `05-build-and-release.md`
-- [ ] User-visible change → also a line for the next `CHANGELOG.md` entry
+- [ ] User-visible change → also a line for the next `CHANGELOG.md` entry, and the user docs
+      (`README.md`, `docs/user-guide.md`, `docs/troubleshooting.md`) if it changes what users do or see
 
 ## Style for spec files
 

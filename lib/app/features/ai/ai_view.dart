@@ -29,7 +29,14 @@ class AiLogFilterField extends HookConsumerWidget {
       try {
         final packages = await ref.read(installedPackagesProvider((device: device, includeSystem: false)).future)
             .catchError((_) => <String>[]);
-        final filter = await controller.filterFor(request, packages: packages, current: current);
+        // Real app names ("Gmail") let the request name apps whose package doesn't say so.
+        final infos = ref.read(appInfoProvider(device).notifier);
+        await infos.ensure(packages).timeout(const Duration(seconds: 8), onTimeout: () {});
+        final labels = {
+          for (final e in ref.read(appInfoProvider(device)).entries)
+            if (e.value.label != null) e.key: e.value.label!,
+        };
+        final filter = await controller.filterFor(request, packages: packages, labels: labels, current: current);
         onFilter(filter);
       } catch (e) {
         error.value = e;

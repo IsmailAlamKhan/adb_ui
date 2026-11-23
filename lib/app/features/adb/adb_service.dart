@@ -454,11 +454,12 @@ class ProccessAdbServiceImpl implements AdbService {
       arguments: [file, destinationPath],
       device: device,
     ).then((result) async {
+      // adb 37+ prints its "1 file pushed" summary to stderr when not on a terminal, so
+      // success is the exit code; the output only explains a failure.
       return result.copyWith(
-        messege: result.stdout.then((output) {
-          if (output.contains('pushed')) {
-            return 'Pushed $file';
-          }
+        messege: Future.wait([result.exitCode, result.stdout, result.stderr]).then((v) {
+          if (v[0] == 0) return 'Pushed $file';
+          final output = '${v[2]}\n${v[1]}'.trim();
           logError('Failed to push $file', error: output);
           throw AppException('Failed to push cause $output');
         }),
@@ -473,11 +474,12 @@ class ProccessAdbServiceImpl implements AdbService {
       arguments: [file, destinationPath],
       device: device,
     ).then((result) async {
+      // adb 37+ prints its "1 file pulled" summary to stderr when not on a terminal, so
+      // success is the exit code; the output only explains a failure.
       return result.copyWith(
-        messege: result.stdout.then((output) {
-          if (output.contains('pulled')) {
-            return 'Pulled $file';
-          }
+        messege: Future.wait([result.exitCode, result.stdout, result.stderr]).then((v) {
+          if (v[0] == 0) return 'Pulled $file';
+          final output = '${v[2]}\n${v[1]}'.trim();
           logError('Failed to pull $file', error: output);
           throw AppException('Failed to pull cause $output');
         }),
