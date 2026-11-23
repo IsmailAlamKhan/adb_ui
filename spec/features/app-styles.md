@@ -1,6 +1,6 @@
 # Feature: App styles (first-run picker and Settings)
 
-**Status:** Implemented (unreleased) · **Code:** `lib/app/design/`, `lib/app/features/style_picker/`, `lib/app/features/settings/`
+**Status:** Shipped in 0.0.16 · **Code:** `lib/app/design/`, `lib/app/features/style_picker/`, `lib/app/features/settings/`
 **Owner / requested by:** owner · **Last updated:** 2026-11-22
 
 ## Problem

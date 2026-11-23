@@ -1,6 +1,6 @@
 # Feature: Device actions
 
-**Status:** Shipped; redesigned 2026-11-22 (unreleased) · **Code:** `adb/device_actions.dart` (`DeviceAction`, `AppShortcuts`), `adb/adb_controller.dart`, `device_page/`
+**Status:** Shipped; redesigned in 0.0.16 · **Code:** `adb/device_actions.dart` (`DeviceAction`, `AppShortcuts`), `adb/adb_controller.dart`, `device_page/`
 
 Actions run on the **selected device** (`selectedDeviceProvider`). They're defined once in the
 `DeviceAction` enum and rendered by every style: tiles (`DeviceActionGrid`, Workbench

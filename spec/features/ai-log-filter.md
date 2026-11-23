@@ -1,6 +1,6 @@
 # Feature: AI log filter (on-device model)
 
-**Status:** Implemented (unreleased) · **Code:** `lib/app/features/ai/`, logcat AI field
+**Status:** Shipped in 0.0.17 · **Code:** `lib/app/features/ai/`, logcat AI field
 **Owner / requested by:** owner · **Last updated:** 2026-11-22
 
 ## Problem

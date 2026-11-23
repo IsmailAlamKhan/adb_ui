@@ -1,6 +1,6 @@
 # 08 — Full app redesign: three selectable styles
 
-**Status:** Implemented (unreleased) — all three styles, light and dark · **Last updated:** 2026-11-22
+**Status:** Shipped in 0.0.16 — all three styles, light and dark · **Last updated:** 2026-11-22
 **Mock-ups:** design canvas "ADB UI redesign options" (private to the owner).
 
 ## Decision

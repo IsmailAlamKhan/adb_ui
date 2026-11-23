@@ -1,6 +1,6 @@
 # Feature: Devices (list and selection)
 
-**Status:** Shipped; redesigned 2026-11-22 (unreleased) · **Code:** `adb/adb_providers.dart`, `device_page/device_widgets.dart`, `shells/`
+**Status:** Shipped; redesigned in 0.0.16 · **Code:** `adb/adb_providers.dart`, `device_page/device_widgets.dart`, `shells/`
 
 - `connectedDevicesProvider` polls `adb devices` every second (models cached per device).
 - The user **selects** a device (`selectedDeviceIdProvider`); `selectedDeviceProvider` resolves

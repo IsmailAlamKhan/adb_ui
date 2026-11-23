@@ -1,6 +1,6 @@
 # Feature: Logcat
 
-**Status:** Implemented (unreleased) · **Code:** `lib/app/features/logcat/`
+**Status:** Shipped in 0.0.17 · **Code:** `lib/app/features/logcat/`
 **Owner / requested by:** owner · **Last updated:** 2026-11-22
 
 ## Problem

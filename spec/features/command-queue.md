@@ -1,6 +1,6 @@
 # Feature: Activity (command queue) and command output
 
-**Status:** Shipped; redesigned 2026-11-22 (unreleased) · **Code:** `command_queue/` (`CommandQueueController`, `command_queue_view.dart`)
+**Status:** Shipped; redesigned in 0.0.16 · **Code:** `command_queue/` (`CommandQueueController`, `command_queue_view.dart`)
 
 Every command run through `AdbController.runForResult` is recorded here, newest first, and
 persisted (`commands` key, see 03-data-models).

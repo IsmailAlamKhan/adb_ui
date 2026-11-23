@@ -1,6 +1,6 @@
 # Feature: Error handling and error display
 
-**Status:** Implemented (unreleased) · **Code:** `lib/app/features/errors/`, `lib/app/features/adb/`, `lib/app/features/command_queue/`
+**Status:** Shipped in 0.0.16 · **Code:** `lib/app/features/errors/`, `lib/app/features/adb/`, `lib/app/features/command_queue/`
 **Owner / requested by:** owner · **Last updated:** 2026-11-22
 
 ## Problem

@@ -1,6 +1,6 @@
 # Feature: Pair & connect with QR code
 
-**Status:** Implemented (unreleased) · **Code:** `lib/app/features/qr_pair/`, `AdbService.mdnsServices`, `AdbMdnsService`
+**Status:** Shipped in 0.0.16 · **Code:** `lib/app/features/qr_pair/`, `AdbService.mdnsServices`, `AdbMdnsService`
 **Requested by:** owner · **Last updated:** 2026-11-22
 
 ## Problem
