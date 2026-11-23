@@ -127,7 +127,7 @@ You tried to push into a system folder (`/system`, `/vendor`…). Push into `/sd
 
 ### Version 0.0.17 says a push or pull failed, but the file is there
 That's a bug in 0.0.17: newer adb versions (37+) print their "1 file pushed" message somewhere
-ADB UI didn't look. The copy itself worked. It's fixed in the next version, which checks adb's
+ADB UI didn't look. The copy itself worked. It's fixed in 0.0.18, which checks adb's
 result instead.
 
 ### A preview doesn't show

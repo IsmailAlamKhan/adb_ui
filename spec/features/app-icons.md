@@ -1,6 +1,6 @@
 # Feature: App icons and names (on-device helper)
 
-**Status:** Implemented (unreleased) · **Code:** `tool/device_helper/` (Java source + build script),
+**Status:** Shipped in 0.0.18 · **Code:** `tool/device_helper/` (Java source + build script),
 `assets/device/adbui-helper.jar`, `lib/app/features/apps/`
 **Owner / requested by:** owner · **Last updated:** 2026-11-23
 

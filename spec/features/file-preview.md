@@ -1,6 +1,6 @@
 # Feature: File preview
 
-**Status:** Implemented (unreleased) · **Code:** `lib/app/features/file_preview/`
+**Status:** Shipped in 0.0.18 · **Code:** `lib/app/features/file_preview/`
 **Owner / requested by:** owner · **Last updated:** 2026-11-23
 
 ## Problem

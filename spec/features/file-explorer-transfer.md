@@ -1,6 +1,6 @@
 # Feature: Device file explorer & file transfer
 
-**Status:** Shipped; push flow reworked 2026-11-23 · **Code:** `adb/adb_file_explorer/`,
+**Status:** Shipped; push flow reworked in 0.0.18 · **Code:** `adb/adb_file_explorer/`,
 `device_page/device_files_view.dart`, `AdbController.pushFile/pullFile`, `file_preview/`
 **Last updated:** 2026-11-23
 

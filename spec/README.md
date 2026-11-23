@@ -35,8 +35,8 @@ app without opening the code first.
 | Logcat (follow app, foreground, presets) | [features/logcat.md](features/logcat.md) | Shipped in 0.0.17 |
 | AI log filter (on-device model) | [features/ai-log-filter.md](features/ai-log-filter.md) | Shipped in 0.0.17 |
 | In-app screen mirror | [features/screen-mirror.md](features/screen-mirror.md) | Shipped in 0.0.17 |
-| File preview (pane + Quick Look) | [features/file-preview.md](features/file-preview.md) | Implemented (unreleased) |
-| App icons and names (on-device helper) | [features/app-icons.md](features/app-icons.md) | Implemented (unreleased) |
+| File preview (pane + Quick Look) | [features/file-preview.md](features/file-preview.md) | Shipped in 0.0.18 |
+| App icons and names (on-device helper) | [features/app-icons.md](features/app-icons.md) | Shipped in 0.0.18 |
 | Device actions | [features/device-actions.md](features/device-actions.md) | Shipped |
 | Device file explorer & file transfer | [features/file-explorer-transfer.md](features/file-explorer-transfer.md) | Shipped |
 | Command queue & output | [features/command-queue.md](features/command-queue.md) | Shipped |
