@@ -67,7 +67,7 @@ files (`*.g.dart`, `*.freezed.dart`), `build/`, and the platform folders (`windo
 
 - `subosito/flutter-action@v2` with `channel: stable` and `cache: true` (v2.4.0 used the
   retired `actions/cache@v2`, which GitHub now rejects). `actions/checkout@v4`.
-- Linux runs `apt-get update` before installing GTK deps.
+- Linux runs `apt-get update` before installing GTK deps and `libmpv-dev` (media_kit, the in-app mirror, links against libmpv; without it CMake fails with `PkgConfig::mpv` not found). Linux users need `libmpv2` (or `libmpv1`) installed to run the app.
 - Windows output is `build\windows\x64\runner\Release` (Flutter ≥ 3.15); the workflow and
   `Installers/installer.iss` use that path. Inno Setup is installed with Chocolatey first.
 - The tag step needs `secrets.PAT` (a token with `contents: write`). If it fails with
