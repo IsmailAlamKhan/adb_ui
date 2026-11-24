@@ -1,5 +1,6 @@
 ## Unreleased
 
+- Bug reports fill in the GitHub issue for you (version, OS, adb, phone and recent log lines, with your home folder and PATH removed) and save the logs to Downloads ready to attach, with no folder to pick. Logs are no longer deleted after a report
 - Updates install from inside the app: see what's new in every version since yours, download with progress, then Install and restart (macOS replaces the app; Windows runs the installer silently; Linux updates its folder). Skip a version, or check any time from the palette or About
 - The changelog opens in the app and works offline; after an update, "What's new" shows once
 - Restart adb (QR dialog, Settings, command palette): fixes QR pairing stuck on "Pairing device…" and Wi-Fi phones that stop showing up

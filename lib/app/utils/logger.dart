@@ -2,11 +2,11 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:archive/archive_io.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 import '../features/features.dart';
 import 'utils.dart';
@@ -159,47 +159,55 @@ class LogFile {
     _stderrLogFile?.writeAsStringSync(messege, mode: FileMode.append);
   }
 
-  Future<File?> getAllLogsAndReset({Device? device}) async {
-    if (_logFile == null) return Future.value();
-    final now = DateTime.now();
-    final month = DateFormat.MMM().format(now);
-    final name = 'logs-$month-${now.day}';
-    final pathToStoreZip = await FilePicker.platform.getDirectoryPath();
-    if (pathToStoreZip == null) {
-      throw AppException('No Directory Selected', 'no-dir-selected');
-    }
-    var encoder = ZipFileEncoder();
+  /// Zips the logs folder (plus `device_info.json` when [device] is given) into the Downloads
+  /// folder, or `<app support>/reports/` without one. The logs are kept. See
+  /// spec/features/about-updates-reporting.md.
+  Future<File> exportLogs({Device? device}) async {
+    final stamp = DateFormat('yyyy-MM-dd-HHmm').format(DateTime.now());
+    final target = await getDownloadsDirectory() ??
+        Directory(p.join((await getApplicationSupportDirectory()).path, 'reports'));
+    await target.create(recursive: true);
+    final zipFile = File(p.join(target.path, 'adb-ui-logs-$stamp.zip'));
+    final logsDir = await _localPath;
+    final encoder = ZipFileEncoder()..create(zipFile.path);
+    if (await logsDir.exists()) await encoder.addDirectory(logsDir);
     File? deviceInfoFile;
     if (device != null) {
-      deviceInfoFile = File(p.join(pathToStoreZip, 'device_info.json'));
+      deviceInfoFile = File(p.join((await getTemporaryDirectory()).path, 'device_info.json'));
+      await deviceInfoFile.writeAsString(jsonEncode(device));
+      await encoder.addFile(deviceInfoFile);
     }
-    final zipFilePath = p.join(pathToStoreZip, '$name.zip');
-    final zipFile = File(zipFilePath);
-    final logsDir = await _localPath;
-
-    await compute((_) async {
-      encoder.create(zipFilePath);
-      final dirs = <Directory>[];
-      await for (var item in logsDir.list(recursive: true)) {
-        if (item.statSync().type == FileSystemEntityType.directory && !dirs.contains(item.parent)) {
-          final path = item.parent.path;
-          if (path.split(p.separator).last != 'logs') {
-            await encoder.addDirectory(item.parent);
-            dirs.add(item.parent);
-          }
-        }
-      }
-      final deviceInfo = device;
-      deviceInfoFile?.writeAsStringSync(jsonEncode(deviceInfo));
-      if (deviceInfoFile != null) {
-        await encoder.addFile(deviceInfoFile);
-      }
-      encoder.close();
-    }, null);
-    deviceInfoFile?.deleteSync();
-    await logsDir.delete(recursive: true);
-    _init(false);
+    await encoder.close();
+    if (deviceInfoFile != null && await deviceInfoFile.exists()) await deviceInfoFile.delete();
     return zipFile;
+  }
+
+  /// Lines of today's log, or the newest log file when today's is empty, plus the newest
+  /// Flutter error's first line. Raw: callers clean them with `logExcerpt`.
+  Future<List<String>> recentLogLines() async {
+    final lines = <String>[];
+    final logsDir = await _localPath;
+    if (!await logsDir.exists()) return lines;
+    final files = <File>[];
+    await for (final e in logsDir.list(recursive: true)) {
+      if (e is File) files.add(e);
+    }
+    files.sort((a, b) => a.statSync().modified.compareTo(b.statSync().modified));
+    File? newest(String prefix) {
+      for (final f in files.reversed) {
+        if (p.basename(f.path).startsWith(prefix) && f.lengthSync() > 0) return f;
+      }
+      return null;
+    }
+
+    final log = _logFile != null && _logFile!.existsSync() && _logFile!.lengthSync() > 0 ? _logFile : newest('log-');
+    if (log != null) lines.addAll(await log.readAsLines());
+    final flutterErrors = newest('flutter-error-log-');
+    if (flutterErrors != null) {
+      final last = (await flutterErrors.readAsLines()).lastWhere((l) => l.startsWith('Messege:'), orElse: () => '');
+      if (last.isNotEmpty) lines.add(last.replaceFirst('Messege:', 'Messege: Flutter error:'));
+    }
+    return lines;
   }
 
   Future<Directory> get _localPath async {

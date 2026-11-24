@@ -359,12 +359,15 @@ Check any time with **Check for updates** in the command palette (⌘K) or **Set
 app, even offline, and after an update ADB UI shows what's new in it once.
 
 **Bug reports:** go to **Settings → About → Report a bug or request a feature**.
-1. Choose a folder. ADB UI saves its logs there as a zip. You can tick **Include device details
-   in the log file** to add your computer's model and OS.
-2. It then opens a GitHub issue page. Attach the zip and describe the problem.
+1. Choose **Bug report** (you can tick **Include this computer's model and OS**) or **Feature
+   request**.
+2. For a bug, ADB UI saves its logs to your **Downloads** folder as `adb-ui-logs-<date>.zip`,
+   shows the file, and opens a GitHub issue already filled in with your setup (ADB UI
+   version, style, OS, `adb version`, the selected phone) and the most recent log lines, with
+   your home folder and PATH removed. Drag the zip onto the issue and describe the problem.
+3. A feature request opens pre-filled with the questions and your version.
 
-The logs are only shared if you attach the zip yourself. After they're saved, ADB UI clears
-its log folder and starts fresh.
+Nothing is sent until you submit the issue on GitHub. ADB UI keeps its logs after a report.
 
 ### Where things are stored
 

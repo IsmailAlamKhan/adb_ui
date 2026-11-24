@@ -192,11 +192,12 @@ Lower **Quality** to Low (720p) or **Frame rate** to 30, or use a USB cable.
 ## Reporting a problem
 
 1. **Settings → About → Report a bug or request a feature.**
-2. Choose a folder. ADB UI saves its logs there as a zip. Tick **Include device details** if
-   you're happy to share your computer's model and OS.
-3. A GitHub issue page opens. Attach the zip and describe:
-   - what you did and what happened;
-   - your ADB UI version (Settings → About), computer OS, and phone model and Android version;
-   - the output of `adb version`.
+2. Choose **Bug report**. Tick **Include this computer's model and OS** if you're happy to
+   share them.
+3. ADB UI saves its logs to your **Downloads** folder as `adb-ui-logs-<date>.zip`, shows the
+   file, and opens a GitHub issue that's already filled in: your ADB UI version, style,
+   computer OS, `adb version`, the selected phone, and the most recent log lines (your home
+   folder and PATH are removed).
+4. Drag the zip onto the issue, then describe what you did and what happened.
 
-Logs stay on your computer unless you attach them yourself.
+Nothing is sent until you submit the issue, and you can edit or delete any of it first.

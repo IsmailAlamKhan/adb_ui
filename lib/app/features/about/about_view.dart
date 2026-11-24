@@ -195,7 +195,7 @@ class FeatureRequestOrBugReportDialog extends HookWidget {
                 const SizedBox(height: 12),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('Include device details in the log file'),
+                  title: const Text("Include this computer's model and OS"),
                   subtitle: const Text('Computer model and OS. Helps reproduce the bug.'),
                   value: addDeviceDetails.value,
                   onChanged: (v) => addDeviceDetails.value = v,

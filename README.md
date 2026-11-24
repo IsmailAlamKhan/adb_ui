@@ -98,13 +98,15 @@ phone go to **Developer options → Wireless debugging → Pair device with QR c
 - It goes online only to check GitHub for updates and, if you choose, to download the AI
   model once from Hugging Face. The AI filter then works offline, and your logs and requests
   stay on your computer.
-- Logs of the app itself stay on your computer. They are only shared if you make a bug
-  report and attach the zip yourself.
+- Logs of the app itself stay on your computer. A bug report pre-fills the GitHub issue with
+  your setup and recent log lines (your home folder and PATH removed) in your browser, where
+  you can read and edit them before submitting; the full zip is only shared if you attach it.
 
 ## Reporting bugs and requesting features
 
-In the app: **Settings → About → Report a bug or request a feature**. It saves the app's logs
-to a zip you can attach to the GitHub issue it opens. Or open an
+In the app: **Settings → About → Report a bug or request a feature**. For a bug it opens a
+GitHub issue already filled in with your setup and recent log lines, and saves the full logs
+to your Downloads folder, ready to drag onto the issue. Or open an
 [issue](https://github.com/IsmailAlamKhan/adb_ui/issues/new/choose) directly.
 
 ## Contributors

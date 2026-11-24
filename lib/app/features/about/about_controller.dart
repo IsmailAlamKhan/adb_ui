@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:async';
 
 import 'package:package_info_plus/package_info_plus.dart';
@@ -40,26 +41,76 @@ class AboutController extends AutoDisposeAsyncNotifier<AboutModel> with Navigati
     }
   }
 
-  Future<void> featureRequest() => launchUrlString(featureRequestUrl);
+  String get _os => '${switch (Platform.operatingSystem) {
+        'macos' => 'macOS',
+        'windows' => 'Windows',
+        'linux' => 'Linux',
+        final other => other,
+      }} ${Platform.operatingSystemVersion}';
 
+  Future<String> _version() async =>
+      packageInfo?.version ?? (await ref.read(packageInfoServiceProvider).getPackageInfo()).version;
+
+  Future<void> featureRequest() async =>
+      launchUrlString(featureIssueUrl(version: await _version(), os: _os));
+
+  /// Saves the logs to Downloads, shows the zip, and opens a pre-filled bug issue with the
+  /// setup and recent log lines. See spec/features/about-updates-reporting.md.
   Future<void> reportBug(bool addDeviceDetails) async {
-    Device? device;
-    if (addDeviceDetails == true) {
-      device = this.device;
-    }
     try {
       showLoading();
-      await LogFile.instance.getAllLogsAndReset(device: device);
-      hideLoading();
-      showSuccess(
-        'Log file saved',
-        message: 'GitHub is opening. Attach the saved zip to the new issue.',
+      final zip = await LogFile.instance.exportLogs(device: addDeviceDetails ? device : null);
+      final home = Platform.environment['HOME'] ?? Platform.environment['USERPROFILE'];
+      final excerpt = logExcerpt(await LogFile.instance.recentLogLines(), home: home);
+      final info = BugReportInfo(
+        version: await _version(),
+        os: _os,
+        style: ref.read(settingsControllerProvider).style?.label,
+        adbVersion: await ref.read(adbServiceProvider).adbVersion(),
+        phone: await _phone(),
       );
-      await launchUrlString(bugReportUrl);
+      final name = zip.uri.pathSegments.last;
+      hideLoading();
+      await revealFile(zip.path);
+      await launchUrlString(bugIssueUrl(info, name, excerpt));
+      showSuccess(
+        'Logs saved to Downloads',
+        message: 'Drag $name onto the GitHub issue that just opened.',
+        actions: [('Show file', () => revealFile(zip.path))],
+      );
     } catch (e) {
       hideLoading();
       showError(e);
     }
+  }
+
+  Future<String?> _phone() async {
+    final phone = ref.read(selectedDeviceProvider);
+    if (phone == null) return null;
+    String? android;
+    try {
+      android = (await ref.read(devicePropertiesProvider(phone).future)
+              .timeout(const Duration(seconds: 3)))
+          .androidVersion;
+    } catch (_) {}
+    return [
+      phone.displayName,
+      if (android != null) 'Android $android',
+      phone.isWireless ? 'Wi-Fi' : 'USB',
+    ].join(', ');
+  }
+
+  /// Shows [path] selected in Finder / Explorer, or opens its folder on Linux.
+  static Future<void> revealFile(String path) async {
+    try {
+      if (Platform.isMacOS) {
+        await Process.run('open', ['-R', path]);
+      } else if (Platform.isWindows) {
+        await Process.run('explorer', ['/select,', path]);
+      } else {
+        await Process.run('xdg-open', [File(path).parent.path]);
+      }
+    } catch (_) {}
   }
 
   /// In-app changelog (bundled CHANGELOG-ALL.md). See spec/features/updates.md.

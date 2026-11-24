@@ -49,15 +49,8 @@ Future<Directory> getExternalDir() async {
   return directory;
 }
 
-const bugReportUrl =
-    'https://github.com/IsmailAlamKhan/adb_ui/issues/new?assignees=&labels=&template=bug_report.md&title=';
-
-const featureRequestUrl =
-    'https://github.com/IsmailAlamKhan/adb_ui/issues/new?assignees=&labels=&template=feature_request.md&title=';
-
 const appRepoUrl = 'https://github.com/IsmailAlamKhan/adb_ui';
 
-const changelogUrl = 'https://github.com/IsmailAlamKhan/adb_ui/blob/master/CHANGELOG-ALL.md';
 final githubRepoSlug = RepositorySlug.full('IsmailAlamKhan/adb_ui');
 
 

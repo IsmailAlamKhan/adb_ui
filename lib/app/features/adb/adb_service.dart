@@ -70,6 +70,9 @@ abstract class AdbService {
 
   Future<void> verifyAdb();
 
+  /// First line of `adb version` (quiet, not in Activity), or null.
+  Future<String?> adbVersion();
+
   Future<bool> scrcpyAvailable();
 
   /// commands
@@ -526,6 +529,17 @@ class ProccessAdbServiceImpl implements AdbService {
         }),
       );
     });
+  }
+
+  @override
+  Future<String?> adbVersion() async {
+    try {
+      final result = await run('version', addToLogs: false);
+      final lines = (await result.stdout).trim().split('\n');
+      return lines.isEmpty || lines.first.trim().isEmpty ? null : lines.take(2).map((l) => l.trim()).join(' · ');
+    } catch (_) {
+      return null;
+    }
   }
 
   @override
