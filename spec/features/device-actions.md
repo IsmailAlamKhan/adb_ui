@@ -26,7 +26,10 @@ Overview and Console center), palette rows (all styles; Launcher's main UI) and 
   with a success or error toast ([error-handling.md](error-handling.md)). Multi-file push/pull
   shows one "Pushing N files…" toast and one summary toast.
 - Dropping `.apk` files anywhere on the window installs them on the selected device
-  (`ApkDropZone`); the Files tab takes its own drops (push into the open folder).
+  (`ApkDropZone`); the Files tab takes its own drops (push into the open folder). While
+  dragging, the window dims and a card shows "Drop to install on <device>" (or "Connect a
+  device to install") and ".apk files only", in the theme's normal text style. The overlay
+  sits above the screen's Scaffold, so it carries its own transparent `Material`.
 
 ## Adding an action
 

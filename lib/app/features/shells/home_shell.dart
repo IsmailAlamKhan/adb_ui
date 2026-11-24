@@ -89,28 +89,33 @@ class ApkDropZone extends HookConsumerWidget {
           if (dragging.value)
             Positioned.fill(
               child: IgnorePointer(
-                child: Container(
-                  color: t.canvas.withValues(alpha: 0.85),
-                  alignment: Alignment.center,
+                // Sits above the Scaffold: without a Material the text gets the yellow
+                // "no Material" underline (spec/04-ui-conventions.md).
+                child: Material(
+                  type: MaterialType.transparency,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 28),
-                    decoration: BoxDecoration(
-                      color: t.surface,
-                      borderRadius: t.borderRadiusLarge,
-                      border: Border.all(color: t.accent, width: 2),
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.download_rounded, size: 36, color: t.accent),
-                        const SizedBox(height: 10),
-                        Text(
-                          device == null ? 'Connect a device to install' : 'Drop to install on ${device.displayName}',
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
-                        const SizedBox(height: 4),
-                        Text('.apk files only', style: TextStyle(color: t.textMuted)),
-                      ],
+                    color: t.canvas.withValues(alpha: 0.85),
+                    alignment: Alignment.center,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 28),
+                      decoration: BoxDecoration(
+                        color: t.surface,
+                        borderRadius: t.borderRadiusLarge,
+                        border: Border.all(color: t.accent, width: 2),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.download_rounded, size: 36, color: t.accent),
+                          const SizedBox(height: 10),
+                          Text(
+                            device == null ? 'Connect a device to install' : 'Drop to install on ${device.displayName}',
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                          const SizedBox(height: 4),
+                          Text('.apk files only', style: TextStyle(color: t.textMuted)),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -125,8 +130,5 @@ class ApkDropZone extends HookConsumerWidget {
 /// Badge counts for the Activity entry: running and failed (unseen) commands.
 final activityCountsProvider = Provider<({int running, int errors})>((ref) {
   final list = ref.watch(commandQueueControllerProvider);
-  return (
-    running: list.where((c) => !c.isDone).length,
-    errors: list.whereType<CommandModelError>().length,
-  );
+  return (running: list.where((c) => !c.isDone).length, errors: list.whereType<CommandModelError>().length);
 });

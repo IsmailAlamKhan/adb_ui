@@ -51,6 +51,10 @@ macOS menu "About ADB UI" ► AboutView
 - **Never hard-code colours.** Read `AppTokens.of(context)`; Material widgets pick tokens up
   from the theme. Text on the always-dark terminal surfaces uses `onTerminal`,
   `onTerminalMuted`, `terminalAccent` (not `accent`, which may be dark in light themes).
+- **Overlays above a screen's Scaffold need their own `Material`.** Widgets stacked over the
+  whole home (e.g. `ApkDropZone`'s drop overlay) sit outside any Scaffold, so wrap them in
+  `Material(type: MaterialType.transparency)`; otherwise text gets Flutter's yellow
+  double-underline "no Material" style.
 - **Layout by width class**, not raw pixels: `WindowSize.of(context)` → compact (< 720),
   medium (720–1199), expanded (≥ 1200). Every screen must work at 480 px wide.
 - **A style changes presentation only.** Behaviour lives in controllers and in the shared
