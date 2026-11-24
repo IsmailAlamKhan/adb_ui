@@ -1,32 +1,102 @@
 # ADB UI
 
-A desktop app for working with Android devices without typing `adb` commands.
-Connect a phone over USB, Wi-Fi or a QR code, then install apps, move files, read logs,
-mirror the screen and run commands, all from one window. Runs on **Windows, macOS and Linux**.
+**A desktop app for your Android phone, so you don't have to type `adb` commands.**
+Connect over USB, Wi-Fi or a QR code, then install apps, browse files, read logs, mirror the
+screen and run commands, all from one window. Free and open source, for **Windows, macOS and
+Linux**.
+
+[![Latest release](https://img.shields.io/github/v/release/IsmailAlamKhan/adb_ui?label=download)](https://github.com/IsmailAlamKhan/adb_ui/releases/latest)
+![Platforms](https://img.shields.io/badge/platforms-Windows%20%7C%20macOS%20%7C%20Linux-informational)
+[![Downloads](https://img.shields.io/github/downloads/IsmailAlamKhan/adb_ui/total)](https://github.com/IsmailAlamKhan/adb_ui/releases)
 
 **[Download the latest release →](https://github.com/IsmailAlamKhan/adb_ui/releases/latest)**
 
-## What it does
+![ADB UI showing a connected Pixel: quick actions, device details and recent activity](docs/screenshots/overview.png)
 
-- **Connect devices:** plug in a USB cable, scan a QR code (like Android Studio), type a
-  pairing code, or connect by IP address.
-- **Apps:** see every installed app with its real icon and name, install an APK (or just drop
-  it on the window), and uninstall apps from that list.
-- **Files:** browse the phone's storage and **preview** files right in the app (photos,
-  videos, music, text and logs). Push files to the folder you're in, or pull files back.
-- **Logcat:** live device logs with one-click filters for warnings, errors and crashes. It
-  can follow one app (even when it restarts) or whatever app is open on the phone.
-- **AI log filter:** describe what you want ("network errors from Slack") and get the
-  filter. The model runs **on your computer**: your logs and requests never leave it.
-- **Screen mirror:** see and control the phone inside the app with mouse and keyboard.
-  Buttons for Back, Home, Recents, volume, power, rotate, screenshot and screen recording.
-- **Shell and text:** run any adb command, or type text into the phone's focused field.
+## Highlights
+
+- **Connect without a cable.** Scan a QR code with your phone, like Android Studio, or use a
+  pairing code or an IP address.
+- **See and control the phone** inside the app, with buttons for Back, Home, volume, rotate,
+  screenshots and screen recording.
+- **Logcat that's easy to read,** with one-click filters, and an **AI filter that runs on your
+  computer**: describe what you want in plain words and your logs never leave the machine.
+- **Let AI agents use your phone.** Claude Code and other MCP clients can take screenshots,
+  tap, read logs and run UI tests through ADB UI. You approve anything risky.
+- **Sets itself up.** On first launch it checks for adb and scrcpy and installs them for you,
+  with your OK.
+- **Updates itself** in place, and shows what's new after each update.
+
+## A quick tour
+
+### Connect a phone in seconds
+Plug in a cable, or press **⌘N / Ctrl+N** and scan the QR code from **Developer options →
+Wireless debugging** (Android 11+). It pairs and connects by itself.
+
+![Add a device: scan the QR code with your phone](docs/screenshots/qr.png)
+
+### Screen mirror
+See the phone live and use it with your mouse and keyboard. scrcpy powers the live view;
+without it, ADB UI shows refreshed screenshots instead.
+
+![The phone's screen mirrored inside ADB UI, with control buttons on the right](docs/screenshots/mirror.png)
+
+### Logcat, with an AI filter
+Live device logs with filters for warnings, errors and crashes. It can follow one app, even
+when it restarts, or whichever app is open on the phone. Or type what you're after, like
+"network errors from Slack", and a small model **on your computer** builds the filter.
+
+![Logcat with the AI filter box and quick filters](docs/screenshots/logcat.png)
+
+### Apps
+Every installed app with its real icon and name. Install an APK (or drop it on the window)
+and uninstall from the list.
+
+![The app list with icons, package names and Uninstall buttons](docs/screenshots/apps.png)
+
+### Files
+Browse the phone's storage, preview photos, videos, music and text right in the app, push
+files to the folder you're in and pull files back.
+
+![The file browser showing the phone's storage folders](docs/screenshots/files.png)
+
+### Every action, one shortcut away
+Press **⌘K / Ctrl+K** to search every action, device and setting. Each action shows the adb
+command it runs.
+
+![The command palette listing actions with their adb commands and shortcuts](docs/screenshots/palette.png)
+
+### Set up for you
+**Setup & requirements** shows what's installed and installs what's missing through Homebrew,
+winget or your Linux package manager, or downloads the official builds. Nothing is installed
+without your OK.
+
+![Setup & requirements: adb and scrcpy found](docs/screenshots/setup.png)
+
+### And also
+- **Shell and Type text:** run any adb command, or type text into the phone's focused field.
 - **Activity:** every command is recorded with its output, so you can see what happened and
   run it again.
-- **Your choice of look:** three styles (Workbench, Console, Launcher), each with a light and
-  a dark theme. It also works in a small window.
+- **Three styles** (Workbench, Console, Launcher), each with a light and a dark theme. It also
+  works in a small window.
 - **Clear errors:** when something fails, ADB UI says what went wrong and what to try next.
   The raw output is one click away.
+- **Restart adb** from Settings or the palette when a phone stops showing up over Wi-Fi.
+
+## AI agents (MCP)
+
+ADB UI can act as an [MCP](https://modelcontextprotocol.io) server, so Claude Code and other
+AI agents can work with your phone: take screenshots, tap and type, read logcat, browse
+files, and run UI tests that save a report with screenshots.
+
+1. Open **Settings → AI agents** and turn on **Let AI agents use ADB UI**. It only listens on
+   this computer.
+2. Click **Copy Claude Code command** and run it in a terminal, or **Copy JSON config** for
+   another client.
+3. Ask the agent something like "open the app and check the welcome text".
+
+Installing or uninstalling apps, clearing data, shell commands and file copies ask you first
+with **Allow** / **Deny**. Details in the [user guide](docs/user-guide.md#ai-agents-claude-and-other-mcp-clients).
 
 ## Requirements
 
@@ -80,7 +150,8 @@ Get the files from the [releases page](https://github.com/IsmailAlamKhan/adb_ui/
    `<Path to the instalation>` with the folder you extracted to, and copy the file to
    `~/.local/share/applications/`.
 
-ADB UI checks for updates when it starts and tells you when a new version is out.
+After that, ADB UI keeps itself up to date: when a new version is out it shows what changed
+and installs it with one click.
 
 ## Quick start
 
@@ -108,6 +179,8 @@ phone go to **Developer options → Wireless debugging → Pair device with QR c
 - It goes online only to check GitHub for updates and, if you choose, to download the AI
   model once from Hugging Face. The AI filter then works offline, and your logs and requests
   stay on your computer.
+- The AI agent server is off until you turn it on, listens only on this computer and needs a
+  token.
 - Logs of the app itself stay on your computer. A bug report pre-fills the GitHub issue with
   your setup and recent log lines (your home folder and PATH removed) in your browser, where
   you can read and edit them before submitting; the full zip is only shared if you attach it.
