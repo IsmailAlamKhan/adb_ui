@@ -371,9 +371,11 @@ class StylePickerView extends HookConsumerWidget {
                         alignment: Alignment.centerRight,
                         child: FilledButton.icon(
                           autofocus: true,
-                          onPressed: () => ref
-                              .read(settingsControllerProvider.notifier)
-                              .completeOnboarding(style.value, mode.value),
+                          onPressed: () {
+                            // Setup (requirements) comes next, before home.
+                            ref.read(setupGateProvider.notifier).state = SetupMode.firstRun;
+                            ref.read(settingsControllerProvider.notifier).completeOnboarding(style.value, mode.value);
+                          },
                           icon: const Icon(Icons.arrow_forward_rounded, size: 18),
                           label: Text('Continue with ${style.value.label}'),
                         ),

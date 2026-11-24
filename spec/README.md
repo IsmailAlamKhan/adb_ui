@@ -40,6 +40,7 @@ app without opening the code first.
 | File preview (pane + Quick Look) | [features/file-preview.md](features/file-preview.md) | Shipped in 0.0.18 |
 | App icons and names (on-device helper) | [features/app-icons.md](features/app-icons.md) | Shipped in 0.0.18 |
 | AI agent access (MCP server + UI-test tools) | [features/agent-mcp-server.md](features/agent-mcp-server.md) | In progress |
+| Setup & requirements (first-run onboarding) | [features/onboarding.md](features/onboarding.md) | In progress |
 | Device actions | [features/device-actions.md](features/device-actions.md) | Shipped |
 | Device file explorer & file transfer | [features/file-explorer-transfer.md](features/file-explorer-transfer.md) | Shipped |
 | Command queue & output | [features/command-queue.md](features/command-queue.md) | Shipped |
@@ -52,8 +53,8 @@ New feature? Copy [templates/feature-spec.md](templates/feature-spec.md).
 
 ## Glossary
 
-- **adb** — Android Debug Bridge, the CLI the app wraps. Must be on `PATH`.
-- **scrcpy** — optional third-party screen-mirroring CLI. Must be on `PATH` to be used.
+- **adb** — Android Debug Bridge, the CLI the app wraps. Found on `PATH` or in the app's own `tools/platform-tools` folder (see [features/onboarding.md](features/onboarding.md)).
+- **scrcpy** — optional third-party screen-mirroring CLI. Found on `PATH` or in the app's `tools/scrcpy` folder.
 - **AdbDevice** — a phone/emulator reported by `adb devices`.
 - **Device** — the *host* computer running the app (from `device_info_plus`). Not an Android device.
 - **Command / CommandModel** — one adb invocation tracked in the command queue.

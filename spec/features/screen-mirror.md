@@ -14,7 +14,8 @@ in Console and Launcher; palette. "Open in scrcpy window" stays as a secondary a
 
 ### Modes
 1. **Live (scrcpy)** — default when scrcpy is installed (`scrcpyAvailableProvider`).
-   - Push `scrcpy-server` (found next to the `scrcpy` binary: `<prefix>/share/scrcpy/scrcpy-server`,
+   - Push `scrcpy-server` (found in the app's own `tools/scrcpy` folder when Setup installed it
+     there, else next to the `scrcpy` binary: `<prefix>/share/scrcpy/scrcpy-server`,
      or `SCRCPY_SERVER_PATH`) to `/data/local/tmp/adbui-scrcpy-server.jar`.
    - Start it: `adb shell CLASSPATH=… app_process / com.genymobile.scrcpy.Server <version>
      scid=<8 hex> tunnel_forward=true audio=false control=true (stream options below)

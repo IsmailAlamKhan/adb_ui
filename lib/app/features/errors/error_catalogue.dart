@@ -3,6 +3,7 @@ import 'dart:io';
 import '../../utils/constants.dart';
 import '../../utils/exception.dart';
 import '../adb/adb_service.dart';
+import '../setup/setup_model.dart';
 import 'errors_model.dart';
 
 /// Turns exceptions and raw adb output into [AppError]s people can act on.
@@ -44,6 +45,49 @@ class ErrorCatalogue {
         retryable: false,
       );
     }
+    if (error is InstallFailedException) {
+      if (error.permissionDenied) {
+        return make(
+          ErrorKind.setupPermission,
+          'Administrator permission was not given',
+          'Installing ${error.requirement.shortName} needs your administrator password, and the request was cancelled or refused.',
+          [
+            'Click Install again and enter your password when your system asks.',
+            'Or use Copy command and run it in a terminal yourself.',
+          ],
+        );
+      }
+      return make(
+        ErrorKind.setupInstall,
+        "Couldn't install ${error.requirement.shortName}",
+        'The package manager stopped with an error. The details below show its output.',
+        [
+          'Read the details for the reason.',
+          'Run the same command in a terminal to see more.',
+          if (error.requirement == Requirement.adb || error.requirement == Requirement.scrcpy)
+            'Or use Download instead to get the official build into ADB UI\'s own folder.',
+        ],
+      );
+    }
+    if (error is ChecksumMismatchException) {
+      return make(
+        ErrorKind.setupChecksum,
+        "The download didn't match its checksum",
+        'ADB UI deleted the file without installing it, because it is not the file the official source published.',
+        [
+          'Try again.',
+          'If it happens again, something on your network changed the download (a proxy or a sign-in page). Try another network.',
+        ],
+      );
+    }
+    if (error is DownloadFailedException) {
+      return make(
+        ErrorKind.setupDownload,
+        "Couldn't download ${error.requirement.shortName}",
+        error.reason,
+        ['Check your internet connection.', 'Try again.'],
+      );
+    }
     if (error is AdbNotFoundException ||
         (error is ProcessException && error.executable == 'adb')) {
       return make(
@@ -51,8 +95,8 @@ class ErrorCatalogue {
         "adb isn't installed or can't be found",
         'ADB UI runs the adb command from Android SDK Platform-Tools, and it could not start it.',
         [
-          'Install Android SDK Platform-Tools (developer.android.com/tools/releases/platform-tools).',
-          'Make sure adb is on your PATH. Running "adb version" in a terminal should work.',
+          'Open Setup & requirements (in Settings or the command palette) and install adb from there.',
+          'Or install Android SDK Platform-Tools yourself and make sure "adb version" works in a terminal.',
           'If adb is somewhere else, add it to PATH in ~/.adb_ui (a shell file ADB UI reads).',
           'Click Try again.',
         ],
@@ -63,7 +107,7 @@ class ErrorCatalogue {
         ErrorKind.scrcpyMissing,
         "scrcpy isn't installed",
         'Screen mirroring uses scrcpy, which was not found on this computer.',
-        ['Install scrcpy (github.com/Genymobile/scrcpy).', 'Restart ADB UI.'],
+        ['Install it from Setup & requirements (in Settings or the command palette).', 'Or install scrcpy yourself (github.com/Genymobile/scrcpy).'],
         false,
       );
     }

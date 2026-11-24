@@ -32,7 +32,8 @@ flutter analyze
 | `google_fonts` | 6.x | 5.1.0 fails constant evaluation on current Flutter |
 | `llamadart` (+ `llamadart_llama_cpp_flutter`) | 0.20.x | on-device AI filter; its build hook downloads the native llama.cpp runtime on first build; needs Dart ≥ 3.10.7, Flutter ≥ 3.38.6 |
 | `media_kit` / `media_kit_video` / `media_kit_libs_video` | 1.2 / 2.0 / 1.0 | in-app mirror video (libmpv) |
-| `archive` / `lottie` | 4.x / 3.x | archive 4 is required by llamadart; lottie 3 depends on archive 4 |
+| `archive` / `lottie` | 4.x / 3.x | archive 4 is required by llamadart; lottie 3 depends on archive 4. Setup also unpacks Platform-Tools / scrcpy with it |
+| `crypto` | 3.x | direct since 0.0.19: SHA-1 / SHA-256 checks of Setup downloads |
 | `riverpod_generator` / `riverpod_annotation` | **removed** | 2.6 needs an older analyzer than freezed 3; its 3 providers are hand-written |
 
 freezed 3 rules: every `@freezed` class is declared `abstract class` (single constructor) or

@@ -122,6 +122,13 @@ List<PaletteItem> buildPaletteItems(WidgetRef ref, {required VoidCallback close}
       keywords: 'kill-server reset stuck wifi wireless discovery',
       onRun: run(adb.restartAdb),
     ),
+    PaletteItem(
+      section: 'App',
+      label: 'Setup & requirements',
+      icon: Icons.build_circle_outlined,
+      keywords: 'install requirements adb scrcpy libmpv onboarding platform-tools',
+      onRun: run(adb.openSetup),
+    ),
     for (final style in AppStyle.values)
       PaletteItem(
         section: 'App',

@@ -26,6 +26,10 @@ enum ErrorKind {
   commandFailed,
   aiModel,
   mirror,
+  setupInstall,
+  setupPermission,
+  setupDownload,
+  setupChecksum,
   unknown,
 }
 

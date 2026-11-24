@@ -51,7 +51,7 @@ lib/
 
 Features: `about`, `adb` (+ `adb_file_explorer/`), `add_device`, `agent` (MCP server for AI agents), `app_init_error`,
 `ai`, `apps` (app icons/names via the on-device helper), `command_queue` (Activity), `device` (host machine info), `device_page`, `errors`,
-`file_picker`, `file_preview`, `logcat`, `menubar`, `mirror`, `package_info`, `palette`, `qr_pair`, `settings`, `shells`,
+`file_picker`, `file_preview`, `logcat`, `menubar`, `mirror`, `package_info`, `palette`, `qr_pair`, `settings`, `setup`, `shells`,
 `splash`, `style_picker`, `update_checker`.
 
 `lib/app/design/` (not a feature): styles, tokens, theme factory, width classes, shared
@@ -87,6 +87,7 @@ and `../../utils/utils.dart`. When you add a file, add it to its folder's barrel
 | `aboutServiceProvider` / `aboutControllerProvider` | Provider / `AsyncNotifierProvider.autoDispose<AboutController, AboutModel>` | about/ |
 | `packageInfoServiceProvider` / `packageInfoControllerProvider` | Provider / `StateNotifierProvider<…, PackageInfo?>` | package_info/ |
 | `deviceServiceProvider` / `deviceControllerProvider` / `deviceInfoProvider` | host machine info | device/ |
+| `setupServiceProvider` / `setupControllerProvider` / `setupGateProvider` | `Provider<SetupService>` / `StateNotifierProvider<SetupController, SetupState>` / `StateProvider<SetupMode?>` | setup/ |
 | `localStorageProvider` | `Provider<LocalStorage>` | shared/services/local_storage.dart |
 | `networkInfoServiceProvider` | `Provider<NetworkInfoService>` | shared/services/network.dart |
 | `githubProvider` | `Provider<GitHub>` (anonymous client) | shared/providers.dart |
@@ -106,16 +107,22 @@ Providers are global and kept alive by default (Riverpod 2 non-`autoDispose`); u
       macOS (`MainFlutterWindow.swift`) and Linux (`my_application.cc`) set the same minimum.
    3. Sequentially, on a shared `ProviderContainer`:
       `packageInfoController.init()` → `localStorage.init()` → `settingsController.init()` →
-      `deviceController.init()` → **`adbService.verifyAdb()`** → `commandQueueController.init()` →
+      `deviceController.init()` → `ToolPaths.init()` → **`adbService.verifyAdb()`** → `commandQueueController.init()` →
       `agentController.init()` (starts the MCP server if it was on; never throws, so a busy port
       only shows in Settings).
       Settings load before adb is checked so the error screen uses the user's style.
+      `ToolPaths.init()` resolves the app's own tool folders, appended to `PATH` for every
+      process (see [features/onboarding.md](features/onboarding.md)).
+      An `AdbNotFoundException` from `verifyAdb` is **not** a startup error: init carries on
+      and `setupGateProvider` is set to `SetupMode.adbMissing`.
    4. Any `AppException`/`ProcessException` is re-thrown as `AppInitializationException`.
 5. On success: `runApp(UncontrolledProviderScope(container, _App))` → `MaterialApp` themed by
    `AppThemeFactory.build(style, brightness)`; `home` is `StylePickerView` until a style is
-   chosen, then `UpdateChecker(child: HomeShell())`.
+   chosen, then `SetupView` while `setupGateProvider` is non-null (first run: the picker's
+   Continue sets `SetupMode.firstRun`; adb missing: `SetupMode.adbMissing`), then
+   `UpdateChecker(child: HomeShell())`.
 6. On zone error that is an `AppInitializationException`: `runApp(AppInitErrorView)` — the
-   explained error (most commonly "adb isn't installed or can't be found") with Try again,
+   explained error (for example "Couldn't read your shell environment"; adb missing now opens Setup) with Try again,
    Copy details, Open logs folder. All zone errors are written to the log file.
 
 Order matters: storage must init before settings/queue; adb must be verified before home is shown.

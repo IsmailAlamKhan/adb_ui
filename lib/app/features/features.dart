@@ -18,6 +18,7 @@ export 'package_info/package_info.dart';
 export 'palette/palette.dart';
 export 'qr_pair/qr_pair.dart';
 export 'settings/settings.dart';
+export 'setup/setup.dart';
 export 'shells/shells.dart';
 export 'splash/splash.dart';
 export 'style_picker/style_picker.dart';

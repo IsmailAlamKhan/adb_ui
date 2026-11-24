@@ -32,12 +32,22 @@ mirror the screen and run commands, all from one window. Runs on **Windows, macO
 
 | | Needed? | Why |
 |---|---|---|
-| **adb** (Android platform-tools) | **Required** | ADB UI runs it for everything. It must be on your `PATH`. |
+| **adb** (Android platform-tools) | **Required** | ADB UI runs it for everything. ADB UI can install it for you (see below). |
 | **scrcpy** | Optional | Smooth, real-time screen mirroring. Without it, the Screen tab shows refreshed screenshots instead. |
 | **libmpv** (Linux only) | Required on Linux | Plays the mirrored screen. |
 | macOS **14 (Sonoma)** or newer | macOS only | Needed since 0.0.17 for the on-device AI. |
 
-Install adb and scrcpy:
+**Let ADB UI install them.** On first launch, and whenever adb is missing, ADB UI opens
+**Set up ADB UI**: a list of what's required and what's optional, with an **Install** button for
+each. It uses your package manager (Homebrew, winget, or apt/dnf/pacman/zypper) and shows the
+exact command before running it. Without a package manager, or if you click **Download
+instead**, it downloads the official build (Platform-Tools from Google, scrcpy from its GitHub
+releases), checks its checksum and keeps it in its own folder, so you don't need to change your
+`PATH`. Nothing is installed without your OK, and on Linux it never runs `sudo` itself: you
+copy the command or approve it through `pkexec`. Open it again any time from **Settings → Setup
+& requirements** or the command palette.
+
+**Or install them yourself:**
 
 - **macOS** (Homebrew): `brew install android-platform-tools scrcpy`
 - **Windows** (winget): `winget install Google.PlatformTools Genymobile.scrcpy`, or download

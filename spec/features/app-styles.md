@@ -22,7 +22,8 @@ and changeable later.
    - Launcher — "Big device cards and a command palette for everything."
 4. Below: **Theme** segmented control System / Light / Dark. The whole picker re-themes live
    to the highlighted style and theme.
-5. **Continue** saves both and opens home in that style. There is no skip: Continue with the
+5. **Continue** saves both, sets `setupGateProvider` to `SetupMode.firstRun` and opens
+   Setup ([onboarding.md](onboarding.md)), then home in that style. There is no skip: Continue with the
    default selection (Workbench, System) is the skip.
 6. At compact width the cards stack vertically and the page scrolls.
 

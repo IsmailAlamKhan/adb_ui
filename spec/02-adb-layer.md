@@ -12,7 +12,10 @@ Future<Result> run(String command, {
 ```
 
 Builds argv as: `[-s <device.id>]? [shell]? [command]? ...arguments` and calls
-`Process.start(executable, argv, environment: _unixEnvironmentMap, runInShell: true)`.
+`Process.start(executable, argv, environment: await processEnvironment(), runInShell: true)`.
+`processEnvironment()` is the env below (or the app's own on Windows) with the `ToolPaths`
+folders appended to `PATH` (app-installed Platform-Tools / scrcpy, Homebrew, winget links),
+see [features/onboarding.md](features/onboarding.md).
 
 - **macOS/Linux env loading:** on first call it writes `env.sh` into the application
   support dir, `chmod u+x`, runs it with `bash -c ./env.sh`, and parses the printed
@@ -45,7 +48,7 @@ Builds argv as: `[-s <device.id>]? [shell]? [command]? ...arguments` and calls
 |--------|---------|--------------|---------|
 | `getConnectedDevices()` | `adb devices` then per device `adb -s ID shell getprop ro.product.model` | — | returns `List<AdbDevice>` (`id`, `type` = state column, `model`) |
 | `connectedDevicesStream` | `Stream.periodic(1s).asyncMap(getConnectedDevices)` | — | — |
-| `verifyAdb()` | `adb version` | stderr empty and stdout contains `Android Debug Bridge version` | else throws `AdbNotFoundException` |
+| `verifyAdb()` | `adb version` | stderr empty and stdout contains `Android Debug Bridge version` | else throws `AdbNotFoundException` (also when the shell says the command doesn't exist: exit 127, `not found`, `is not recognized`); at startup this opens Setup |
 | `scrcpyAvailable()` | `scrcpy --version` | exit code 0 | `false` on any `AppException` |
 | `connect(host, port)` | `adb connect host:port` | stdout contains `connected to` | `Connected to host:port` |
 | `pair(code, host, port)` | `adb pair host:port code` | stdout contains `Successfully paired` | stdout |

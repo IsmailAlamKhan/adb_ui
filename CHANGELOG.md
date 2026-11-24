@@ -5,6 +5,7 @@
 - The changelog opens in the app and works offline; after an update, "What's new" shows once
 - Restart adb (QR dialog, Settings, command palette): fixes QR pairing stuck on "Pairing device…" and Wi-Fi phones that stop showing up
 - AI agents: turn on Settings → AI agents to let Claude Code and other MCP clients use your devices (screenshots, taps, logcat, files) and run UI tests; risky actions ask you first, and everything shows in Activity
+- Setup & requirements: on first launch (and whenever adb is missing) ADB UI checks for adb, scrcpy, libmpv and the AI model, and installs what's missing with your OK, through Homebrew, winget or apt/dnf/pacman/zypper, or by downloading the official, checksum-checked build into its own folder. Open it again from Settings or the command palette
 
 ## 0.0.18
 

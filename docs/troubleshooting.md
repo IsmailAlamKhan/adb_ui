@@ -18,13 +18,31 @@ On macOS, shortcuts use ⌘; on Windows and Linux, use Ctrl.
 
 ## Installing and starting
 
-### "ADB UI couldn't start" / adb isn't found
-ADB UI needs `adb` from Android platform-tools on your `PATH`.
-1. Open a **new** terminal and run `adb version`. If that fails, install platform-tools (see the
-   [README](../README.md#requirements)).
-2. Quit ADB UI completely and open it again. It reads your `PATH` when it starts.
+### "adb wasn't found" / "ADB UI couldn't start"
+ADB UI needs `adb` from Android platform-tools. When it can't find it, it opens **Set up ADB UI**.
+1. Click **Install** next to adb (or **Download instead** to use Google's official build, kept
+   in ADB UI's own folder; no `PATH` change needed). See the
+   [user guide](user-guide.md#setup--requirements).
+2. If you installed adb yourself: open a **new** terminal and run `adb version`, then click
+   **Check again**. If it still isn't found, quit ADB UI completely and open it again; it reads
+   your `PATH` when it starts.
 3. On macOS, ADB UI loads your shell's environment (`~/.zshrc` etc.). If `adb` is only added in
    a file your login shell doesn't read, add it to `~/.zprofile` or `~/.zshrc`.
+
+### Setup: an install fails
+- **"Administrator permission was not given"** (Linux): the `pkexec` password prompt was
+  cancelled. Click **Install…** again, or **Copy command** and run it in a terminal.
+- **"Couldn't install …"**: the package manager stopped with an error; click **Details** to
+  read its output. Try the same command in a terminal, or use **Download instead**.
+- **"The download didn't match its checksum"**: ADB UI deleted the file without installing it.
+  Try again; if it keeps happening, something on your network (a proxy or a Wi-Fi sign-in page)
+  is changing downloads. Try another network.
+- **"Couldn't download …"**: check your internet connection. GitHub limits anonymous API use; if
+  scrcpy's download can't be found, wait a few minutes and try again.
+- **winget isn't found** (Windows): it comes with *App Installer* from the Microsoft Store. Or use
+  **Download instead**.
+- **Installed, but still "Not found"**: click **Check again**. A tool installed somewhere ADB UI
+  doesn't look needs that folder on your `PATH` (or in `~/.adb_ui` on macOS/Linux).
 
 ### macOS says the app "can't be opened" or "is damaged"
 The app isn't notarized by Apple yet. Right-click **ADB UI** in Applications → **Open**, or go to
@@ -169,8 +187,9 @@ a second; older or CPU-only computers can take a few seconds. The Fast model is 
 ## Screen mirror
 
 ### "Install scrcpy for smooth, real-time mirroring"
-Without scrcpy, ADB UI falls back to refreshed screenshots. Install scrcpy (see the
-[README](../README.md#requirements)) and open the Screen tab again.
+Without scrcpy, ADB UI falls back to refreshed screenshots. Install scrcpy from **Settings →
+Setup & requirements** (no restart needed), or yourself (see the
+[README](../README.md#requirements)), and open the Screen tab again.
 
 ### Live mirroring doesn't start
 - Make sure `scrcpy --version` works in a terminal and scrcpy is up to date. ADB UI uses the
