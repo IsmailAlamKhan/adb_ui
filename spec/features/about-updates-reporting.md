@@ -1,6 +1,6 @@
 # Feature: About, update check, bug report
 
-**Status:** Shipped; bug-report flow reworked (unreleased) · **Code:** `about/`, `package_info/`, `update_checker/`
+**Status:** Shipped; bug-report flow reworked in 0.0.19 · **Code:** `about/`, `package_info/`, `update_checker/`
 
 ## Update check
 

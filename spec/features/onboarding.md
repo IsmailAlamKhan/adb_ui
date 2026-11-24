@@ -1,6 +1,6 @@
 # Feature: Setup & requirements (first-run onboarding)
 
-**Status:** In progress (built 2026-11-24, not yet released) · **Code:** `lib/app/features/setup/`, `test/setup_test.dart`, `test/setup_view_test.dart`
+**Status:** Shipped in 0.0.19 · **Code:** `lib/app/features/setup/`, `test/setup_test.dart`, `test/setup_view_test.dart`
 **Owner / requested by:** owner · **Last updated:** 2026-11-24
 
 ## Problem

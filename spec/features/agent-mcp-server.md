@@ -1,6 +1,6 @@
 # Feature: AI agent access (MCP server + UI-test tools)
 
-**Status:** In progress · **Code:** `lib/app/features/agent/`
+**Status:** Shipped in 0.0.19 · **Code:** `lib/app/features/agent/`
 **Owner / requested by:** Ismail · **Last updated:** 2026-11-24
 
 ## Problem

@@ -30,8 +30,8 @@ app without opening the code first.
 | Device list (home) | [features/device-list.md](features/device-list.md) | Shipped |
 | Wireless connect & pair | [features/wireless-connect-pair.md](features/wireless-connect-pair.md) | Shipped |
 | Pair & connect with QR code | [features/qr-pairing.md](features/qr-pairing.md) | Shipped in 0.0.16 |
-| Restart adb (fix stalled Wi-Fi discovery) | [features/restart-adb.md](features/restart-adb.md) | Implemented (unreleased) |
-| In-app updates and changelog | [features/updates.md](features/updates.md) | Implemented (unreleased) |
+| Restart adb (fix stalled Wi-Fi discovery) | [features/restart-adb.md](features/restart-adb.md) | Shipped in 0.0.19 |
+| In-app updates and changelog | [features/updates.md](features/updates.md) | Shipped in 0.0.19 |
 | App styles (first-run picker, Settings) | [features/app-styles.md](features/app-styles.md) | Shipped in 0.0.16 |
 | Error handling & display | [features/error-handling.md](features/error-handling.md) | Shipped in 0.0.16 |
 | Logcat (follow app, foreground, presets) | [features/logcat.md](features/logcat.md) | Shipped in 0.0.17 |
@@ -39,8 +39,8 @@ app without opening the code first.
 | In-app screen mirror | [features/screen-mirror.md](features/screen-mirror.md) | Shipped in 0.0.17 |
 | File preview (pane + Quick Look) | [features/file-preview.md](features/file-preview.md) | Shipped in 0.0.18 |
 | App icons and names (on-device helper) | [features/app-icons.md](features/app-icons.md) | Shipped in 0.0.18 |
-| AI agent access (MCP server + UI-test tools) | [features/agent-mcp-server.md](features/agent-mcp-server.md) | In progress |
-| Setup & requirements (first-run onboarding) | [features/onboarding.md](features/onboarding.md) | In progress |
+| AI agent access (MCP server + UI-test tools) | [features/agent-mcp-server.md](features/agent-mcp-server.md) | Shipped in 0.0.19 |
+| Setup & requirements (first-run onboarding) | [features/onboarding.md](features/onboarding.md) | Shipped in 0.0.19 |
 | Device actions | [features/device-actions.md](features/device-actions.md) | Shipped |
 | Device file explorer & file transfer | [features/file-explorer-transfer.md](features/file-explorer-transfer.md) | Shipped |
 | Command queue & output | [features/command-queue.md](features/command-queue.md) | Shipped |

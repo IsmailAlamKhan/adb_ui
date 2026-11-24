@@ -1,6 +1,6 @@
 # Feature: Restart adb
 
-**Status:** Implemented (unreleased) · **Code:** `AdbService.restartServer`, `AdbController.restartAdb`,
+**Status:** Shipped in 0.0.19 · **Code:** `AdbService.restartServer`, `AdbController.restartAdb`,
 `qr_pair/`, `palette/palette_view.dart`, `settings/settings_view.dart`
 **Owner / requested by:** owner · **Last updated:** 2026-11-24
 

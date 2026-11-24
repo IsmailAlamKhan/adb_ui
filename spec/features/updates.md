@@ -1,6 +1,6 @@
 # Feature: In-app updates and changelog
 
-**Status:** Implemented (unreleased) · **Code:** `lib/app/features/update_checker/`, `about/`,
+**Status:** Shipped in 0.0.19 · **Code:** `lib/app/features/update_checker/`, `about/`,
 `assets/CHANGELOG-ALL.md` (bundled copy)
 **Owner / requested by:** owner · **Last updated:** 2026-11-24
 
