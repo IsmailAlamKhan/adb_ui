@@ -203,4 +203,10 @@ void main() {
       expect(dl.title, "Couldn't download adb");
     });
   });
+
+  test('firstPathLine takes the first non-empty line (where lists every match)', () {
+    expect(firstPathLine('/opt/homebrew/bin/adb\n'), '/opt/homebrew/bin/adb');
+    expect(firstPathLine('\r\nC:\\tools\\adb.exe\r\nC:\\other\\adb.exe\r\n'), 'C:\\tools\\adb.exe');
+    expect(firstPathLine('  \n'), isNull);
+  });
 }

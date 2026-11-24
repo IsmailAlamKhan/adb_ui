@@ -162,6 +162,19 @@ app's scrcpy folder first.
 
 A found tool whose path is under `<app support>/tools` is shown as "Installed by ADB UI".
 
+**Resolve, then run (fix 2026-11-24).** In the released 0.0.19 (opened from Finder) adb and
+scrcpy showed **Not found** although both worked in the app (`/opt/homebrew/bin`), while the
+`command -v` checks for package managers worked. So adb and scrcpy are now first **resolved to
+a full path** with the same lookup the package-manager check uses (`command -v <name>` through
+`/bin/sh` on macOS/Linux, `where <name>` on Windows, both with the login-shell environment),
+falling back to the app's own tools folder; the check then runs that path. A check that
+still fails writes **why** to the log file (`Setup: <tool> not found — <reason>`: not on PATH,
+exit code + first stderr line, timeout, or unrecognised output), so the cause shows in bug
+reports. Verified 2026-11-24 with a local release build opened from Finder (`open -n`):
+adb "Found · 37.0.0-14910828, /opt/homebrew/bin/adb", scrcpy "Found · 4.0". The exact cause in
+0.0.19 wasn't reproduced outside the app (a plain Dart process finds both either way); the new
+log lines will show it if it comes back.
+
 ## adb / process commands
 
 Not adb commands, so they don't go through `AdbController.run` and don't appear in Activity;

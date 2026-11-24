@@ -51,8 +51,12 @@ class SetupServiceImpl implements SetupService {
   static final _scrcpySlug = RepositorySlug('Genymobile', 'scrcpy');
   static const _repositoryXml = 'https://dl.google.com/android/repository/repository2-3.xml';
 
+  /// Why the last [_run] returned null (exception or timeout), for the log.
+  String? _lastRunError;
+
   Future<ProcessResult?> _run(String exe, List<String> args) async {
     try {
+      _lastRunError = null;
       return await Process.run(
         exe,
         args,
@@ -60,14 +64,44 @@ class SetupServiceImpl implements SetupService {
         runInShell: Platform.isWindows,
       ).timeout(_timeout);
     } on Object catch (e) {
+      _lastRunError = e is TimeoutException ? 'timed out after ${_timeout.inSeconds} s' : '$e'.split('\n').first;
       logInfo('[setup] $exe ${args.join(' ')} failed: $e');
       return null;
     }
   }
 
-  Future<bool> _exists(String name) async {
+  /// Full path of [name] via `command -v` (Unix, through /bin/sh) or `where` (Windows), with
+  /// the login-shell environment; null when it isn't on PATH. See spec/features/onboarding.md.
+  Future<String?> _which(String name) async {
     final r = Platform.isWindows ? await _run('where', [name]) : await _run('/bin/sh', ['-c', 'command -v $name']);
-    return r != null && r.exitCode == 0 && r.stdout.toString().trim().isNotEmpty;
+    if (r == null || r.exitCode != 0) return null;
+    return firstPathLine(r.stdout.toString());
+  }
+
+  Future<bool> _exists(String name) async => await _which(name) != null;
+
+  /// Logs why [tool] counts as missing, so it shows in bug reports.
+  void _notFound(String tool, String reason) =>
+      LogFile.instance.dispath('Setup: $tool not found — $reason', isError: false);
+
+  /// Resolves [tool], runs it with [args] and returns its output, or null (reason logged).
+  Future<String?> _toolOutput(String tool, List<String> args) async {
+    final exe = await _which(tool) ?? ToolPaths.maybeInstance?.managedExecutable(tool);
+    if (exe == null) {
+      _notFound(tool, 'not on PATH');
+      return null;
+    }
+    final res = await _run(exe, args);
+    if (res == null) {
+      _notFound(tool, "couldn't run $exe: ${_lastRunError ?? 'unknown error'}");
+      return null;
+    }
+    if (res.exitCode != 0) {
+      final err = '${res.stderr}'.trim().split('\n').first;
+      _notFound(tool, '$exe exited with ${res.exitCode}${err.isEmpty ? '' : ': $err'}');
+      return null;
+    }
+    return '${res.stdout}';
   }
 
   Future<String> _arch() async {
@@ -111,18 +145,24 @@ class SetupServiceImpl implements SetupService {
     final tools = ToolPaths.maybeInstance;
     switch (r) {
       case Requirement.adb:
-        final res = await _run('adb', ['version']);
-        final parsed = res == null || res.exitCode != 0 ? null : parseAdbVersion(res.stdout.toString());
-        if (parsed == null) return const ToolStatus.missing();
+        final out = await _toolOutput('adb', ['version']);
+        final parsed = out == null ? null : parseAdbVersion(out);
+        if (parsed == null) {
+          if (out != null) _notFound('adb', 'unrecognised output: ${out.trim().split('\n').first}');
+          return const ToolStatus.missing();
+        }
         return ToolStatus.found(
           version: parsed.platformTools ?? parsed.adb,
           path: parsed.path,
           managedByApp: tools?.isManaged(parsed.path) ?? false,
         );
       case Requirement.scrcpy:
-        final res = await _run('scrcpy', ['--version']);
-        final version = res == null ? null : parseScrcpyVersion(res.stdout.toString());
-        if (version == null) return const ToolStatus.missing();
+        final out = await _toolOutput('scrcpy', ['--version']);
+        final version = out == null ? null : parseScrcpyVersion(out);
+        if (version == null) {
+          if (out != null) _notFound('scrcpy', 'unrecognised output: ${out.trim().split('\n').first}');
+          return const ToolStatus.missing();
+        }
         final managed = tools?.managedExecutable('scrcpy');
         return ToolStatus.found(version: version, path: managed, managedByApp: managed != null);
       case Requirement.libmpv:

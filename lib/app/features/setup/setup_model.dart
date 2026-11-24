@@ -353,3 +353,12 @@ String? selectScrcpyAsset(Iterable<String> names, HostOs os, String arch) {
   }
   return null;
 }
+
+/// First non-empty line of `command -v` / `where` output (where lists every match). Pure.
+String? firstPathLine(String output) {
+  for (final line in output.split(RegExp(r'\r?\n'))) {
+    final t = line.trim();
+    if (t.isNotEmpty) return t;
+  }
+  return null;
+}
