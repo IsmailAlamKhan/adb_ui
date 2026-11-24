@@ -3,7 +3,7 @@
 #ifndef version
 #define version "0.0.0"
 #endif
-#define MyAppName "Adb ui"
+#define MyAppName "ADB UI"
 #define MyAppPublisher "Md Ismail Alam Khan"
 #define MyAppURL "https://github.com/IsmailAlamKhan/adb_ui"
 #define MyAppExeName "adb_ui.exe"

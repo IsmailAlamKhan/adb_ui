@@ -8,7 +8,7 @@ import 'package:path_provider/path_provider.dart';
 
 import 'exception.dart';
 
-const appName = 'Adb ui';
+const appName = 'ADB UI';
 
 Color tintColor({
   required Color color,

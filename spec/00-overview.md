@@ -9,7 +9,7 @@ without typing commands. Every action is recorded in a persistent **Activity** l
 queue) that can be re-run.
 
 - Repo: https://github.com/IsmailAlamKhan/adb_ui
-- Package name: `adb_ui`; display name: `Adb ui` (`appName` in `lib/app/utils/constants.dart`)
+- Package name: `adb_ui`; display name: **`ADB UI`** everywhere users see it (`appName` in `lib/app/utils/constants.dart`, macOS `PRODUCT_NAME`, Windows window title, `Runner.rc` FileDescription/ProductName and the Inno Setup `MyAppName`, Linux window/header title). Was "Adb ui" until 0.0.19.
 - Current version: see `pubspec.yaml` (`version:`) and `version.txt`
 - License / distribution: open source, released through GitHub Releases
 

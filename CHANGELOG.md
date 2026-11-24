@@ -1,3 +1,7 @@
+## Unreleased
+
+- The app is called ADB UI everywhere (title bar, About, menus, Windows installer); it said "Adb ui" in places
+
 ## 0.0.19
 
 - Bug reports fill in the GitHub issue for you (version, OS, adb, phone and recent log lines, with your home folder and PATH removed) and save the logs to Downloads ready to attach, with no folder to pick. Logs are no longer deleted after a report

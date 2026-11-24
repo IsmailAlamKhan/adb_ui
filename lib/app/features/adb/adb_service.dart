@@ -882,7 +882,7 @@ class NotDirException extends AppException {
 
 class AdbNotFoundException extends AppException {
   AdbNotFoundException()
-      : super('Adb not found please install it, Adb is required for this app to run');
+      : super("adb wasn't found. ADB UI needs Android SDK Platform-Tools to run.");
 }
 
 class AdbMdnsUnavailableException extends AppException {

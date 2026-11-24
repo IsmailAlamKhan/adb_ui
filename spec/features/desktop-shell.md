@@ -6,8 +6,8 @@
 
 | Platform | Behaviour |
 |----------|-----------|
-| Windows | Native title bar hidden; custom 30 px `WindowCaption` with logo + "Adb ui"; right-click opens the system window menu; `VirtualWindowFrameInit` wraps the app; themed via `_AppThemeBuilder` (follows platform brightness when theme = system). |
-| macOS | `CustomMenuBar` (`PlatformMenuBar`): app menu with **About Adb ui**, **Open Application Support** (⌥A, opens the support dir in Finder), Hide/Hide others/Show all, Quit; **View** → full screen; **Window** → bring to front / zoom / minimise. Top padding adjusted for the transparent title bar. |
+| Windows | Native title bar hidden; custom 30 px `WindowCaption` with logo + "ADB UI"; right-click opens the system window menu; `VirtualWindowFrameInit` wraps the app; themed via `_AppThemeBuilder` (follows platform brightness when theme = system). |
+| macOS | `CustomMenuBar` (`PlatformMenuBar`): app menu with **About ADB UI**, **Open Application Support** (⌥A, opens the support dir in Finder), Hide/Hide others/Show all, Quit; **View** → full screen; **Window** → bring to front / zoom / minimise. Top padding adjusted for the transparent title bar. |
 | Linux | Plain system window, no custom chrome. |
 
 ## Splash & init error

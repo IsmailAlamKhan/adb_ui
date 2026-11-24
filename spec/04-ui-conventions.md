@@ -2,7 +2,10 @@
 
 The UI comes in three selectable **styles** (Workbench, Console, Launcher), each in light and
 dark. Design decisions, tokens and per-style layouts: [08-redesign.md](08-redesign.md).
-This file covers how the UI code is put together. Last updated 2026-11-22.
+This file covers how the UI code is put together. Last updated 2026-11-24.
+
+The product name is written **ADB UI** in every visible string (use `appName`); `adb` in
+lowercase means the command-line tool.
 
 ## Screen map
 
@@ -25,7 +28,7 @@ Shared dialogs/pages (all styles):
   FilePreviewDialog (Space: large preview, ← / →)
   AdbInputDialog  ·  ConfirmActionDialog  ·  ErrorDetailsDialog  ·  AgentConfirmDialog (AI agent risky action)
   LogcatPage (⌘L)  ·  MirrorPage (⇧⌘M)  ·  AboutView  ·  UpdateAvailableDialog
-macOS menu "About Adb ui" ► AboutView
+macOS menu "About ADB UI" ► AboutView
 ```
 
 ## Folders
