@@ -1,5 +1,7 @@
 ## Unreleased
 
+- Updates install from inside the app: see what's new in every version since yours, download with progress, then Install and restart (macOS replaces the app; Windows runs the installer silently; Linux updates its folder). Skip a version, or check any time from the palette or About
+- The changelog opens in the app and works offline; after an update, "What's new" shows once
 - Restart adb (QR dialog, Settings, command palette): fixes QR pairing stuck on "Pairing device…" and Wi-Fi phones that stop showing up
 - AI agents: turn on Settings → AI agents to let Claude Code and other MCP clients use your devices (screenshots, taps, logcat, files) and run UI tests; risky actions ask you first, and everything shows in Activity
 

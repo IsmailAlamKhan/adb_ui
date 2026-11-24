@@ -345,8 +345,18 @@ command again.
 
 ## Updates, bug reports and logs
 
-**Updates:** ADB UI checks GitHub for a new version when it starts, and shows "Update available"
-with a download button and what's new. You can also check from **Settings → About**.
+**Updates:** ADB UI checks for a new version when it starts and every few hours. When there is
+one, it shows what's new in every version since yours, with three buttons:
+- **Update** downloads it inside the app (with progress), then **Install and restart** closes
+  ADB UI, installs the new version and reopens it. On macOS it replaces the app; on Windows it
+  runs the installer silently; on Linux it updates the folder you run it from. If it can't
+  replace itself (for example when run straight from the disk image), it opens the installer
+  for you instead.
+- **Later** asks again next time; **Skip this version** stays quiet until a newer one comes out.
+
+Check any time with **Check for updates** in the command palette (⌘K) or **Settings → About**.
+**Changelog** (About, or "What's new" in the palette) shows every version's notes inside the
+app, even offline, and after an update ADB UI shows what's new in it once.
 
 **Bug reports:** go to **Settings → About → Report a bug or request a feature**.
 1. Choose a folder. ADB UI saves its logs there as a zip. You can tick **Include device details
@@ -366,6 +376,7 @@ its log folder and starts fresh.
 | App icons and names | `<app data>/app_icons/` |
 | File previews | your system's temp folder, `adb_ui_preview/` (cleared at start) |
 | AI agent test runs | `<app data>/agent_runs/` |
+| Downloaded updates (removed after updating) | `<app data>/updates/` |
 
 `<app data>` is:
 - macOS: `~/Library/Application Support/com.adb-ui/`

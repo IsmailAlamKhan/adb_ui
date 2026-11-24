@@ -4,6 +4,8 @@
 
 ## Update check
 
+> Being replaced by in-app updates and an in-app changelog: see [updates.md](updates.md).
+
 - `PackageInfoService.newVersionAvailable()` gets the latest GitHub release of
   `IsmailAlamKhan/adb_ui` (anonymous API), strips `v` from the tag, compares numerically
   (`X*10000+Y*100+Z`) with the running version.
@@ -14,9 +16,10 @@
 
 ## AboutView
 
-Dialog (600 wide): logo, update status (`_UpdateChecker` using `aboutControllerProvider`,
-with download button), "Current version: X", report link, actions **Show licenses**,
-**Show changelog** (opens `changelogUrl`), and "Please star the repo on GitHub".
+Dialog (600 wide): logo, version, update status banner (from `updateControllerProvider`:
+checking / up to date / "ADB UI x is available" → **See update** / couldn't check, with
+**Check for updates**), actions **Changelog** (in-app, see [updates.md](updates.md)),
+**Licenses**, **GitHub**, the report card, and "a star on GitHub helps".
 Opened from Settings → About app, or the macOS app menu.
 
 ## Bug report / feature request

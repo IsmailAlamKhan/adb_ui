@@ -5,7 +5,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
-import '../../shared/shared.dart';
 import '../../utils/utils.dart';
 import '../features.dart';
 
@@ -13,8 +12,6 @@ final aboutControllerProvider =
     AsyncNotifierProvider.autoDispose<AboutController, AboutModel>(AboutController.new);
 
 class AboutController extends AutoDisposeAsyncNotifier<AboutModel> with NavigationController {
-  late AboutService service;
-
   late PackageInfo? packageInfo;
   @override
   late EventBus eventBus;
@@ -22,14 +19,11 @@ class AboutController extends AutoDisposeAsyncNotifier<AboutModel> with Navigati
 
   @override
   FutureOr<AboutModel> build() {
-    service = ref.read(aboutServiceProvider);
     packageInfo = ref.read(packageInfoControllerProvider);
     eventBus = ref.read(eventBusProvider);
     device = ref.watch(deviceControllerProvider);
-    return service.checkUpdateAvailable();
+    return AboutModel.updateNotAvailable;
   }
-
-  Future<void> downloadUpdates() => service.downloadUpdates();
 
   Future<void> reportBugOrFeatureRequest() async {
     final reportBugOrFeature = await showDialog<Map<String, bool>>(
@@ -68,7 +62,8 @@ class AboutController extends AutoDisposeAsyncNotifier<AboutModel> with Navigati
     }
   }
 
-  void showChangelog() => launchUrlString(changelogUrl);
+  /// In-app changelog (bundled CHANGELOG-ALL.md). See spec/features/updates.md.
+  void showChangelog() => ref.read(updateControllerProvider.notifier).showChangelog();
 
   void openGitHub() => launchUrl(Uri.parse(appRepoUrl));
 }

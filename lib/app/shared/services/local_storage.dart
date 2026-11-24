@@ -7,7 +7,8 @@ enum LocalStorageKeys {
   commands('commands'),
   settings('settings'),
   aiModel('ai_model'),
-  agentServer('agent_server');
+  agentServer('agent_server'),
+  updates('updates');
 
   final String key;
   const LocalStorageKeys(this.key);

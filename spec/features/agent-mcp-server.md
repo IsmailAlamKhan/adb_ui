@@ -165,7 +165,7 @@ checked, big output kept out of Activity when `summarize` is given) and
 - [x] Requests without the token get 401; wrong Host/Origin get 403.
 - [ ] `initialize` → `tools/list` → `tools/call` works from Claude Code with the copied command.
 - [x] Every adb command an agent runs shows in Activity as `Agent · …`, without toasts.
-- [ ] Risky tools ask first; Deny returns an error; "allow until quit" skips later asks. *(Deny verified; **Allow** verified 2026-11-24: `shell` `getprop ro.product.model` → "Pixel 10 Pro" after the user clicked Allow. "Allow until quit" not checked.)*
+- [x] Risky tools ask first; Deny returns an error; Allow runs the tool (verified live 2026-11-24). "Allow until quit" not yet checked live.
 - [ ] `ui_dump`, `find_elements`, `tap_element`, `wait_for_element`, `assert_element` work on a real app screen.
 - [x] A recorded run writes `run.json`, `report.md` and step screenshots.
 - [x] Unit tests cover dump parsing, selectors, JSON-RPC handling and HTTP auth.
@@ -188,11 +188,11 @@ checked, big output kept out of Activity when `summarize` is given) and
   (exists / gone / text_equals, PASS and FAIL), `logcat` with the `errors` preset, `list_files`,
   `list_packages`, and a recorded run (`report.md`, `run.json`, step screenshot). Activity listed
   every command as `Agent · …`. The settings section renders and shows `Listening on …`.
-- Risky actions: the dialog opened and **Deny** returned `The user denied this action.` This found
-  that a covered window doesn't repaint, so the dialog went unseen; ADB UI now brings its window
-  to the front first. **Allow** and "allow until quit" were not clicked by the agent (the user
-  answers that dialog), so they are untested live. Not yet tried with Claude Code itself, and the
-  phone was on its lock screen, so `tap_element`/`launch_app` weren't run on an app.
+- Risky actions: the dialog opened, **Deny** returned `The user denied this action.`, and after
+  the user clicked **Allow** the shell command ran (Activity: `Agent · shell getprop …` →
+  `Pixel 10 Pro`). The first try found that a covered window doesn't repaint, so the dialog went
+  unseen; ADB UI now brings its window to the front first. `launch_app` also ran from that session.
+  Not checked: the "allow until quit" checkbox, `tap_element` inside an app.
 
 ## Open questions
 

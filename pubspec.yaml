@@ -65,3 +65,4 @@ flutter:
     - assets/lottie/
     - assets/
     - assets/device/
+    - CHANGELOG-ALL.md

@@ -102,6 +102,20 @@ List<PaletteItem> buildPaletteItems(WidgetRef ref, {required VoidCallback close}
     ),
     PaletteItem(
       section: 'App',
+      label: 'Check for updates',
+      icon: Icons.system_update_alt_rounded,
+      keywords: 'update upgrade new version download install',
+      onRun: run(() => ref.read(updateControllerProvider.notifier).checkAndPrompt(manual: true)),
+    ),
+    PaletteItem(
+      section: 'App',
+      label: "What's new",
+      icon: Icons.history_edu_rounded,
+      keywords: 'changelog release notes changes',
+      onRun: run(() => ref.read(updateControllerProvider.notifier).showChangelog()),
+    ),
+    PaletteItem(
+      section: 'App',
       label: 'Restart adb',
       detail: 'adb kill-server, start-server',
       icon: Icons.restart_alt_rounded,

@@ -103,25 +103,39 @@ class _UpdateStatus extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(aboutControllerProvider);
-    final controller = ref.read(aboutControllerProvider.notifier);
-    return state.when(
-      loading: () => const AppBanner(tone: BannerTone.info, title: 'Checking for updates…'),
-      error: (e, _) => AppBanner(
-        tone: BannerTone.warning,
-        title: "Couldn't check for updates",
-        message: ErrorCatalogue.explain(e).message,
-        actions: [TextButton(onPressed: () => ref.invalidate(aboutControllerProvider), child: const Text('Try again'))],
-      ),
-      data: (about) => about.updateAvailable
-          ? AppBanner(
-              tone: BannerTone.info,
-              icon: Icons.system_update_alt_rounded,
-              title: 'A new version of $appName is available',
-              actions: [FilledButton(onPressed: controller.downloadUpdates, child: const Text('Download'))],
-            )
-          : const AppBanner(tone: BannerTone.success, title: "You're on the latest version"),
+    final state = ref.watch(updateControllerProvider);
+    final controller = ref.read(updateControllerProvider.notifier);
+    void openDialog() => Navigator.of(context).push(DialogRoute(context: context, builder: (_) => const UpdateDialog()));
+    final checkAgain = TextButton(
+      onPressed: () => controller.checkAndPrompt(manual: true),
+      child: const Text('Check for updates'),
     );
+    return switch (state.status) {
+      UpdateStatus.checking => const AppBanner(tone: BannerTone.info, title: 'Checking for updates…'),
+      UpdateStatus.failed when state.release == null => AppBanner(
+          tone: BannerTone.warning,
+          title: "Couldn't check for updates",
+          message: state.error?.message,
+          actions: [checkAgain],
+        ),
+      _ when state.release != null => AppBanner(
+          tone: BannerTone.info,
+          icon: Icons.system_update_alt_rounded,
+          title: 'ADB UI ${state.release!.version} is available',
+          message: switch (state.status) {
+            UpdateStatus.downloading => 'Downloading…',
+            UpdateStatus.ready => 'Downloaded and ready to install.',
+            _ => null,
+          },
+          actions: [FilledButton(onPressed: openDialog, child: const Text('See update'))],
+        ),
+      UpdateStatus.upToDate => AppBanner(
+          tone: BannerTone.success,
+          title: "You're on the latest version",
+          actions: [checkAgain],
+        ),
+      _ => AppBanner(tone: BannerTone.info, title: 'Updates are checked automatically', actions: [checkAgain]),
+    };
   }
 }
 
