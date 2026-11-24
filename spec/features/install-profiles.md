@@ -1,6 +1,6 @@
 # Feature: Choose the profile when installing an APK
 
-**Status:** Built, not released yet · **Code:** `adb/adb_service.dart` (`listUsers`, `installApk`),
+**Status:** Shipped in 0.0.21 · **Code:** `adb/adb_service.dart` (`listUsers`, `installApk`),
 `adb/adb_model.dart` (`DeviceUser`), `adb/adb_controller.dart` (`installApk`, `installDropped`),
 `adb/install_target_dialog.dart`, `agent/agent_tools.dart` (`install_apk`)
 **Owner / requested by:** owner · **Last updated:** 2026-11-24

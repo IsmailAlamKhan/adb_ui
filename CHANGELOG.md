@@ -1,4 +1,4 @@
-## 0.0.20
+## 0.0.21
 
-- Fixed: Setup & requirements said adb and scrcpy were "Not found" even when they were installed and working
-- The app is called ADB UI everywhere (title bar, About, menus, Windows installer); it said "Adb ui" in places
+- Install APK asks which profile to install on when your phone has a work profile, Private space or another user (it used to land in the work profile on some phones). Phones with one profile install as before
+- AI agents: `install_apk` installs to your personal profile unless a profile is given
