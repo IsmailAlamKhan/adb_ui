@@ -100,6 +100,14 @@ List<PaletteItem> buildPaletteItems(WidgetRef ref, {required VoidCallback close}
       keywords: 'preferences style theme',
       onRun: run(adb.openSettings),
     ),
+    PaletteItem(
+      section: 'App',
+      label: 'Restart adb',
+      detail: 'adb kill-server, start-server',
+      icon: Icons.restart_alt_rounded,
+      keywords: 'kill-server reset stuck wifi wireless discovery',
+      onRun: run(adb.restartAdb),
+    ),
     for (final style in AppStyle.values)
       PaletteItem(
         section: 'App',

@@ -42,6 +42,8 @@ class App {
       await container.read(deviceControllerProvider.notifier).init();
       await container.read(adbServiceProvider).verifyAdb();
       await container.read(commandQueueControllerProvider.notifier).init();
+      // After Activity is loaded: agents' commands are recorded there. Never throws.
+      await container.read(agentControllerProvider.notifier).init();
     } on Exception catch (e, stackTrace) {
       Exception exception = e;
       if (e is AppException) {

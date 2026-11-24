@@ -49,7 +49,7 @@ lib/
     utils/                      constants, event_bus, navigation, exception, logger, theme, extensions, debouncer
 ```
 
-Features: `about`, `adb` (+ `adb_file_explorer/`), `add_device`, `app_init_error`,
+Features: `about`, `adb` (+ `adb_file_explorer/`), `add_device`, `agent` (MCP server for AI agents), `app_init_error`,
 `ai`, `apps` (app icons/names via the on-device helper), `command_queue` (Activity), `device` (host machine info), `device_page`, `errors`,
 `file_picker`, `file_preview`, `logcat`, `menubar`, `mirror`, `package_info`, `palette`, `qr_pair`, `settings`, `shells`,
 `splash`, `style_picker`, `update_checker`.
@@ -80,6 +80,8 @@ and `../../utils/utils.dart`. When you add a file, add it to its folder's barrel
 | `activityCountsProvider` | `Provider<({int running, int errors})>` | shells/home_shell.dart |
 | `adbFileExplorerControllerProvider` | `ChangeNotifierProvider` | adb/adb_file_explorer/… |
 | `qrPairControllerProvider` | `StateNotifierProvider.autoDispose<QrPairController, QrPairState>` | qr_pair/qr_pair_controller.dart |
+| `agentControllerProvider` | `StateNotifierProvider<AgentController, AgentState>` (MCP server for AI agents) | agent/agent_controller.dart |
+| `agentSettingsServiceProvider` / `mcpServerProvider` / `agentRunRecorderProvider` | `Provider<AgentSettingsService>` / `Provider<McpServer>` / `Provider<AgentRunRecorder>` | agent/agent_service.dart |
 | `commandQueueServiceProvider` / `commandQueueControllerProvider` | Provider / `StateNotifierProvider<…, List<CommandModel>>` | command_queue/ |
 | `settingsServiceProvider` / `settingsControllerProvider` | Provider / `StateNotifierProvider<…, SettingsModel>` | settings/ |
 | `aboutServiceProvider` / `aboutControllerProvider` | Provider / `AsyncNotifierProvider.autoDispose<AboutController, AboutModel>` | about/ |
@@ -104,7 +106,9 @@ Providers are global and kept alive by default (Riverpod 2 non-`autoDispose`); u
       macOS (`MainFlutterWindow.swift`) and Linux (`my_application.cc`) set the same minimum.
    3. Sequentially, on a shared `ProviderContainer`:
       `packageInfoController.init()` → `localStorage.init()` → `settingsController.init()` →
-      `deviceController.init()` → **`adbService.verifyAdb()`** → `commandQueueController.init()`.
+      `deviceController.init()` → **`adbService.verifyAdb()`** → `commandQueueController.init()` →
+      `agentController.init()` (starts the MCP server if it was on; never throws, so a busy port
+      only shows in Settings).
       Settings load before adb is checked so the error screen uses the user's style.
    4. Any `AppException`/`ProcessException` is re-thrown as `AppInitializationException`.
 5. On success: `runApp(UncontrolledProviderScope(container, _App))` → `MaterialApp` themed by

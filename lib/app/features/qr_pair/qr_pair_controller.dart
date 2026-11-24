@@ -33,6 +33,47 @@ class QrPairController extends StateNotifier<QrPairState> {
 
   bool _isActive(int session) => mounted && session == _session;
 
+  /// While a Restart adb runs, polling waits (adb's errors meanwhile aren't failures).
+  bool _restarting = false;
+
+  /// When the current wait counts as possibly stuck (see [QrPairState.stuckAfter]).
+  DateTime? _stuckAt;
+
+  /// Guid from `adb pair`, kept so a restart from "paired, not connected" can retry.
+  String? _guid;
+
+  void _startStuckClock(QrPairStatus status) {
+    final after = QrPairState.stuckAfter(status);
+    _stuckAt = after == null ? null : DateTime.now().add(after);
+  }
+
+  void _checkStuck() {
+    final at = _stuckAt;
+    if (at != null && !state.adbMaybeStuck && DateTime.now().isAfter(at)) {
+      state = state.copyWith(adbMaybeStuck: true);
+    }
+  }
+
+  /// Restarts adb from the pairing flow and carries on with the same code.
+  Future<void> restartAdb() async {
+    if (state.restartingAdb) return;
+    final session = _session;
+    _restarting = true;
+    state = state.copyWith(restartingAdb: true);
+    try {
+      await adbController.restartAdb();
+    } finally {
+      _restarting = false;
+      if (_isActive(session)) {
+        state = state.copyWith(restartingAdb: false, adbMaybeStuck: false);
+        _startStuckClock(state.status);
+        if (state.status == QrPairStatus.pairedNotConnected && state.host != null) {
+          _connect(session, state.host!, _guid).catchError((Object e) => _fail(session, e));
+        }
+      }
+    }
+  }
+
   /// Generates a new code and starts over.
   void restart() {
     state = QrPairState(code: QrPairCode.generate());
@@ -44,8 +85,14 @@ class QrPairController extends StateNotifier<QrPairState> {
     final code = state.code;
     final deadline = DateTime.now().add(scanTimeout);
     state = state.copyWith(expiresAt: deadline);
+    _startStuckClock(QrPairStatus.waitingForScan);
     try {
       while (_isActive(session)) {
+        if (_restarting) {
+          await Future.delayed(pollInterval);
+          continue;
+        }
+        _checkStuck();
         if (DateTime.now().isAfter(deadline)) {
           _fail(
             session,
@@ -90,19 +137,26 @@ class QrPairController extends StateNotifier<QrPairState> {
       _fail(session, AppException('Failed to pair'));
       return;
     }
-    final guid = RegExp(r'guid=([^\]\s]+)').firstMatch(output)?.group(1);
+    final guid = _guid = RegExp(r'guid=([^\]\s]+)').firstMatch(output)?.group(1);
     await _connect(session, pairing.host, guid);
   }
 
   Future<void> _connect(int session, String host, String? guid) async {
     state = state.copyWith(status: QrPairStatus.connecting);
+    _startStuckClock(QrPairStatus.connecting);
     final startedAt = DateTime.now();
     final deadline = startedAt.add(connectTimeout);
     final manualConnectAfter = startedAt.add(autoConnectGrace);
     var triedConnect = false;
     while (_isActive(session)) {
+      if (_restarting) {
+        await Future.delayed(pollInterval);
+        continue;
+      }
+      _checkStuck();
       if (DateTime.now().isAfter(deadline)) {
-        state = state.copyWith(status: QrPairStatus.pairedNotConnected);
+        _stuckAt = null;
+        state = state.copyWith(status: QrPairStatus.pairedNotConnected, adbMaybeStuck: true);
         return;
       }
 

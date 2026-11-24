@@ -1,3 +1,8 @@
+## Unreleased
+
+- Restart adb (QR dialog, Settings, command palette): fixes QR pairing stuck on "Pairing device…" and Wi-Fi phones that stop showing up
+- AI agents: turn on Settings → AI agents to let Claude Code and other MCP clients use your devices (screenshots, taps, logcat, files) and run UI tests; risky actions ask you first, and everything shows in Activity
+
 ## 0.0.18
 
 - App icons and names: the Apps tab, uninstall list and "Follow app" show each app's real icon and name (also in work profiles); search by name

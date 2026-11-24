@@ -70,7 +70,11 @@ class QrPairStatusView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(qrPairControllerProvider);
     final host = state.host ?? 'your phone';
-    return switch (state.status) {
+    final restart = _RestartAdbButton(
+      busy: state.restartingAdb,
+      onPressed: ref.read(qrPairControllerProvider.notifier).restartAdb,
+    );
+    final status = switch (state.status) {
       QrPairStatus.waitingForScan => const _Working('Waiting for your phone to scan the code…'),
       QrPairStatus.pairing => _Working('Pairing with $host… (step 2 of 3)'),
       QrPairStatus.connecting => _Working('Paired. Connecting to $host… (step 3 of 3)'),
@@ -79,13 +83,14 @@ class QrPairStatusView extends ConsumerWidget {
           title: 'Connected',
           message: '${state.deviceId} is ready. This closes in a moment.',
         ),
-      QrPairStatus.pairedNotConnected => const AppBanner(
+      QrPairStatus.pairedNotConnected => AppBanner(
           tone: BannerTone.warning,
           title: "Paired, but it didn't connect automatically",
-          steps: [
-            'On the phone, Wireless debugging shows "IP address & Port".',
-            'Use Add device → IP address with that address.',
+          steps: const [
+            'Restart adb: it sometimes stops seeing phones on the network.',
+            'Or: on the phone, Wireless debugging shows "IP address & Port". Use Add device → IP address with that address.',
           ],
+          actions: [restart],
         ),
       QrPairStatus.failed => AppBanner(
           tone: BannerTone.danger,
@@ -94,7 +99,40 @@ class QrPairStatusView extends ConsumerWidget {
           steps: state.error?.steps ?? const [],
         ),
     };
+    final showHint = state.adbMaybeStuck &&
+        (state.status == QrPairStatus.waitingForScan || state.status == QrPairStatus.connecting);
+    if (!showHint) return status;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        status,
+        const SizedBox(height: 8),
+        AppBanner(
+          tone: BannerTone.info,
+          icon: Icons.restart_alt_rounded,
+          title: 'Phone stuck on "Pairing device…"?',
+          message: 'adb sometimes stops seeing phones on the network. Restarting it usually fixes this.',
+          actions: [restart],
+        ),
+      ],
+    );
   }
+}
+
+class _RestartAdbButton extends StatelessWidget {
+  const _RestartAdbButton({required this.busy, required this.onPressed});
+  final bool busy;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) => OutlinedButton.icon(
+        onPressed: busy ? null : onPressed,
+        icon: busy
+            ? const SizedBox.square(dimension: 14, child: CircularProgressIndicator(strokeWidth: 2))
+            : const Icon(Icons.restart_alt_rounded, size: 18),
+        label: Text(busy ? 'Restarting adb…' : 'Restart adb'),
+      );
 }
 
 class _Working extends StatelessWidget {
@@ -301,7 +339,8 @@ class QrPairPage extends HookConsumerWidget {
                               Expanded(child: steps),
                             ],
                           ),
-                        if (state.status == QrPairStatus.failed ||
+                        if (state.adbMaybeStuck ||
+                            state.status == QrPairStatus.failed ||
                             state.status == QrPairStatus.pairedNotConnected ||
                             state.status == QrPairStatus.connected) ...[
                           const SizedBox(height: 8),

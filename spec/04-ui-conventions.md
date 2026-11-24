@@ -18,10 +18,10 @@ SplashView ──(init ok)──► MaterialApp (theme = AppThemeFactory(style, 
 
 Shared dialogs/pages (all styles):
   AddDeviceDialog (QR code | Pairing code | IP address)  ·  QrPairPage (Launcher's full-page QR)
-  CommandPaletteDialog (⌘K)  ·  CommandDetailsDialog  ·  ActivityView  ·  SettingsView → AboutView
+  CommandPaletteDialog (⌘K)  ·  CommandDetailsDialog  ·  ActivityView  ·  SettingsView (Appearance, AI, AI agents → AgentSettingsCard) → AboutView
   UninstallPickerDialog  ·  AdbFileExplorerView (pull picker / push browser, with FilePreviewPane)  ·  FilePickerView (APK only)
   FilePreviewDialog (Space: large preview, ← / →)
-  AdbInputDialog  ·  ConfirmActionDialog  ·  ErrorDetailsDialog
+  AdbInputDialog  ·  ConfirmActionDialog  ·  ErrorDetailsDialog  ·  AgentConfirmDialog (AI agent risky action)
   LogcatPage (⌘L)  ·  MirrorPage (⇧⌘M)  ·  AboutView  ·  UpdateAvailableDialog
 macOS menu "About Adb ui" ► AboutView
 ```

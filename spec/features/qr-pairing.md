@@ -76,6 +76,11 @@ Changes to existing behaviour that ship with this feature:
 - `AdbController.runForResult(...)` added: same as `run` but returns the success message
   (or `null` on failure) so flows can continue after a command. `run` delegates to it.
 
+## Stalled adb discovery
+
+When the wait drags on (15 s waiting for the scan, 10 s connecting), the status shows a
+**Restart adb** hint; see [restart-adb.md](restart-adb.md).
+
 ## Connect detection (after pairing)
 
 Poll every 1 s for up to 30 s:
@@ -96,7 +101,7 @@ Poll every 1 s for up to 30 s:
 - `QrPairCode` (`qr_pair_model.dart`): `serviceName` = `adbui-` + 10 random alphanumerics,
   `password` = 12 random alphanumerics (`Random.secure`), `qrData` getter. Alphanumerics
   only, so no escaping is needed in the `WIFI:` payload.
-- `QrPairState` (plain immutable class with `copyWith`): `code, status (QrPairStatus), host?, deviceId?, message?`.
+- `QrPairState` (plain immutable class with `copyWith`): `code, status (QrPairStatus), host?, deviceId?, message?, error?, expiresAt?, adbMaybeStuck, restartingAdb`.
 - Both are hand-written (no codegen) — small, fully unit-tested, and they don't need JSON.
 - `qrPairControllerProvider`: `StateNotifierProvider.autoDispose<QrPairController, QrPairState>`.
 - Nothing persisted.

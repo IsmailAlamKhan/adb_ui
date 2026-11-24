@@ -1,5 +1,6 @@
 export 'about/about.dart';
 export 'adb/adb.dart';
+export 'agent/agent.dart';
 export 'add_device/add_device.dart';
 export 'ai/ai.dart';
 export 'app_init_error/app_init_error.dart';

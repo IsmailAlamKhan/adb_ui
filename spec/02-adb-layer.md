@@ -51,6 +51,7 @@ Builds argv as: `[-s <device.id>]? [shell]? [command]? ...arguments` and calls
 | `pair(code, host, port)` | `adb pair host:port code` | stdout contains `Successfully paired` | stdout |
 | `mdnsServices()` | `adb mdns services` (not logged) | stderr empty, or stdout non-empty | returns `List<AdbMdnsService>` via `AdbMdnsService.parseList`; else throws `AdbMdnsUnavailableException` |
 | `tcpip()` | `adb tcpip 5555` | stdout contains `restarting in TCP mode port: 5555` | `Restarted in TCP mode` |
+| `restartServer()` | `adb kill-server` (quiet, exit code ignored) then `adb start-server`; recorded as `kill-server` | `start-server` exit code 0 | `adb restarted` |
 | `disconnect(device)` | `adb -s ID disconnect ID` | stdout contains `disconnected` | `Disconnected from ID` |
 | `installApk(device, path)` | `adb -s ID install path` | stdout contains `Success` (stderr warnings allowed) | `Installed <file name>` |
 | `uninstallApp(device, pkg)` | `adb -s ID uninstall pkg` | stdout contains `Success` | `Uninstalled pkg` |
@@ -65,6 +66,8 @@ Builds argv as: `[-s <device.id>]? [shell]? [command]? ...arguments` and calls
 | `pidsOf(device, pkg)` | `adb -s ID shell pidof <pkg>` (not logged) | — | `Set<int>` |
 | `foregroundPackage(device)` | `adb -s ID shell dumpsys activity activities` (not logged) | — | package of the resumed activity |
 | `clearLogcat(device)` | `adb -s ID logcat -c` | exit 0 | `Cleared the device log` |
+| `runArguments(device, args, {summarize, onStdout})` | `adb -s ID <args…>` (args passed as given, not split) | exit code 0, else `CommandFailedException` | stdout+stderr or `Done`; with `summarize` Activity gets only the summary (no live output, not logged) and stdout goes to `onStdout` — used by AI agent tools |
+| `screenshot(device, onBytes)` | `adb -s ID exec-out screencap -p` | exit 0 and PNG bytes | `Screenshot <w>×<h>`; bytes go to `onBytes`, not to Activity |
 | `listPackages(device, {includeSystem})` *(redesign)* | `adb -s ID shell pm list packages [-3]` (not logged) | exit code 0 | sorted package names (`package:` prefix stripped) |
 
 `inputText` escaping: `'` → `\'`, `"` → `\"`, space → `%s`.
@@ -86,9 +89,11 @@ Builds argv as: `[-s <device.id>]? [shell]? [command]? ...arguments` and calls
 | `pair` | `pair(arguments.last, host, port)` with host/port from `arguments.first` |
 | `disconnect` / `install` / `push` / `pull` / `scrcpy` | same method with stored args |
 | `tcpip` | `tcpip()` |
+| `kill-server` | `restartServer()` |
 | `logcat` | `clearLogcat(device)` |
 | `shell` | `input text …` → `inputText`; otherwise `runCustomCommand` |
-| `''` (custom command) | `runCustomCommand(device, arguments.join(' '))` |
+| `exec-out` | `screencap …` → `screenshot(device)` (image discarded); otherwise `runCustomCommand` |
+| `''` (custom command, `runArguments`) | `runCustomCommand(device, arguments.join(' '))` |
 | other | throws `AppException('Command not found')` |
 
 **Adding a new adb command:** add the method to `AdbService`, implement in

@@ -58,6 +58,9 @@ debugging off and on.
 ### QR code pairing doesn't finish
 - The phone and computer must be on the **same Wi-Fi network**. Guest networks and some office
   networks block devices from seeing each other.
+- If the phone stays on **"Pairing device…"**, adb has probably stopped seeing phones on the
+  network. After 15 seconds the QR dialog offers **Restart adb**: click it and the same scan
+  finishes (no need to scan again).
 - Update platform-tools: QR pairing needs a recent adb (`adb mdns check` should print an mDNS
   version).
 - If it says "Paired, but couldn't connect automatically", open the **IP address** tab and enter
@@ -76,7 +79,9 @@ Android switches Wireless debugging off when the phone changes Wi-Fi network, an
 when it sleeps. Turn it back on in Developer options.
 
 If the phone is on and on the same network but still doesn't appear, adb's own discovery may
-have got stuck. Restart adb's server, then reconnect:
+have got stuck. Restart adb: **Settings → adb → Restart adb**, or search "Restart adb" in the
+command palette (⌘K). Every device disconnects for a few seconds; USB and paired Wi-Fi phones
+come back by themselves. On versions before 0.0.19, run these in a terminal instead:
 
 ```bash
 adb kill-server

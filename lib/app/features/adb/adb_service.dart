@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io' as io;
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:path/path.dart';
@@ -76,6 +77,10 @@ abstract class AdbService {
 
   Future<Result> tcpip();
 
+  /// `adb kill-server` then `adb start-server`: fixes stalled mDNS discovery.
+  /// Recorded as `kill-server`. See spec/features/restart-adb.md.
+  Future<Result> restartServer();
+
   Future<Result> pair(String pair, String host, int port);
 
   /// Services currently advertised over mDNS (`adb mdns services`).
@@ -126,6 +131,19 @@ abstract class AdbService {
 
   /// Installed package names; third-party only unless [includeSystem].
   Future<List<String>> listPackages(AdbDevice device, {bool includeSystem = false});
+
+  /// Runs `adb -s <id> <arguments…>` and fails on a non-zero exit code. With [summarize],
+  /// Activity keeps only the summary (not the output) and the full stdout goes to
+  /// [onStdout]. Used by AI agent tools (spec/features/agent-mcp-server.md).
+  Future<Result> runArguments(
+    AdbDevice device,
+    List<String> arguments, {
+    String Function(String stdout)? summarize,
+    void Function(String stdout)? onStdout,
+  });
+
+  /// PNG of the screen (`adb exec-out screencap -p`), handed to [onBytes].
+  Future<Result> screenshot(AdbDevice device, void Function(Uint8List png) onBytes);
 
   /// -connnected device commands-
 
@@ -569,6 +587,24 @@ class ProccessAdbServiceImpl implements AdbService {
       });
 
   @override
+  Future<Result> restartServer() async {
+    // kill-server exits 1 when no server is running; only start-server decides.
+    final kill = await run('kill-server', addToLogs: false);
+    await kill.exitCode;
+    final start = await run('start-server');
+    return start.copyWith(
+      command: 'kill-server',
+      arguments: const [],
+      messege: Future.wait([start.exitCode, start.stdout, start.stderr]).then((v) {
+        if (v[0] == 0) return 'adb restarted';
+        final output = '${v[2]}\n${v[1]}'.trim();
+        logError('Failed to restart adb', error: output);
+        throw AppException('Failed to restart adb cause $output');
+      }),
+    );
+  }
+
+  @override
   Future<Result> inputText(AdbDevice device, String text) {
     text = text.replaceAll('\'', '\\\'').replaceAll('"', '\\"').replaceAll(' ', '%s');
     logInfo('Text: $text');
@@ -623,6 +659,8 @@ class ProccessAdbServiceImpl implements AdbService {
 
       case 'tcpip':
         return tcpip();
+      case 'kill-server':
+        return restartServer();
       case 'logcat':
         assert(device != null, 'Device cannot be null');
         return clearLogcat(device!);
@@ -635,6 +673,11 @@ class ProccessAdbServiceImpl implements AdbService {
           assert(device != null, 'Device cannot be null');
           return runCustomCommand(device!, arguments.join(' '), executable: executable);
         }
+      case 'exec-out':
+        if (arguments.isNotEmpty && arguments.first == 'screencap') {
+          return screenshot(device!, (_) {});
+        }
+        return runCustomCommand(device!, [command, ...arguments].join(' '), executable: executable);
       case '':
         return runCustomCommand(device!, arguments.join(' '), executable: executable);
       default:
@@ -719,6 +762,63 @@ class ProccessAdbServiceImpl implements AdbService {
       throw AppException(stderr.isEmpty ? 'getprop failed' : stderr);
     }
     return DeviceProperties.parse(output);
+  }
+
+  @override
+  Future<Result> runArguments(
+    AdbDevice device,
+    List<String> arguments, {
+    String Function(String stdout)? summarize,
+    void Function(String stdout)? onStdout,
+  }) async {
+    final quiet = summarize != null;
+    final result = await run('', arguments: arguments, device: device, addToLogs: !quiet);
+    final message = Future.wait([result.stdout, result.stderr, result.exitCode]).then((v) {
+      final stdout = v[0] as String;
+      final stderr = v[1] as String;
+      final exitCode = v[2] as int;
+      final output = [stdout.trim(), stderr.trim()].where((e) => e.isNotEmpty).join('\n');
+      if (exitCode != 0) throw CommandFailedException(exitCode, output);
+      onStdout?.call(stdout);
+      if (summarize != null) return summarize(stdout);
+      return output.isEmpty ? 'Done' : output;
+    });
+    if (!quiet) return result.copyWith(messege: message);
+    return result.copyWith(
+      stdoutStream: const Stream<String>.empty(),
+      stderrStream: const Stream<String>.empty(),
+      messege: message,
+    );
+  }
+
+  @override
+  Future<Result> screenshot(AdbDevice device, void Function(Uint8List png) onBytes) async {
+    final arguments = ['screencap', '-p'];
+    final process = await startProcess(['exec-out', ...arguments], device: device);
+    final bytes = BytesBuilder(copy: false);
+    final read = process.stdout.forEach(bytes.add);
+    final stderr = process.stderr.transform(utf8.decoder).join();
+    final message = Future.wait([read.then((_) => 0), process.exitCode, stderr]).then((v) {
+      final png = bytes.takeBytes();
+      final isPng = png.length > 24 && png[1] == 0x50 && png[2] == 0x4E && png[3] == 0x47;
+      if (v[1] != 0 || !isPng) {
+        throw AppException("Couldn't capture the screen. ${(v[2] as String).trim()}".trim());
+      }
+      onBytes(png);
+      final data = ByteData.sublistView(png);
+      return 'Screenshot ${data.getUint32(16)}×${data.getUint32(20)}';
+    });
+    return Result(
+      stdoutStream: const Stream<String>.empty(),
+      stderrStream: const Stream<String>.empty(),
+      exitCode: process.exitCode,
+      stdout: Future.value(''),
+      stderr: stderr,
+      messege: message,
+      device: device,
+      command: 'exec-out',
+      arguments: arguments,
+    );
   }
 
   @override

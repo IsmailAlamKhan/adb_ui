@@ -36,5 +36,27 @@ void main() {
       expect(next.status.isWorking, isTrue);
       expect(QrPairStatus.failed.isWorking, isFalse);
     });
+
+    test('restart hint flags default off and survive copyWith', () {
+      const state = QrPairState(code: QrPairCode(serviceName: 'adbui-a', password: 'p'));
+      expect(state.adbMaybeStuck, isFalse);
+      expect(state.restartingAdb, isFalse);
+      final stuck = state.copyWith(adbMaybeStuck: true);
+      expect(stuck.copyWith(status: QrPairStatus.connecting).adbMaybeStuck, isTrue);
+      expect(stuck == state, isFalse);
+    });
+
+    test('stuck thresholds: 15 s waiting for the scan, 10 s connecting, none otherwise', () {
+      expect(QrPairState.stuckAfter(QrPairStatus.waitingForScan), const Duration(seconds: 15));
+      expect(QrPairState.stuckAfter(QrPairStatus.connecting), const Duration(seconds: 10));
+      for (final s in [
+        QrPairStatus.pairing,
+        QrPairStatus.connected,
+        QrPairStatus.pairedNotConnected,
+        QrPairStatus.failed,
+      ]) {
+        expect(QrPairState.stuckAfter(s), isNull);
+      }
+    });
   });
 }

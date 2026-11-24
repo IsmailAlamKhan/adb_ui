@@ -66,6 +66,8 @@ class QrPairState {
     this.message,
     this.error,
     this.expiresAt,
+    this.adbMaybeStuck = false,
+    this.restartingAdb = false,
   });
 
   final QrPairCode code;
@@ -86,6 +88,20 @@ class QrPairState {
   /// When the code stops being looked for.
   final DateTime? expiresAt;
 
+  /// The wait has dragged on long enough that adb's discovery may have stalled: the view
+  /// offers Restart adb. See spec/features/restart-adb.md.
+  final bool adbMaybeStuck;
+
+  /// A Restart adb started from this flow is running.
+  final bool restartingAdb;
+
+  /// How long a status may last before [adbMaybeStuck] is set, or null if it doesn't apply.
+  static Duration? stuckAfter(QrPairStatus status) => switch (status) {
+        QrPairStatus.waitingForScan => const Duration(seconds: 15),
+        QrPairStatus.connecting => const Duration(seconds: 10),
+        _ => null,
+      };
+
   QrPairState copyWith({
     QrPairStatus? status,
     String? host,
@@ -93,6 +109,8 @@ class QrPairState {
     String? message,
     AppError? error,
     DateTime? expiresAt,
+    bool? adbMaybeStuck,
+    bool? restartingAdb,
   }) =>
       QrPairState(
         code: code,
@@ -102,6 +120,8 @@ class QrPairState {
         message: message ?? this.message,
         error: error ?? this.error,
         expiresAt: expiresAt ?? this.expiresAt,
+        adbMaybeStuck: adbMaybeStuck ?? this.adbMaybeStuck,
+        restartingAdb: restartingAdb ?? this.restartingAdb,
       );
 
   @override
@@ -113,8 +133,20 @@ class QrPairState {
       other.deviceId == deviceId &&
       other.message == message &&
       other.error == error &&
-      other.expiresAt == expiresAt;
+      other.expiresAt == expiresAt &&
+      other.adbMaybeStuck == adbMaybeStuck &&
+      other.restartingAdb == restartingAdb;
 
   @override
-  int get hashCode => Object.hash(code, status, host, deviceId, message, error, expiresAt);
+  int get hashCode => Object.hash(
+        code,
+        status,
+        host,
+        deviceId,
+        message,
+        error,
+        expiresAt,
+        adbMaybeStuck,
+        restartingAdb,
+      );
 }

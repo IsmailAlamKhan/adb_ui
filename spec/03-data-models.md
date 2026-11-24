@@ -30,7 +30,7 @@ the type, and splits the address on its last `:`. Not persisted.
 - `QrPairCode({ serviceName, password })`, `QrPairCode.generate()` (`adbui-` + 10 / 12
   random alphanumerics, `Random.secure`), `qrData` = `WIFI:T:ADB;S:<serviceName>;P:<password>;;`.
 - `enum QrPairStatus { waitingForScan, pairing, connecting, connected, pairedNotConnected, failed }`
-- `QrPairState({ code, status, host?, deviceId?, message? })` with `copyWith` — hand-written, not freezed. Not persisted.
+- `QrPairState({ code, status, host?, deviceId?, message?, error?, expiresAt?, adbMaybeStuck, restartingAdb })` with `copyWith`; `stuckAfter(status)` (15 s waiting, 10 s connecting — see features/restart-adb.md) — hand-written, not freezed. Not persisted.
 
 ## CommandModel — `command_queue/command_queue_model.dart`
 
@@ -109,6 +109,7 @@ File: `shared/services/local_storage.dart`. Keys are the enum `LocalStorageKeys`
 | `commands` | JSON string: `List<CommandModelLocalStorage>` (newest first is **not** guaranteed; appended) | `LocalStorageCommandQueueServiceImpl` |
 | `settings` | JSON string: `SettingsModel` | `LocalStorageSettingsServiceImpl` |
 | `ai_model` | `fast` / `accurate` | `AiController` |
+| `agent_server` | JSON string: `AgentServerSettings` `{enabled, port, token}` | `LocalStorageAgentSettingsServiceImpl` |
 
 `set<T>` supports `bool/int/double/String` natively and JSON-encodes `Map`, `List`, or any
 `LocalStorageModel`. `get<T>(key, defaultValue:, fromJson:)` decodes with `fromJson` when given.
@@ -148,3 +149,12 @@ shape of an existing key needs a migration or tolerant `fromJson` — old instal
 - `file_preview/file_preview_model.dart`: `FilePreviewKind` (by extension, with size limits),
   `RemoteFileInfo.parse` (`stat -c '%s|%Y'`), `FilePreviewData`, `formatFileSize`, `shellQuote`,
   `prettyJsonOrSame`. See [features/file-preview.md](features/file-preview.md).
+
+## AgentServerSettings / AgentState — `agent/agent_model.dart`
+
+Hand-written (no codegen). `AgentServerSettings({enabled = false, port = 47123, token = ''})`
+with `url`, `claudeCodeCommand`, `jsonConfig`; persisted under `agent_server`.
+`AgentState({settings, running, error, allowRiskyForSession, activeRun})` is the state of
+`agentControllerProvider`; only `settings` is persisted. `UiNode` (one `uiautomator dump`
+node, `UiNode.parseDump`), `UiSelector` and `AgentRunStep` are pure helpers.
+See [features/agent-mcp-server.md](features/agent-mcp-server.md).

@@ -166,6 +166,26 @@ class AdbController with NavigationController {
       await runForResult(function: service.tcpip, command: 'Enable Wi-Fi debugging (tcpip 5555)') !=
       null;
 
+  /// Restarts the adb server (fixes stalled Wi-Fi discovery). Asks first when devices are
+  /// connected, since they all drop for a few seconds. Returns whether it restarted.
+  /// See spec/features/restart-adb.md.
+  Future<bool> restartAdb() async {
+    final devices = await service.getConnectedDevices().catchError((_) => <AdbDevice>[]);
+    if (devices.isNotEmpty) {
+      final ok = await showDialog<bool>(
+        pageBuilder: (_) => const ConfirmActionDialog(
+          title: 'Restart adb?',
+          message: 'Every device disconnects for a few seconds. USB and paired Wi-Fi phones '
+              'come back by themselves; phones added by IP address (port 5555) need '
+              'connecting again.',
+          confirmLabel: 'Restart',
+        ),
+      );
+      if (ok != true) return false;
+    }
+    return await runForResult(function: service.restartServer, command: 'Restart adb') != null;
+  }
+
   // ── Device actions ────────────────────────────────────────────────────────
 
   Future<void> disconnect(AdbDevice device) async {

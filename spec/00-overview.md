@@ -43,6 +43,7 @@ queue) that can be re-run.
 | Add device | QR code pairing, pairing code, connect by IP (with `adb tcpip 5555` for Android ≤ 10) |
 | Logcat | Live logs, presets (Warnings+/Errors+/Crashes), follow app / foreground app, tags, search, AI filter |
 | AI log filter | On-device Qwen2.5 model turns a sentence into a logcat filter; nothing leaves the computer |
+| AI agent access | Local MCP server (off by default, token, asks before risky tools) so Claude and other agents can drive devices and run UI tests |
 | Screen mirror | In-app live mirror via scrcpy server (touch, keys, controls, screenshot, record) or adb snapshots |
 | File explorer | Browse device filesystem, pick a folder (push) or multiple files (pull) |
 | File picker | Drag-and-drop or system picker for local files; APK-only variant |

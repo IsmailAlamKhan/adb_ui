@@ -21,6 +21,7 @@ On macOS, shortcuts use **⌘**. On Windows and Linux, use **Ctrl** where you se
 - [Activity (command history)](#activity-command-history)
 - [Command palette](#command-palette)
 - [Settings](#settings)
+- [AI agents (Claude and other MCP clients)](#ai-agents-claude-and-other-mcp-clients)
 - [Updates, bug reports and logs](#updates-bug-reports-and-logs)
 - [Keyboard shortcuts](#keyboard-shortcuts)
 
@@ -76,7 +77,8 @@ Open **Add device** with ⌘N, the **+** button, or the palette. It has three ta
 
 The phone and the computer must be on the same Wi-Fi network. The status line under the code
 says what's happening: waiting for the scan, pairing, then connecting. If nothing scans within
-2 minutes, click **New code**. If pairing works but connecting doesn't, use the IP address
+2 minutes, click **New code**. If the phone stays on "Pairing device…", click **Restart adb**
+in the hint that appears after 15 seconds; adb sometimes stops seeing phones on the network. If pairing works but connecting doesn't, use the IP address
 tab with the address shown on the phone's Wireless debugging screen.
 
 **Pairing code** (Android 11+)
@@ -310,7 +312,36 @@ Open with **⌘,** or from the sidebar/menu.
   Dark). Changes apply straight away.
 - **AI:** choose the Fast or Accurate model, see whether it's downloaded, **Download** it or
   **Delete model** to free the disk space.
+- **AI agents:** let Claude and other MCP clients use ADB UI (see below).
+- **adb:** **Restart adb** fixes phones not showing up over Wi-Fi and QR pairing that never
+  finishes. Every device disconnects for a few seconds (asks first if any are connected).
 - **About:** version, changelog, GitHub link, and *Report a bug or request a feature*.
+
+## AI agents (Claude and other MCP clients)
+
+ADB UI can act as an MCP server, so an AI agent such as Claude Code can use your devices:
+list them, take screenshots, tap and type, read logcat, browse files, and run UI tests.
+Everything the agent runs shows in **Activity** as `Agent · …`.
+
+1. Open **Settings → AI agents** and turn on **Let AI agents use ADB UI**. It's off until you
+   do this, and it only listens on this computer (`http://127.0.0.1:47123/mcp`).
+2. Click **Copy Claude Code command** and run it in a terminal, or **Copy JSON config** for
+   another MCP client. Both include the access token; keep it private. **New token** makes
+   the old one stop working.
+3. Ask the agent to do something, e.g. "open the app, sign in as test@example.com and check
+   the welcome text".
+
+**Asking first:** installing or uninstalling apps, clearing app data, shell commands and file
+copies open a dialog in ADB UI. Choose **Deny** or **Allow**; tick **Allow risky actions until
+ADB UI quits** to stop being asked. **Ask again** in Settings turns the questions back on.
+
+**UI tests:** the agent can read the screen as a list of elements (`ui_dump`), tap by text or
+id (`tap_element`), wait for something to appear (`wait_for_element`) and check it
+(`assert_element`). If it starts a test run, each step and screenshot is saved to
+`<app data>/agent_runs/<date>-<name>/` with a `report.md`; **Open test runs folder** opens it.
+
+If the status says the port is in use, type another port, click **Apply**, and copy the
+command again.
 
 ## Updates, bug reports and logs
 
@@ -334,6 +365,7 @@ its log folder and starts fresh.
 | AI models | `<app data>/models/` |
 | App icons and names | `<app data>/app_icons/` |
 | File previews | your system's temp folder, `adb_ui_preview/` (cleared at start) |
+| AI agent test runs | `<app data>/agent_runs/` |
 
 `<app data>` is:
 - macOS: `~/Library/Application Support/com.adb-ui/`
