@@ -40,7 +40,14 @@ class App {
       // Settings first, so even the startup error screen uses the user's style.
       await container.read(settingsControllerProvider.notifier).init();
       await container.read(deviceControllerProvider.notifier).init();
-      await container.read(adbServiceProvider).verifyAdb();
+      await ToolPaths.init();
+      try {
+        await container.read(adbServiceProvider).verifyAdb();
+      } on AdbNotFoundException catch (e) {
+        // Not a startup error: Setup offers to install it.
+        LogFile.instance.dispath('adb not found at startup, opening Setup', error: e);
+        container.read(setupGateProvider.notifier).state = SetupMode.adbMissing;
+      }
       await container.read(commandQueueControllerProvider.notifier).init();
     } on Exception catch (e, stackTrace) {
       Exception exception = e;
@@ -145,6 +152,7 @@ class _App extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final chosen = ref.watch(settingsControllerProvider.select((s) => s.style != null));
+    final setup = ref.watch(setupGateProvider);
     return AppWrapper(
       builder: (context, themeMode, light, dark, builder) => MaterialApp(
         themeMode: themeMode,
@@ -154,7 +162,11 @@ class _App extends ConsumerWidget {
         debugShowCheckedModeBanner: false,
         navigatorKey: NavigatorService.instance.navigatorKey(false),
         builder: builder,
-        home: chosen ? const UpdateChecker(child: HomeShell()) : const StylePickerView(),
+        home: !chosen
+            ? const StylePickerView()
+            : setup != null
+                ? SetupView(key: ValueKey(setup), mode: setup)
+                : const UpdateChecker(child: HomeShell()),
       ),
     );
   }

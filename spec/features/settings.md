@@ -16,5 +16,6 @@ controller, a tile in the view, and update this file + 03-data-models.
 ## Redesign (in progress)
 
 Settings becomes a page with **Appearance** (Style: Workbench / Console / Launcher cards;
-Theme: System / Light / Dark) and **About**. ⌘/Ctrl+, opens it. Full behaviour in
+Theme: System / Light / Dark), **AI** (`AiModelSetupCard`), **Setup** (row "Setup &
+requirements" → `SetupView` in `manual` mode, see [onboarding.md](onboarding.md)) and **About**. ⌘/Ctrl+, opens it. Full behaviour in
 [app-styles.md](app-styles.md).

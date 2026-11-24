@@ -1,3 +1,7 @@
+## Unreleased
+
+- Setup & requirements: on first launch (and whenever adb is missing) ADB UI checks for adb, scrcpy, libmpv and the AI model, and installs what's missing with your OK, through Homebrew, winget or apt/dnf/pacman/zypper, or by downloading the official, checksum-checked build into its own folder. Open it again from Settings or the command palette
+
 ## 0.0.18
 
 - App icons and names: the Apps tab, uninstall list and "Follow app" show each app's real icon and name (also in work profiles); search by name

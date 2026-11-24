@@ -10,6 +10,7 @@ import 'package:path_provider/path_provider.dart' as p;
 import '../../utils/utils.dart';
 import '../errors/errors_model.dart';
 import '../logcat/logcat_model.dart';
+import '../setup/tool_paths.dart';
 import 'adb_model.dart';
 
 final adbServiceProvider = Provider<AdbService>(ProccessAdbServiceImpl.new);
@@ -216,6 +217,27 @@ Future<Map<String, String>?> _loadUnixEnvironment() async {
   return envMap;
 }
 
+/// The environment for every process ADB UI starts: the login-shell environment on
+/// macOS/Linux (read once through env.sh), the app's own elsewhere, with the folders from
+/// [ToolPaths] appended to PATH so tools installed by Setup are found.
+/// Whether a shell's output says the command doesn't exist (sh, zsh, cmd.exe). Pure.
+bool isCommandNotFound(String stderr, int exitCode) {
+  final t = stderr.toLowerCase();
+  return exitCode == 127 ||
+      t.contains('command not found') ||
+      t.contains(': not found') ||
+      t.contains('is not recognized as an internal or external command');
+}
+
+Future<Map<String, String>> processEnvironment() async {
+  if (io.Platform.isLinux || io.Platform.isMacOS) {
+    _unixEnvironmentMap ??= await _loadUnixEnvironment();
+  }
+  final tools = ToolPaths.maybeInstance;
+  final base = _unixEnvironmentMap ?? io.Platform.environment;
+  return tools == null ? Map.of(base) : tools.environment(base);
+}
+
 class ProccessAdbServiceImpl implements AdbService {
   final Ref ref;
 
@@ -229,10 +251,7 @@ class ProccessAdbServiceImpl implements AdbService {
     AdbDevice? device,
     bool addToLogs = true,
   }) async {
-    // Unix exception.
-    if (io.Platform.isLinux || io.Platform.isMacOS) {
-      _unixEnvironmentMap ??= await _loadUnixEnvironment();
-    }
+    final environment = await processEnvironment();
 
     // logWarning(arguments);
     Process process;
@@ -246,7 +265,7 @@ class ProccessAdbServiceImpl implements AdbService {
       process = await io.Process.start(
         executable,
         _command,
-        environment: _unixEnvironmentMap,
+        environment: environment,
         runInShell: true,
       );
     } on ProcessException catch (e) {
@@ -515,6 +534,8 @@ class ProccessAdbServiceImpl implements AdbService {
     return run('version').then((result) async {
       final stdErr = await result.stderr;
       if (stdErr != '') {
+        // runInShell: a missing adb is reported by the shell, not as a ProcessException.
+        if (isCommandNotFound(stdErr, await result.exitCode)) throw AdbNotFoundException();
         throw AppException(stdErr);
       }
       final stdOut = await result.stdout;
@@ -667,14 +688,12 @@ class ProccessAdbServiceImpl implements AdbService {
     AdbDevice? device,
     String executable = 'adb',
   }) async {
-    if (io.Platform.isLinux || io.Platform.isMacOS) {
-      _unixEnvironmentMap ??= await _loadUnixEnvironment();
-    }
+    final environment = await processEnvironment();
     try {
       return await io.Process.start(
         executable,
         [if (device != null) ...['-s', device.id], ...arguments],
-        environment: _unixEnvironmentMap,
+        environment: environment,
         runInShell: true,
       );
     } on ProcessException catch (e) {

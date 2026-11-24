@@ -156,10 +156,15 @@ class MirrorController extends StateNotifier<MirrorState> {
 
   Future<(String, String)> _scrcpyServer() async {
     final env = Platform.environment['SCRCPY_SERVER_PATH'];
-    final which = await Process.run('/bin/sh', ['-lc', 'command -v scrcpy'], runInShell: false);
-    final bin = (which.stdout as String).trim();
+    // scrcpy installed by Setup into the app's own folder wins; then whatever PATH finds.
+    final managed = ToolPaths.maybeInstance?.managedExecutable('scrcpy');
+    final which = managed != null
+        ? null
+        : await Process.run('/bin/sh', ['-c', 'command -v scrcpy'], environment: await processEnvironment());
+    final bin = managed ?? (which!.stdout as String).trim();
     final candidates = [
       if (env != null) env,
+      if (managed != null) p.join(p.dirname(managed), 'scrcpy-server'),
       if (bin.isNotEmpty) p.normalize(p.join(p.dirname(File(bin).resolveSymbolicLinksSync()), '..', 'share', 'scrcpy', 'scrcpy-server')),
       '/opt/homebrew/share/scrcpy/scrcpy-server',
       '/usr/local/share/scrcpy/scrcpy-server',
@@ -170,7 +175,7 @@ class MirrorController extends StateNotifier<MirrorState> {
     if (server.isEmpty) {
       throw MirrorException("Couldn't find scrcpy-server next to scrcpy. Set SCRCPY_SERVER_PATH, or use snapshot mode.");
     }
-    final version = await Process.run('/bin/sh', ['-lc', 'scrcpy --version']);
+    final version = await Process.run(bin.isEmpty ? 'scrcpy' : bin, ['--version'], environment: await processEnvironment());
     final match = RegExp(r'scrcpy\s+(\S+)').firstMatch(version.stdout as String);
     if (match == null) throw MirrorException("Couldn't read the scrcpy version.");
     return (server, match.group(1)!);

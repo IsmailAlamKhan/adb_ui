@@ -108,6 +108,8 @@ class AdbController with NavigationController {
 
   Future<void> openSettings() => adaptivePush<void>((_) => const SettingsView());
 
+  Future<void> openSetup() => adaptivePush<void>((_) => const SetupView());
+
   Future<void> openPalette() async {
     final inline = LauncherPaletteFocus.node;
     if (_style == AppStyle.launcher && inline != null && inline.context != null) {

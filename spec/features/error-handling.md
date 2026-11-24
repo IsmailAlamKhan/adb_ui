@@ -34,7 +34,7 @@ combined exception message + output.
 
 | Kind | Matches | Title | Steps (summary) |
 |------|---------|-------|-----------------|
-| `adbMissing` | `AdbNotFoundException`, `No such file or directory` spawning adb | adb isn't installed or can't be found | Install Android SDK Platform-Tools; make sure `adb` is on your PATH (or add it in `~/.adb_ui`); Try again |
+| `adbMissing` | `AdbNotFoundException`, `No such file or directory` spawning adb | adb isn't installed or can't be found | Open Setup & requirements (Settings or palette) to install it; or install Platform-Tools yourself and put `adb` on your PATH (or in `~/.adb_ui`); Try again |
 | `environment` | "Error requesting environment" | Couldn't read your shell environment | Check your shell profile for errors; see logs |
 | `unauthorized` | `unauthorized` | Your phone hasn't allowed this computer yet | Unlock the phone; accept "Allow USB debugging?"; tick "Always allow" |
 | `offline` | `device offline` | The device is offline | Reconnect the cable or toggle Wireless debugging; `adb kill-server` if it persists |
@@ -50,7 +50,11 @@ combined exception message + output.
 | `notFound` | `No such file or directory` (file ops), `NotFoundException` | That file or folder doesn't exist on the device | — |
 | `permission` | `Permission denied`, `PermissionDeniedException` | Android doesn't allow access there | Use a folder under `/sdcard` |
 | `uninstall` | `DELETE_FAILED_*`, `Unknown package` | Couldn't uninstall the app | It may be a system app or already removed |
-| `scrcpyMissing` | `ScrcpyNotFoundException` | scrcpy isn't installed | Install scrcpy, then restart ADB UI |
+| `scrcpyMissing` | `ScrcpyNotFoundException` | scrcpy isn't installed | Install it from Setup & requirements (no restart needed), or install scrcpy yourself |
+| `setupPermission` | `InstallFailedException` run through `pkexec` with exit 126/127 | Administrator permission was not given | Run Install again and enter your password; or Copy command and run it in a terminal |
+| `setupInstall` | `InstallFailedException` (package manager exited non-zero) | Couldn't install <name> | Read the details; run the shown command in a terminal to see more; try Download instead |
+| `setupChecksum` | `ChecksumMismatchException` | The download didn't match its checksum | The file was deleted; try again; if it repeats, the download was altered on the way (proxy, captive portal) |
+| `setupDownload` | `DownloadFailedException` | Couldn't download <name> | Check your internet connection; try again |
 | `mdns` | `AdbMdnsUnavailableException` | QR pairing needs a newer adb | Update Android SDK Platform-Tools (31+) |
 | `invalidInput` | `InvalidInputException` (our validation) | (the field message) | — |
 | `commandFailed` | `CommandFailedException` (non-zero exit of a shell command) | The command exited with code N | Read the details |
@@ -76,7 +80,7 @@ combined exception message + output.
 4. **In-place loading errors**: `ErrorPanel` with the catalogue title, message, steps and
    **Try again** (only when retryable). It is the default error state of `AsyncValueBuilder`,
    so the file explorer dialog, About and any other user get it too.
-5. **Startup errors**: `AppInitErrorView` shows the catalogue page with **Try again** (re-runs
+5. **Startup errors**: adb missing opens Setup ([onboarding.md](onboarding.md)); other startup errors: `AppInitErrorView` shows the catalogue page with **Try again** (re-runs
    app init), **Copy details**, **Open logs folder**.
 6. **Device state**: an `unauthorized` / `offline` device shows a `warningSoft` banner on its
    page with the catalogue steps; its actions are disabled with that reason as tooltip.
@@ -107,7 +111,7 @@ shell command with a non-zero exit fails with `CommandFailedException(exitCode, 
 - [x] `1.2.3.4` (no port) in Connect by IP → inline field error, no crash (validation unit-tested).
 - [ ] A successful install that writes to stderr is shown as done.
 - [ ] Unauthorized device → banner with steps, actions disabled with reason.
-- [ ] adb missing → init page with steps and a working Try again.
+- [ ] adb missing at startup → Setup page (adbMissing mode); other init errors → init page with steps and a working Try again.
 - [ ] Errors readable in all three styles, light and dark (danger tokens pass AA).
 
 Verified live 2026-11-22: explained "Android doesn't allow access there" panel when opening

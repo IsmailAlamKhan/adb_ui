@@ -74,6 +74,8 @@ static const initial = SettingsModel(themeMode: ThemeMode.system);
 | `selectedDeviceProvider` | `Provider<AdbDevice?>` | That device if still connected, else the first connected one |
 | `devicePropertiesProvider` | `FutureProvider.family<DeviceProperties, AdbDevice>` | `getprop` values for Overview |
 | `installedPackagesProvider` | `FutureProvider.family<List<String>, PackagesQuery>` | `pm list packages` (third-party or all) |
+| `setupGateProvider` | `StateProvider<SetupMode?>` | Non-null: show `SetupView` before home (`firstRun`, `adbMissing`) |
+| `setupControllerProvider` | `StateNotifierProvider<SetupController, SetupState>` | Requirement statuses, host info, running install, log — see [features/onboarding.md](features/onboarding.md) |
 
 `DeviceProperties` (`adb_model.dart`, hand-written): `model`, `manufacturer`,
 `androidVersion`, `sdk`, `abi`, plus `raw` map; parsed from `[key]: [value]` lines.
@@ -126,6 +128,9 @@ shape of an existing key needs a migration or tolerant `fromJson` — old instal
 | `…/flutter-error-log-<day>.txt` | `FlutterError` details |
 | `…/stdout-log-<day>.txt` | adb stdout **and** stderr |
 | `…/stderr-log-<day>.txt` | (created; currently unused) |
+| `<appSupport>/tools/platform-tools/` | Platform-Tools downloaded by Setup (on `PATH` for the app's processes) |
+| `<appSupport>/tools/scrcpy/` | scrcpy (+ `scrcpy-server`) downloaded by Setup |
+| `<appSupport>/tools/.download/` | temporary archives while installing; deleted afterwards |
 | `~/.adb_ui` (user-created, optional) | sourced by env.sh to customise PATH etc. |
 
 ## Logcat, AI and mirror (2026-11-22)

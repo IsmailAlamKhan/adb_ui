@@ -9,16 +9,18 @@ This file covers how the UI code is put together. Last updated 2026-11-22.
 ```
 SplashView ──(init ok)──► MaterialApp (theme = AppThemeFactory(style, brightness))
                             ├─ settings.style == null → StylePickerView (first run)
+                            ├─ setupGateProvider != null → SetupView (after the picker; or adb missing)
                             └─ UpdateChecker
                                  └─ HomeShell  (AppShortcuts + ApkDropZone)
                                       ├─ WorkbenchHome  sidebar │ device page (tabs: Overview, Screen, Logcat, Apps, Files, Shell, Type text)
                                       ├─ ConsoleHome    title row │ device list │ action grid │ docked activity terminal
                                       └─ LauncherHome   device cards · inline CommandPalette · "Today" chips
-           ──(init fails)──► AppInitErrorView (explained error, Try again)
+           ──(init fails)──► AppInitErrorView (explained error, Try again; adb missing goes to SetupView instead)
 
 Shared dialogs/pages (all styles):
   AddDeviceDialog (QR code | Pairing code | IP address)  ·  QrPairPage (Launcher's full-page QR)
-  CommandPaletteDialog (⌘K)  ·  CommandDetailsDialog  ·  ActivityView  ·  SettingsView → AboutView
+  CommandPaletteDialog (⌘K)  ·  CommandDetailsDialog  ·  ActivityView  ·  SettingsView → AboutView, SetupView
+  InstallConsentDialog (Setup: exact command / URL + checksum before any install)
   UninstallPickerDialog  ·  AdbFileExplorerView (pull picker / push browser, with FilePreviewPane)  ·  FilePickerView (APK only)
   FilePreviewDialog (Space: large preview, ← / →)
   AdbInputDialog  ·  ConfirmActionDialog  ·  ErrorDetailsDialog
@@ -38,6 +40,7 @@ macOS menu "About Adb ui" ► AboutView
 | `features/apps/` | `AppIcon`, `AppLetterTile`, `AppInfoController`, `AppInfoService`, `AppInfoDiskCache` |
 | `features/file_preview/` | `FilePreviewPane`, `FilePreviewContent`, `FilePreviewDialog`, `showFilePreview`, `FilePreviewService` |
 | `features/errors/` | `AppError`, `ErrorCatalogue`, `ErrorExplanation`, `ErrorDetailsDialog`, `ErrorPanel` |
+| `features/setup/` | `SetupView`, `RequirementRow`, `InstallConsentDialog`, `SetupController`, `SetupService`, `InstallPlanner`, `ToolPaths` |
 | `features/style_picker/` | `StylePickerView`, `StyleChooser`, `StylePreview`, `ThemeModeChooser` |
 
 ## Rules

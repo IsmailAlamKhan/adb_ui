@@ -28,12 +28,12 @@ On macOS, shortcuts use **⌘**. On Windows and Linux, use **Ctrl** where you se
 
 ## Before you start
 
-ADB UI is a front end for **adb** (Android Debug Bridge), so adb has to be installed and on
-your `PATH`. If it isn't, ADB UI shows a "couldn't start" screen that explains what to do.
-Install steps for each system are in the [README](../README.md#requirements).
+ADB UI is a front end for **adb** (Android Debug Bridge), so adb has to be installed. If it
+isn't, ADB UI can install it for you (see [Setup & requirements](#setup--requirements)), or you
+can install it yourself with the steps in the [README](../README.md#requirements).
 
 [scrcpy](https://github.com/Genymobile/scrcpy) is optional, but you need it for smooth live
-screen mirroring.
+screen mirroring. Setup can install it too.
 
 On the phone, turn on **Developer options**: Settings → About phone → tap **Build number**
 seven times. Then, in Developer options, turn on **USB debugging** and, for Wi-Fi connections,
@@ -45,6 +45,40 @@ The first time ADB UI opens, it asks **"Choose how ADB UI looks"**. Pick one of 
 a theme (**System**, **Light** or **Dark**), then click **Continue**. Each card shows a live
 preview, and you can move between them with the arrow keys. You can change both at any time in
 [Settings](#settings).
+
+Next comes **Set up ADB UI**.
+
+## Setup & requirements
+
+This page lists what ADB UI needs on your computer and whether it's there:
+
+- **Required:** **adb** (Android SDK Platform-Tools).
+- **Optional:** **scrcpy** (live screen mirror), **libmpv** (Linux only, plays the mirror video)
+  and the **AI log-filter model**.
+
+Each item shows **Found** with its version, **Installed by ADB UI**, or **Not found**. For a
+missing item, the line under it shows how it would be installed, for example
+`brew install scrcpy`.
+
+- **Install** uses your package manager: Homebrew on macOS, winget on Windows, apt, dnf, pacman
+  or zypper on Linux. A dialog shows the exact command first; nothing runs until you click
+  **Install**.
+- **Download instead** (or **Install** when you have no package manager) downloads the official
+  build: Platform-Tools from Google, scrcpy from its GitHub releases. The dialog shows the
+  address, the checksum ADB UI checks, and the folder it goes into (`<app data>/tools/`).
+  ADB UI finds tools there without you changing your `PATH`.
+- On **Linux**, package installs need administrator rights. ADB UI never runs `sudo` itself:
+  **Copy command** and run it in a terminal, or **Run with pkexec** and your system asks for
+  your password.
+- **Install required** installs everything required that's missing, one at a time.
+- **Check again** looks again, for example after you installed something in a terminal.
+
+The output of the running install is shown at the bottom. When adb is found, **Continue** takes
+you to your devices.
+
+If adb goes missing later, ADB UI opens this page when it starts instead of an error. You can
+open it any time from **Settings → Setup & requirements** or the command palette (⌘K, type
+"setup").
 
 ## The three styles
 
@@ -310,6 +344,8 @@ Open with **⌘,** or from the sidebar/menu.
   Dark). Changes apply straight away.
 - **AI:** choose the Fast or Accurate model, see whether it's downloaded, **Download** it or
   **Delete model** to free the disk space.
+- **Setup:** **Setup & requirements** opens the [setup page](#setup--requirements) to check or
+  install adb, scrcpy and the other tools.
 - **About:** version, changelog, GitHub link, and *Report a bug or request a feature*.
 
 ## Updates, bug reports and logs
@@ -332,6 +368,7 @@ its log folder and starts fresh.
 | Settings, Activity history | The app's preferences |
 | App logs (one folder per month, files per day) | `<app data>/logs/` |
 | AI models | `<app data>/models/` |
+| adb and scrcpy installed by Setup | `<app data>/tools/platform-tools/`, `<app data>/tools/scrcpy/` |
 | App icons and names | `<app data>/app_icons/` |
 | File previews | your system's temp folder, `adb_ui_preview/` (cleared at start) |
 
