@@ -234,3 +234,67 @@ List<AdbFileSystem> parseLsOutput(String output, {bool root = false}) {
   int byName(AdbFileSystem a, AdbFileSystem b) => a.name.toLowerCase().compareTo(b.name.toLowerCase());
   return [...(dirs..sort(byName)), ...(files..sort(byName))];
 }
+
+/// A user or profile on the phone, from `pm list users`.
+/// See spec/features/install-profiles.md.
+@immutable
+class DeviceUser {
+  const DeviceUser({required this.id, required this.name, this.flags = 0, this.running = false});
+  final int id;
+  final String name;
+
+  /// `UserInfo` flags; `0x20` is a managed (work) profile.
+  final int flags;
+  final bool running;
+
+  bool get isManagedProfile => flags & 0x20 != 0;
+  bool get isPrivateSpace => name.toLowerCase() == 'private space';
+
+  /// Short name: Personal, Work profile, Private space, or the user's name.
+  String get label {
+    if (id == 0) return 'Personal';
+    if (isManagedProfile) return 'Work profile';
+    if (isPrivateSpace) return 'Private space';
+    return name.isEmpty ? 'User $id' : name;
+  }
+
+  /// Muted second line, e.g. `Island · user 10`.
+  String get detail {
+    if (id == 0) return 'Main profile';
+    if (isManagedProfile && name.isNotEmpty && name.toLowerCase() != 'work profile') {
+      return '$name · user $id';
+    }
+    return 'user $id';
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      other is DeviceUser && other.id == id && other.name == name && other.flags == flags && other.running == running;
+
+  @override
+  int get hashCode => Object.hash(id, name, flags, running);
+
+  @override
+  String toString() => 'DeviceUser($id, $name, 0x${flags.toRadixString(16)}, running: $running)';
+}
+
+/// Parses `pm list users`: lines like `UserInfo{10:Island:1030} running`. Names are trimmed.
+List<DeviceUser> parseDeviceUsers(String output) {
+  final line = RegExp(r'UserInfo\{(\d+):(.*):([0-9a-fA-F]+)\}(.*)$');
+  final users = <DeviceUser>[];
+  for (final raw in output.split('\n')) {
+    final match = line.firstMatch(raw.trim());
+    if (match == null) continue;
+    users.add(DeviceUser(
+      id: int.parse(match.group(1)!),
+      name: match.group(2)!.trim(),
+      flags: int.parse(match.group(3)!, radix: 16),
+      running: match.group(4)!.contains('running'),
+    ));
+  }
+  return users;
+}
+
+/// The `--user` value for an install: a user id, or `all`. Null means no `--user`.
+String? installUserArgument({DeviceUser? user, bool allProfiles = false}) =>
+    allProfiles ? 'all' : user?.id.toString();

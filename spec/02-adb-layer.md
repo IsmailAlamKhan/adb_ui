@@ -56,7 +56,9 @@ see [features/onboarding.md](features/onboarding.md).
 | `tcpip()` | `adb tcpip 5555` | stdout contains `restarting in TCP mode port: 5555` | `Restarted in TCP mode` |
 | `restartServer()` | `adb kill-server` (quiet, exit code ignored) then `adb start-server`; recorded as `kill-server` | `start-server` exit code 0 | `adb restarted` |
 | `disconnect(device)` | `adb -s ID disconnect ID` | stdout contains `disconnected` | `Disconnected from ID` |
-| `installApk(device, path)` | `adb -s ID install path` | stdout contains `Success` (stderr warnings allowed) | `Installed <file name>` |
+| `installApk(device, path, {user, profileLabel})` | `adb -s ID install [--user <id\|all\|current>] path` | stdout contains `Success` (stderr warnings allowed) | `Installed <file name>[ in <profile>]` |
+| `listUsers(device)` | `adb -s ID shell pm list users` (not logged) | exit code 0 | `List<DeviceUser>` (empty on failure); see [install-profiles.md](features/install-profiles.md) |
+| `currentUser(device)` | `adb -s ID shell am get-current-user` (not logged) | integer | user id or null |
 | `uninstallApp(device, pkg)` | `adb -s ID uninstall pkg` | stdout contains `Success` | `Uninstalled pkg` |
 | `pushFile(device, file, dest)` | `adb -s ID push file dest` | exit code 0 (adb 37+ prints "1 file pushed" to **stderr** when not on a terminal, so output isn't checked); error = stderr/stdout | `Pushed file` |
 | `pullFile(device, file, dest)` | `adb -s ID pull file dest` | exit code 0 (summary goes to stderr on adb 37+) | `Pulled file` |

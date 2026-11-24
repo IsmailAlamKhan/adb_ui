@@ -64,7 +64,7 @@ General:
 | `list_devices` | Serial, state, model of each device | |
 | `device_info` | Model, maker, Android version, SDK, ABI, screen size | |
 | `list_packages` | Installed packages (`include_system` optional) | |
-| `install_apk` | Install a host `.apk` path | yes |
+| `install_apk` | Install a host `.apk` path; optional `user` (id or `"all"`), else `--user current` ([install-profiles.md](install-profiles.md)) | yes |
 | `uninstall_app` | Uninstall a package | yes |
 | `launch_app` | Start a package's launcher activity (`monkey -p <pkg> -c android.intent.category.LAUNCHER 1`) | |
 | `stop_app` | `am force-stop <pkg>` | |

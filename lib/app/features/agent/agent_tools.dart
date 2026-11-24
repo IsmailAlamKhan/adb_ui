@@ -93,9 +93,15 @@ class AgentToolbox implements McpToolbox {
     McpTool(
       name: 'install_apk',
       title: 'Install APK',
-      description: 'Install an .apk from a path on this computer. The user is asked first.',
+      description: 'Install an .apk from a path on this computer. The user is asked first. '
+          "Installs to the phone's current user (the personal profile) unless user is given.",
       properties: _props({
         'path': {'type': 'string', 'description': 'Absolute path to the .apk on this computer.'},
+        'user': {
+          'type': ['integer', 'string'],
+          'description': 'Optional profile: a user id from `pm list users` (e.g. 10 for a work '
+              'profile) or "all" for every profile.',
+        },
       }),
       required: ['path'],
       risky: true,
@@ -394,7 +400,10 @@ class AgentToolbox implements McpToolbox {
       case 'install_apk':
         final path = _req(a, 'path');
         if (!File(path).existsSync()) throw AgentToolException('No file at $path');
-        return McpToolResult.text(await runInActivity(label, () => service.installApk(device, path)));
+        final user = _installUser(a['user']);
+        return McpToolResult.text(
+          await runInActivity(label, () => service.installApk(device, path, user: user ?? 'current')),
+        );
       case 'uninstall_app':
         final package = _req(a, 'package');
         return McpToolResult.text(await runInActivity(label, () => service.uninstallApp(device, package)));
@@ -617,6 +626,15 @@ class AgentToolbox implements McpToolbox {
     return online.single;
   }
 
+  /// `install_apk`'s `user`: an id or `all`; null when not given.
+  static String? _installUser(Object? value) {
+    if (value == null) return null;
+    final text = value.toString().trim().toLowerCase();
+    if (text.isEmpty) return null;
+    if (text == 'all' || int.tryParse(text) != null) return text;
+    throw AgentToolException('user must be a user id (e.g. 10) or "all"');
+  }
+
   /// Completes "Allow an AI agent to …?".
   static const _riskAction = {
     'install_apk': 'install an app',
@@ -630,7 +648,7 @@ class AgentToolbox implements McpToolbox {
   static String _riskDetails(String name, Map<String, dynamic> a, AdbDevice device) {
     final on = 'on ${device.model.isEmpty ? device.id : device.model}';
     return switch (name) {
-      'install_apk' => 'Install ${a['path']} $on',
+      'install_apk' => 'Install ${a['path']} $on${a['user'] == null ? '' : ' (user ${a['user']})'}',
       'uninstall_app' => 'Uninstall ${a['package']} and its data $on',
       'clear_app_data' => 'Delete all data of ${a['package']} $on',
       'shell' => 'Run `adb shell ${a['command']}` $on',

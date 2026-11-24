@@ -101,7 +101,16 @@ abstract class AdbService {
 
   Future<Result> disconnect(AdbDevice device);
 
-  Future<Result> installApk(AdbDevice device, String path);
+  /// `adb install`. [user] adds `--user <user>` (an id, `all` or `current`); [profileLabel]
+  /// is appended to the success message ("in Work profile"). See
+  /// spec/features/install-profiles.md.
+  Future<Result> installApk(AdbDevice device, String path, {String? user, String? profileLabel});
+
+  /// The phone's users and profiles (`pm list users`, quiet). Empty when it can't be read.
+  Future<List<DeviceUser>> listUsers(AdbDevice device);
+
+  /// `am get-current-user` (quiet); null when it can't be read.
+  Future<int?> currentUser(AdbDevice device);
 
   Future<Result> scrcpy(AdbDevice device);
 
@@ -438,10 +447,10 @@ class ProccessAdbServiceImpl implements AdbService {
   }
 
   @override
-  Future<Result> installApk(AdbDevice device, String path) {
+  Future<Result> installApk(AdbDevice device, String path, {String? user, String? profileLabel}) {
     return run(
       'install',
-      arguments: [path],
+      arguments: [if (user != null) ...['--user', user], path],
       device: device,
     ).then((result) async {
       return result.copyWith(
@@ -450,7 +459,7 @@ class ProccessAdbServiceImpl implements AdbService {
           final stderr = output.last;
           // stderr may hold warnings on success; stdout's "Success" decides.
           if (stdout.contains('Success')) {
-            return 'Installed ${basename(path)}';
+            return 'Installed ${basename(path)}${profileLabel == null ? '' : ' in $profileLabel'}';
           }
           logError('Failed to install $path', error: output);
           throw AppException('Failed to install ${basename(path)}\n$stdout\n$stderr'.trim());
@@ -681,7 +690,13 @@ class ProccessAdbServiceImpl implements AdbService {
         return disconnect(device!);
       case 'install':
         assert(device != null, 'Device cannot be null');
-        return installApk(device!, arguments.first);
+        // `install [--user <id>] <path>`: keep the profile on re-run.
+        final userAt = arguments.indexOf('--user');
+        return installApk(
+          device!,
+          arguments.last,
+          user: userAt >= 0 && userAt + 1 < arguments.length - 1 ? arguments[userAt + 1] : null,
+        );
       case 'push':
         assert(device != null, 'Device cannot be null');
         return pushFile(device!, arguments.first, arguments.last);
@@ -785,6 +800,30 @@ class ProccessAdbServiceImpl implements AdbService {
               return 'Cleared the device log';
             }),
           ));
+
+  @override
+  Future<List<DeviceUser>> listUsers(AdbDevice device) async {
+    try {
+      final result =
+          await run('pm', shell: true, device: device, arguments: ['list', 'users'], addToLogs: false);
+      if (await result.exitCode != 0) return const [];
+      return parseDeviceUsers(await result.stdout);
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  @override
+  Future<int?> currentUser(AdbDevice device) async {
+    try {
+      final result =
+          await run('am', shell: true, device: device, arguments: ['get-current-user'], addToLogs: false);
+      if (await result.exitCode != 0) return null;
+      return int.tryParse((await result.stdout).trim());
+    } catch (_) {
+      return null;
+    }
+  }
 
   @override
   Future<DeviceProperties> deviceProperties(AdbDevice device) async {

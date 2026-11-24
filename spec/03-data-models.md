@@ -80,6 +80,14 @@ static const initial = SettingsModel(themeMode: ThemeMode.system);
 `DeviceProperties` (`adb_model.dart`, hand-written): `model`, `manufacturer`,
 `androidVersion`, `sdk`, `abi`, plus `raw` map; parsed from `[key]: [value]` lines.
 
+## DeviceUser — `adb/adb_model.dart`
+Hand-written: `{int id, String name, int flags, bool running}`, parsed from `pm list users` by
+`parseDeviceUsers`. `isManagedProfile` (`flags & 0x20`), `isPrivateSpace`, `label` (Personal /
+Work profile / Private space / name), `detail`. `InstallTarget = ({DeviceUser? user, bool
+allProfiles})` is what `InstallTargetDialog` pops; `installUserArgument` turns it into the
+`--user` value. The last choice per serial lives in memory on `AdbController`. See
+[install-profiles.md](features/install-profiles.md).
+
 ## AppError — `errors/errors_model.dart`
 
 See [features/error-handling.md](features/error-handling.md). Not persisted: a stored

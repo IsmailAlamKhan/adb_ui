@@ -32,6 +32,7 @@ app without opening the code first.
 | Pair & connect with QR code | [features/qr-pairing.md](features/qr-pairing.md) | Shipped in 0.0.16 |
 | Restart adb (fix stalled Wi-Fi discovery) | [features/restart-adb.md](features/restart-adb.md) | Shipped in 0.0.19 |
 | In-app updates and changelog | [features/updates.md](features/updates.md) | Shipped in 0.0.19 |
+| Choose the profile when installing an APK | [features/install-profiles.md](features/install-profiles.md) | In progress |
 | App styles (first-run picker, Settings) | [features/app-styles.md](features/app-styles.md) | Shipped in 0.0.16 |
 | Error handling & display | [features/error-handling.md](features/error-handling.md) | Shipped in 0.0.16 |
 | Logcat (follow app, foreground, presets) | [features/logcat.md](features/logcat.md) | Shipped in 0.0.17 |

@@ -8,7 +8,7 @@ Overview and Console center), palette rows (all styles; Launcher's main UI) and 
 
 | Action | Controller | adb | Activity label | Shortcut | Input |
 |--------|-----------|-----|----------------|----------|-------|
-| Install APK | `installApk(device, [path])` | `install <path>` | Install `<file>` | ⌘I | `FilePickerView.apk()`, or a dropped `.apk` |
+| Install APK | `installApk(device, [path])` | `install [--user <id>] <path>` | Install `<file>` [(`<profile>`)] | ⌘I | `FilePickerView.apk()`, or a dropped `.apk`; then `InstallTargetDialog` when the phone has more than one profile ([install-profiles.md](install-profiles.md)) |
 | Uninstall app | `uninstallApp(device, [pkg])` | `uninstall <pkg>` | Uninstall `<pkg>` | ⌘U | `UninstallPickerDialog` (installed packages) → `ConfirmActionDialog` |
 | Push files | `pushFile(device, {files, destination})` | `push` per file | Push `<file>` | ⌘P | device file browser in push mode at the last folder → **Push files here…** (native picker) or drop; see [file-explorer-transfer.md](file-explorer-transfer.md) |
 | Pull files | `pullFile(device, {files, destination})` | `pull` per file | Pull `<file>` | ⇧⌘P | files on device → local save location |

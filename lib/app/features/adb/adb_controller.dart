@@ -205,14 +205,13 @@ class AdbController with NavigationController {
     await run(function: () => service.disconnect(device), command: 'Disconnect ${device.displayName}');
   }
 
+  /// Last profile chosen per device serial this session (-1 = all profiles).
+  final _installUser = <String, int>{};
+
   Future<void> installApk(AdbDevice device, [String? path]) async {
     path ??= await showDialog<String>(pageBuilder: (_) => const FilePickerView.apk());
     if (path == null) return;
-    final apk = path;
-    await run(
-      function: () => service.installApk(device, apk),
-      command: 'Install ${p.basename(apk)}',
-    );
+    await _install(device, [path]);
   }
 
   /// Installs every `.apk` in [paths] on [device], one after another.
@@ -226,9 +225,37 @@ class AdbController with NavigationController {
       );
       return;
     }
-    for (final apk in apks) {
-      await installApk(device, apk);
+    await _install(device, apks);
+  }
+
+  /// Asks which profile when the phone has more than one, then installs [apks] there.
+  /// See spec/features/install-profiles.md.
+  Future<void> _install(AdbDevice device, List<String> apks) async {
+    String? user;
+    String? profile;
+    final users = await service.listUsers(device);
+    if (users.length > 1) {
+      final current = await service.currentUser(device) ?? 0;
+      final target = await showDialog<InstallTarget>(
+        pageBuilder: (_) => InstallTargetDialog(
+          users: users,
+          what: apks.length == 1 ? p.basename(apks.single) : '${apks.length} APKs',
+          deviceName: device.displayName,
+          initialUserId: _installUser[device.id] ?? current,
+        ),
+      );
+      if (target == null) return;
+      _installUser[device.id] = target.allProfiles ? -1 : target.user!.id;
+      user = installUserArgument(user: target.user, allProfiles: target.allProfiles);
+      profile = target.allProfiles ? 'all profiles' : target.user!.label;
     }
+    for (final apk in apks) {
+      await run(
+        function: () => service.installApk(device, apk, user: user, profileLabel: profile),
+        command: 'Install ${p.basename(apk)}${profile == null ? '' : ' ($profile)'}',
+      );
+    }
+    ref.invalidate(installedPackagesProvider);
   }
 
   Future<void> uninstallApp(AdbDevice device, [String? packageName]) async {

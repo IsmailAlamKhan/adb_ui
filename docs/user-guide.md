@@ -155,6 +155,10 @@ id** (⇧⌘C).
 - **Install APK (⌘I):** choose an `.apk` file, or **drop one anywhere on the window**. The result
   shows as a notification, and failures explain the reason (for example "an older version
   with a different signature is installed").
+  - **Phones with a work profile** (or Island, Shelter, Private space or a second user): ADB UI
+    asks **Install on which profile?** and installs only there, or in **All profiles**. A locked
+    profile (like Private space) shows greyed out until you unlock it on the phone. ADB UI
+    remembers your choice for that phone until it quits.
 - **Uninstall app (⌘U):** choose from the list of installed apps. ADB UI asks before it
   uninstalls.
 
