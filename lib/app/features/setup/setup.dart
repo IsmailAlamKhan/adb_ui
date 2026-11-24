@@ -1,4 +1,6 @@
 export 'install_planner.dart';
+export 'onboarding_frame.dart';
+export 'onboarding_window.dart';
 export 'setup_controller.dart';
 export 'setup_model.dart';
 export 'setup_service.dart';

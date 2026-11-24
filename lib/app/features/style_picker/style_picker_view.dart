@@ -4,7 +4,6 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../design/design.dart';
-import '../../shared/shared.dart';
 import '../features.dart';
 
 /// Light/dark the app will actually use for [mode].
@@ -203,31 +202,43 @@ class StyleChoiceCard extends StatelessWidget {
       inMutuallyExclusiveGroup: true,
       checked: selected,
       label: '${style.label} style. ${style.tagline}',
-      child: AppCard(
-        selected: selected,
-        onTap: onSelect,
-        padding: EdgeInsets.all(compact ? 10 : 12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            StylePreview(style: style, brightness: brightness, height: compact ? 92 : 132),
-            SizedBox(height: compact ? 8 : 12),
-            Row(
-              children: [
-                Expanded(child: Text(style.label, style: text.titleMedium)),
-                Icon(
-                  selected ? Icons.radio_button_checked_rounded : Icons.radio_button_unchecked_rounded,
-                  color: selected ? t.accent : t.textMuted,
-                  size: 20,
-                ),
-              ],
-            ),
-            if (!compact) ...[
-              const SizedBox(height: 4),
-              Text(style.tagline, style: text.bodyMedium!.copyWith(color: t.textMuted)),
-            ],
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOutCubic,
+        transform: Matrix4.translationValues(0, selected ? -4 : 0, 0),
+        decoration: BoxDecoration(
+          borderRadius: t.borderRadiusLarge,
+          boxShadow: [
+            if (selected)
+              BoxShadow(color: t.accent.withValues(alpha: 0.22), blurRadius: 24, offset: const Offset(0, 10)),
           ],
+        ),
+        child: AppCard(
+          selected: selected,
+          onTap: onSelect,
+          padding: EdgeInsets.all(compact ? 10 : 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              StylePreview(style: style, brightness: brightness, height: compact ? 92 : 132),
+              SizedBox(height: compact ? 8 : 12),
+              Row(
+                children: [
+                  Expanded(child: Text(style.label, style: text.titleMedium)),
+                  Icon(
+                    selected ? Icons.radio_button_checked_rounded : Icons.radio_button_unchecked_rounded,
+                    color: selected ? t.accent : t.textMuted,
+                    size: 20,
+                  ),
+                ],
+              ),
+              if (!compact) ...[
+                const SizedBox(height: 4),
+                Text(style.tagline, style: text.bodyMedium!.copyWith(color: t.textMuted)),
+              ],
+            ],
+          ),
         ),
       ),
     );
@@ -332,58 +343,73 @@ class StylePickerView extends HookConsumerWidget {
       child: Builder(builder: (context) {
         final t = AppTokens.of(context);
         final text = Theme.of(context).textTheme;
-        return Scaffold(
-          body: SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.all(compact ? 20 : 40),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 1000),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
+        void cont() {
+          // Setup (requirements) comes next, before home.
+          ref.read(setupGateProvider.notifier).state = SetupMode.firstRun;
+          ref.read(settingsControllerProvider.notifier).completeOnboarding(style.value, mode.value);
+        }
+        return OnboardingFrame(
+          step: 1,
+          maxWidth: 1000,
+          actions: [
+            FilledButton.icon(
+              autofocus: true,
+              onPressed: cont,
+              icon: const Icon(Icons.arrow_forward_rounded, size: 18),
+              label: Text('Continue with ${style.value.label}'),
+            ),
+          ],
+          child: LayoutBuilder(
+            builder: (context, box) => SingleChildScrollView(
+            padding: EdgeInsets.fromLTRB(compact ? 16 : 32, 20, compact ? 16 : 32, 20),
+            child: ConstrainedBox(
+              // Centred vertically when it fits in the fixed onboarding window.
+              constraints: BoxConstraints(minHeight: box.maxHeight - 40),
+              child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1000),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    FadeSlideIn(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const AppLogo(size: 28),
-                          const SizedBox(width: 10),
-                          Text('ADB UI', style: text.titleMedium),
+                          Text('Choose how ADB UI looks', style: compact ? text.headlineMedium : text.displaySmall),
+                          const SizedBox(height: 8),
+                          Text(
+                            'You can change this any time in Settings.',
+                            style: text.bodyLarge!.copyWith(color: t.textMuted),
+                          ),
                         ],
                       ),
-                      const SizedBox(height: 28),
-                      Text('Choose how ADB UI looks', style: compact ? text.headlineMedium : text.displaySmall),
-                      const SizedBox(height: 8),
-                      Text(
-                        'You can change this any time in Settings.',
-                        style: text.bodyLarge!.copyWith(color: t.textMuted),
-                      ),
-                      const SizedBox(height: 28),
-                      StyleChooser(
+                    ),
+                    const SizedBox(height: 28),
+                    FadeSlideIn(
+                      delay: const Duration(milliseconds: 80),
+                      child: StyleChooser(
                         selected: style.value,
                         brightness: brightness,
                         onChanged: (s) => style.value = s,
                       ),
-                      const SizedBox(height: 28),
-                      const SectionLabel('Theme'),
-                      const SizedBox(height: 8),
-                      ThemeModeChooser(value: mode.value, onChanged: (m) => mode.value = m),
-                      const SizedBox(height: 32),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: FilledButton.icon(
-                          autofocus: true,
-                          onPressed: () {
-                            // Setup (requirements) comes next, before home.
-                            ref.read(setupGateProvider.notifier).state = SetupMode.firstRun;
-                            ref.read(settingsControllerProvider.notifier).completeOnboarding(style.value, mode.value);
-                          },
-                          icon: const Icon(Icons.arrow_forward_rounded, size: 18),
-                          label: Text('Continue with ${style.value.label}'),
-                        ),
+                    ),
+                    const SizedBox(height: 28),
+                    FadeSlideIn(
+                      delay: const Duration(milliseconds: 160),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SectionLabel('Theme'),
+                          const SizedBox(height: 8),
+                          ThemeModeChooser(value: mode.value, onChanged: (m) => mode.value = m),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
+            ),
+            ),
             ),
           ),
         );

@@ -71,3 +71,21 @@ Map<String, String> withExtraPath(Map<String, String> env, List<String> dirs, {r
   copy[key] = appendToPath(copy[key], dirs, windows ? ';' : ':');
   return copy;
 }
+
+/// The data of the first `REG_SZ` / `REG_EXPAND_SZ` value in `reg query … /v <name>` output,
+/// or null. Pure. See spec/features/onboarding.md "Fresh PATH on Windows".
+String? parseRegQueryValue(String output) {
+  final value = RegExp(r'^\s+\S+\s+REG_(?:EXPAND_)?SZ\s+(.*)$');
+  for (final line in output.split(RegExp(r'\r?\n'))) {
+    final m = value.firstMatch(line);
+    if (m != null) return m.group(1)!.trim();
+  }
+  return null;
+}
+
+/// [value] with `%NAME%` replaced from [env] (names case-insensitive, as on Windows);
+/// unknown names are left as they are. Pure.
+String expandWindowsVariables(String value, Map<String, String> env) {
+  final upper = {for (final e in env.entries) e.key.toUpperCase(): e.value};
+  return value.replaceAllMapped(RegExp('%([^%]+)%'), (m) => upper[m.group(1)!.toUpperCase()] ?? m.group(0)!);
+}

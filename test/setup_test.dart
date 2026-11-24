@@ -209,4 +209,32 @@ void main() {
     expect(firstPathLine('\r\nC:\\tools\\adb.exe\r\nC:\\other\\adb.exe\r\n'), 'C:\\tools\\adb.exe');
     expect(firstPathLine('  \n'), isNull);
   });
+
+  test('parseRegQueryValue reads the Path value of reg query output', () {
+    const user = '\r\nHKEY_CURRENT_USER\\Environment\r\n'
+        '    Path    REG_EXPAND_SZ    %USERPROFILE%\\AppData\\Local\\Microsoft\\WindowsApps;'
+        'C:\\Users\\me\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Google.PlatformTools_x\\platform-tools\r\n\r\n';
+    expect(
+      parseRegQueryValue(user),
+      '%USERPROFILE%\\AppData\\Local\\Microsoft\\WindowsApps;'
+      'C:\\Users\\me\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Google.PlatformTools_x\\platform-tools',
+    );
+    expect(parseRegQueryValue('    Path    REG_SZ    C:\\Windows\\system32\n'), 'C:\\Windows\\system32');
+    expect(parseRegQueryValue('ERROR: The system was unable to find the specified registry key or value.'), isNull);
+  });
+
+  test('expandWindowsVariables expands known names case-insensitively', () {
+    final env = {'UserProfile': 'C:\\Users\\me', 'SystemRoot': 'C:\\Windows'};
+    expect(expandWindowsVariables('%USERPROFILE%\\bin;%systemroot%\\system32', env), 'C:\\Users\\me\\bin;C:\\Windows\\system32');
+    expect(expandWindowsVariables('%NOPE%\\x', env), '%NOPE%\\x');
+  });
+
+  test('a fresh registry PATH entry is appended after the app PATH', () {
+    final env = withExtraPath(
+      {'Path': 'C:\\Windows;C:\\Users\\me\\bin'},
+      ['c:\\windows\\', 'C:\\pt\\platform-tools'],
+      windows: true,
+    );
+    expect(env['Path'], 'C:\\Windows;C:\\Users\\me\\bin;C:\\pt\\platform-tools');
+  });
 }

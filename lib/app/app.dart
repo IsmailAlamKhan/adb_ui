@@ -155,20 +155,25 @@ class _App extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final chosen = ref.watch(settingsControllerProvider.select((s) => s.style != null));
     final setup = ref.watch(setupGateProvider);
-    return AppWrapper(
-      builder: (context, themeMode, light, dark, builder) => MaterialApp(
-        themeMode: themeMode,
-        title: appName,
-        darkTheme: dark,
-        theme: light,
-        debugShowCheckedModeBanner: false,
-        navigatorKey: NavigatorService.instance.navigatorKey(false),
-        builder: builder,
-        home: !chosen
-            ? const StylePickerView()
-            : setup != null
-                ? SetupView(key: ValueKey(setup), mode: setup)
-                : const UpdateChecker(child: HomeShell()),
+    // Before home the window is a small fixed one (spec/features/onboarding.md).
+    final onboarding = !chosen || (setup != null && setup != SetupMode.manual);
+    return OnboardingWindowScope(
+      active: onboarding,
+      child: AppWrapper(
+        builder: (context, themeMode, light, dark, builder) => MaterialApp(
+          themeMode: themeMode,
+          title: appName,
+          darkTheme: dark,
+          theme: light,
+          debugShowCheckedModeBanner: false,
+          navigatorKey: NavigatorService.instance.navigatorKey(false),
+          builder: builder,
+          home: !chosen
+              ? const StylePickerView()
+              : setup != null
+                  ? SetupView(key: ValueKey(setup), mode: setup)
+                  : const UpdateChecker(child: HomeShell()),
+        ),
       ),
     );
   }
@@ -230,15 +235,39 @@ class WindowTitleBar extends StatelessWidget {
                         windowManager.popUpWindowMenu();
                       }
                     },
-                    child: WindowCaption(
-                      brightness: Theme.of(context).brightness,
-                      backgroundColor: Colors.transparent,
-                      title: DefaultTextStyle(
-                        style: Theme.of(context).textTheme.bodyMedium!,
-                        child: const Row(
-                          children: [AppLogo(size: 20), Gap(6), Text(appName)],
-                        ),
-                      ),
+                    child: ValueListenableBuilder<bool>(
+                      valueListenable: OnboardingWindow.active,
+                      builder: (context, onboarding, _) {
+                        final brightness = Theme.of(context).brightness;
+                        final title = DefaultTextStyle(
+                          style: Theme.of(context).textTheme.bodyMedium!,
+                          child: const Row(
+                            children: [AppLogo(size: 20), Gap(6), Text(appName)],
+                          ),
+                        );
+                        if (!onboarding) {
+                          return WindowCaption(
+                            brightness: brightness,
+                            backgroundColor: Colors.transparent,
+                            title: title,
+                          );
+                        }
+                        // Onboarding: fixed window, so no drag area and no maximise.
+                        return Row(
+                          children: [
+                            const SizedBox(width: 16),
+                            Expanded(child: title),
+                            WindowCaptionButton.minimize(
+                              brightness: brightness,
+                              onPressed: windowManager.minimize,
+                            ),
+                            WindowCaptionButton.close(
+                              brightness: brightness,
+                              onPressed: windowManager.close,
+                            ),
+                          ],
+                        );
+                      },
                     ),
                   ),
                 ),

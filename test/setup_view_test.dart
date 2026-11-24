@@ -32,7 +32,7 @@ class _FakeSetupService implements SetupService {
 
 Future<void> _pump(WidgetTester tester, SetupService service, SetupMode mode, {double width = 1000}) async {
   SharedPreferences.setMockInitialValues({});
-  tester.view.physicalSize = Size(width, 900);
+  tester.view.physicalSize = Size(width, 1400);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
   final container = ProviderContainer(overrides: [setupServiceProvider.overrideWithValue(service)]);
@@ -67,6 +67,8 @@ void main() {
     expect(find.text('Download instead'), findsWidgets);
     expect(find.text('Found · libmpv.so.2'), findsOneWidget);
     expect(find.text('Install required'), findsOneWidget);
+    expect(find.text('1 required tool is missing'), findsOneWidget);
+    expect(find.text('Required'), findsWidgets);
     final cont = tester.widget<FilledButton>(find.ancestor(of: find.text('Continue'), matching: find.byWidgetPredicate((w) => w is FilledButton)));
     expect(cont.onPressed, isNull);
     expect(tester.takeException(), isNull);
@@ -89,6 +91,9 @@ void main() {
     expect(find.text('Installed by ADB UI · 5.0.1'), findsOneWidget);
     expect(find.text('libmpv'), findsNothing);
     expect(find.text('Install required'), findsNothing);
+    expect(find.text('Get your tools ready'), findsOneWidget);
+    expect(find.text('Everything ADB UI needs is ready'), findsOneWidget);
+    expect(find.bySemanticsLabel('Step 2 of 2: Tools'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

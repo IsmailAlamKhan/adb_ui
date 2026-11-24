@@ -7,13 +7,14 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../design/design.dart';
 import '../../shared/widgets/widgets.dart';
 import '../ai/ai.dart';
+import 'onboarding_frame.dart';
 import 'setup_controller.dart';
 import 'setup_model.dart';
 import 'tool_paths.dart';
 
 /// Setup & requirements: what ADB UI needs, and installing it with the user's OK.
-/// First run (after the style picker), adb missing at startup, or from Settings / palette.
-/// See spec/features/onboarding.md.
+/// First run (step 2 after the style picker), adb missing at startup, or from Settings /
+/// palette. See spec/features/onboarding.md.
 class SetupView extends HookConsumerWidget {
   const SetupView({super.key, this.mode = SetupMode.manual});
 
@@ -26,6 +27,7 @@ class SetupView extends HookConsumerWidget {
     final t = AppTokens.of(context);
     final text = Theme.of(context).textTheme;
     final compact = WindowSize.of(context).isCompact;
+    final manual = mode == SetupMode.manual;
 
     useEffect(() {
       Future.microtask(controller.refresh);
@@ -35,117 +37,249 @@ class SetupView extends HookConsumerWidget {
     final host = state.host;
     final requirements = host?.requirements ?? const [Requirement.adb, Requirement.scrcpy, Requirement.aiModel];
     final busy = state.running != null;
-    final requiredMissing = requirements.any((r) => r.required && state.statusOf(r).checked && !state.statusOf(r).found);
 
+    var delay = 0;
+    Widget enter(Widget child, [Object? id]) {
+      final d = Duration(milliseconds: 60 * delay++);
+      return manual ? child : FadeSlideIn(key: id == null ? null : ValueKey(id), delay: d, child: child);
+    }
+
+    final hPad = compact ? 16.0 : 32.0;
     final list = ListView(
-      padding: EdgeInsets.fromLTRB(compact ? 16 : 28, 20, compact ? 16 : 28, 24),
+      padding: EdgeInsets.fromLTRB(hPad, manual ? 20 : (compact ? 20 : 36), hPad, 24),
       children: [
-        if (mode != SetupMode.manual) ...[
-          const Row(children: [AppLogo(size: 28)]),
-          const SizedBox(height: 16),
-        ],
-        Text('Set up ADB UI', style: compact ? text.headlineSmall : text.headlineMedium),
-        const SizedBox(height: 6),
-        Text(
-          'ADB UI checks what it needs on this computer. Nothing is installed without your OK.',
-          style: TextStyle(color: t.textMuted),
+        enter(
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                mode == SetupMode.firstRun ? 'Get your tools ready' : 'Set up ADB UI',
+                style: manual
+                    ? (compact ? text.headlineSmall : text.headlineMedium)
+                    : (compact ? text.headlineMedium : text.displaySmall),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'ADB UI checks what it needs on this computer. Nothing is installed without your OK.',
+                style: text.bodyLarge!.copyWith(color: t.textMuted),
+              ),
+              if (host != null) ...[const SizedBox(height: 12), _InstallerLine(host: host)],
+            ],
+          ),
         ),
-        const SizedBox(height: 8),
-        if (host != null) _InstallerLine(host: host),
         if (mode == SetupMode.adbMissing) ...[
           const SizedBox(height: 16),
-          const AppBanner(
-            tone: BannerTone.warning,
-            title: "adb wasn't found",
-            message: 'ADB UI needs it to talk to your devices. Install it below, or install '
-                'Android SDK Platform-Tools yourself and click Check again.',
+          enter(
+            const AppBanner(
+              tone: BannerTone.warning,
+              title: "adb wasn't found",
+              message:
+                  'ADB UI needs it to talk to your devices. Install it below, or install '
+                  'Android SDK Platform-Tools yourself and click Check again.',
+            ),
           ),
         ],
         const SizedBox(height: 24),
-        const SectionLabel('Required'),
-        const SizedBox(height: 8),
+        enter(_ReadinessCard(requirements: requirements)),
+        const SizedBox(height: 28),
+        enter(const SectionLabel('Required')),
+        const SizedBox(height: 10),
         for (final r in requirements.where((r) => r.required)) ...[
-          RequirementRow(requirement: r),
-          const SizedBox(height: 8),
+          enter(RequirementRow(requirement: r), r),
+          const SizedBox(height: 10),
         ],
-        const SizedBox(height: 16),
-        const SectionLabel('Optional'),
-        const SizedBox(height: 8),
+        const SizedBox(height: 18),
+        enter(const SectionLabel('Optional')),
+        const SizedBox(height: 10),
         for (final r in requirements.where((r) => !r.required)) ...[
-          RequirementRow(requirement: r),
-          const SizedBox(height: 8),
+          enter(RequirementRow(requirement: r), r),
+          const SizedBox(height: 10),
         ],
-        if (state.log.isNotEmpty || busy) ...[
-          const SizedBox(height: 16),
-          SectionLabel(busy ? 'Installing ${state.running!.shortName}…' : 'Last install'),
-          const SizedBox(height: 8),
-          if (state.progress != null) ...[
-            LinearProgressIndicator(value: state.progress),
-            const SizedBox(height: 8),
-          ],
-          TerminalBlock(text: state.log.join('\n'), maxHeight: 220, placeholder: 'Starting…'),
-        ],
+        AnimatedSize(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOutCubic,
+          alignment: Alignment.topCenter,
+          child: state.log.isNotEmpty || busy
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 18),
+                    SectionLabel(busy ? 'Installing ${state.running!.shortName}…' : 'Last install'),
+                    const SizedBox(height: 8),
+                    if (state.progress != null) ...[
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: LinearProgressIndicator(value: state.progress, minHeight: 6),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+                    TerminalBlock(text: state.log.join('\n'), maxHeight: 220, placeholder: 'Starting…'),
+                  ],
+                )
+              : const SizedBox(width: double.infinity),
+        ),
       ],
     );
 
-    final footer = Padding(
-      padding: EdgeInsets.fromLTRB(compact ? 16 : 28, 8, compact ? 16 : 28, 16),
-      child: Wrap(
-        alignment: WrapAlignment.end,
-        spacing: 8,
-        runSpacing: 8,
-        children: [
-          OutlinedButton.icon(
-            onPressed: busy ? null : controller.refresh,
-            icon: const Icon(Icons.refresh_rounded, size: 18),
-            label: const Text('Check again'),
+    final checkAgain = OutlinedButton.icon(
+      onPressed: busy ? null : controller.refresh,
+      icon: const Icon(Icons.refresh_rounded, size: 18),
+      label: const Text('Check again'),
+    );
+
+    if (manual) {
+      return AdaptiveDialog(
+        child: Scaffold(
+          appBar: AppBar(title: const Text('Setup & requirements')),
+          body: Column(
+            children: [
+              Expanded(child: list),
+              Divider(height: 1, color: t.borderSubtle),
+              Padding(
+                padding: EdgeInsets.fromLTRB(hPad, 8, hPad, 16),
+                child: Wrap(
+                  alignment: WrapAlignment.end,
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    checkAgain,
+                    FilledButton(
+                      autofocus: true,
+                      onPressed: () => Navigator.of(context).maybePop(),
+                      child: const Text('Done'),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          if (requiredMissing)
-            OutlinedButton.icon(
+        ),
+      );
+    }
+    return OnboardingFrame(
+      step: mode == SetupMode.firstRun ? 2 : null,
+      maxWidth: 760,
+      actions: [
+        checkAgain,
+        Tooltip(
+          message: state.requiredReady ? '' : 'Install adb first',
+          child: FilledButton.icon(
+            onPressed: state.requiredReady && !busy ? controller.finish : null,
+            icon: const Icon(Icons.arrow_forward_rounded, size: 18),
+            label: const Text('Continue'),
+          ),
+        ),
+      ],
+      child: Center(
+        child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 760), child: list),
+      ),
+    );
+  }
+}
+
+/// Ring of found tools plus one line about what's still needed, and Install required.
+class _ReadinessCard extends ConsumerWidget {
+  const _ReadinessCard({required this.requirements});
+  final List<Requirement> requirements;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(setupControllerProvider);
+    final controller = ref.read(setupControllerProvider.notifier);
+    final t = AppTokens.of(context);
+    final text = Theme.of(context).textTheme;
+    final tools = requirements.where((r) => r != Requirement.aiModel).toList();
+    final checking = tools.any((r) => !state.statusOf(r).checked);
+    final found = tools.where((r) => state.statusOf(r).found).length;
+    final missingRequired = tools
+        .where((r) => r.required && state.statusOf(r).checked && !state.statusOf(r).found)
+        .length;
+    final ready = !checking && missingRequired == 0;
+    final busy = state.running != null;
+
+    final (Color ring, Color tint, String title, String detail) = switch (()) {
+      _ when checking => (t.accent, t.accentSoft, 'Checking this computer…', 'Looking for adb and the other tools.'),
+      _ when ready => (
+        t.success,
+        t.successSoft,
+        'Everything ADB UI needs is ready',
+        found == tools.length
+            ? (found == 2 ? 'Both tools were found.' : 'All $found tools were found.')
+            : '$found of ${tools.length} tools found. The optional ones can wait.',
+      ),
+      _ => (
+        t.danger,
+        t.dangerSoft,
+        missingRequired == 1 ? '1 required tool is missing' : '$missingRequired required tools are missing',
+        'Install it below, or click Install required to do it in one go.',
+      ),
+    };
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        borderRadius: t.borderRadiusLarge,
+        color: Color.alphaBlend(tint.withValues(alpha: 0.55), t.surface),
+        border: Border.all(color: ring.withValues(alpha: 0.35)),
+      ),
+      child: Wrap(
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 16,
+        runSpacing: 12,
+        children: [
+          SizedBox(
+            width: 56,
+            height: 56,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                SizedBox.expand(
+                  child: TweenAnimationBuilder<double>(
+                    tween: Tween(end: tools.isEmpty ? 0 : found / tools.length),
+                    duration: const Duration(milliseconds: 500),
+                    curve: Curves.easeOutCubic,
+                    builder: (_, v, __) => CircularProgressIndicator(
+                      value: checking ? null : v,
+                      strokeWidth: 5,
+                      strokeCap: StrokeCap.round,
+                      color: ring,
+                      backgroundColor: ring.withValues(alpha: 0.15),
+                    ),
+                  ),
+                ),
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 250),
+                  child: ready
+                      ? Icon(Icons.check_rounded, key: const ValueKey('ok'), color: ring, size: 26)
+                      : Text(
+                          checking ? '' : '$found/${tools.length}',
+                          key: ValueKey('$found${tools.length}$checking'),
+                          style: TextStyle(fontWeight: FontWeight.w700, color: t.text, fontSize: 13),
+                        ),
+                ),
+              ],
+            ),
+          ),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(title, style: text.titleMedium),
+                const SizedBox(height: 2),
+                Text(detail, style: TextStyle(color: t.textMuted)),
+              ],
+            ),
+          ),
+          if (missingRequired > 0)
+            FilledButton.icon(
               onPressed: busy ? null : controller.installRequired,
               icon: const Icon(Icons.download_rounded, size: 18),
               label: const Text('Install required'),
             ),
-          if (mode == SetupMode.manual)
-            FilledButton(
-              autofocus: true,
-              onPressed: () => Navigator.of(context).maybePop(),
-              child: const Text('Done'),
-            )
-          else
-            Tooltip(
-              message: state.requiredReady ? '' : 'Install adb first',
-              child: FilledButton.icon(
-                onPressed: state.requiredReady && !busy ? controller.finish : null,
-                icon: const Icon(Icons.arrow_forward_rounded, size: 18),
-                label: const Text('Continue'),
-              ),
-            ),
         ],
-      ),
-    );
-
-    final body = Column(
-      children: [
-        Expanded(child: list),
-        Divider(height: 1, color: t.borderSubtle),
-        footer,
-      ],
-    );
-
-    if (mode == SetupMode.manual) {
-      return AdaptiveDialog(
-        child: Scaffold(
-          appBar: AppBar(title: const Text('Setup & requirements')),
-          body: body,
-        ),
-      );
-    }
-    return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 760), child: body),
-        ),
       ),
     );
   }
@@ -164,37 +298,61 @@ class _InstallerLine extends StatelessWidget {
       PackageManager.winget => ('Installs use winget.', null, null),
       final PackageManager m => ('Installs use ${m.label} (needs your administrator password).', null, null),
       null => switch (host.os) {
-          HostOs.macos => (
-              "No package manager found. Installs download from the official site into ADB UI's own folder.",
-              'Get Homebrew',
-              'https://brew.sh',
-            ),
-          HostOs.windows => (
-              "winget wasn't found. Installs download from the official site into ADB UI's own folder.",
-              'About winget',
-              'https://learn.microsoft.com/windows/package-manager/winget/',
-            ),
-          HostOs.linux => (
-              "No package manager found. Installs download from the official site into ADB UI's own folder.",
-              null,
-              null,
-            ),
-        },
+        HostOs.macos => (
+          "No package manager found. Installs download from the official site into ADB UI's own folder.",
+          'Get Homebrew',
+          'https://brew.sh',
+        ),
+        HostOs.windows => (
+          "winget wasn't found. Installs download from the official site into ADB UI's own folder.",
+          'About winget',
+          'https://learn.microsoft.com/windows/package-manager/winget/',
+        ),
+        HostOs.linux => (
+          "No package manager found. Installs download from the official site into ADB UI's own folder.",
+          null,
+          null,
+        ),
+      },
     };
     return Wrap(
       crossAxisAlignment: WrapCrossAlignment.center,
       spacing: 8,
+      runSpacing: 4,
       children: [
-        Icon(Icons.inventory_2_outlined, size: 16, color: t.textMuted),
-        Text(line, style: TextStyle(color: t.textMuted)),
-        if (link != null)
-          TextButton(onPressed: () => launchUrl(Uri.parse(link)), child: Text(linkLabel!)),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(
+            color: t.surface.withValues(alpha: 0.7),
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(color: t.borderSubtle),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.inventory_2_outlined, size: 15, color: t.textMuted),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(line, style: TextStyle(color: t.textMuted, fontSize: 13)),
+              ),
+            ],
+          ),
+        ),
+        if (link != null) TextButton(onPressed: () => launchUrl(Uri.parse(link)), child: Text(linkLabel!)),
       ],
     );
   }
 }
 
-/// One requirement: status, how it would be installed, and Install buttons.
+/// Icon shown in a requirement's tile.
+IconData requirementIcon(Requirement r) => switch (r) {
+  Requirement.adb => Icons.usb_rounded,
+  Requirement.scrcpy => Icons.cast_rounded,
+  Requirement.libmpv => Icons.movie_rounded,
+  Requirement.aiModel => Icons.auto_awesome_rounded,
+};
+
+/// One requirement: icon tile, name, purpose, status pill, and the Install buttons.
 class RequirementRow extends ConsumerWidget {
   const RequirementRow({super.key, required this.requirement});
   final Requirement requirement;
@@ -205,16 +363,57 @@ class RequirementRow extends ConsumerWidget {
     final t = AppTokens.of(context);
     final text = Theme.of(context).textTheme;
     final mono = TextStyle(fontFamily: t.monoFont, fontSize: 12.5, color: t.textMuted);
+    final compact = WindowSize.of(context).isCompact;
+
+    Widget heading({Widget? pill, required Color tile, required Color onTile}) {
+      final titleBlock = Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 4,
+            children: [
+              Text(r.label, style: text.titleSmall),
+              _Tag(r.required ? 'Required' : 'Optional', strong: r.required),
+            ],
+          ),
+          const SizedBox(height: 3),
+          Text(r.purpose, style: TextStyle(color: t.textMuted)),
+        ],
+      );
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(color: tile, borderRadius: BorderRadius.circular(t.radius + 4)),
+            child: Icon(requirementIcon(r), color: onTile, size: 22),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: compact && pill != null
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [titleBlock, const SizedBox(height: 8), pill],
+                  )
+                : titleBlock,
+          ),
+          if (!compact && pill != null) ...[const SizedBox(width: 12), pill],
+        ],
+      );
+    }
 
     if (r == Requirement.aiModel) {
       return AppCard(
+        padding: const EdgeInsets.all(18),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(r.label, style: text.titleSmall),
-            const SizedBox(height: 2),
-            Text(r.purpose, style: TextStyle(color: t.textMuted)),
-            const SizedBox(height: 12),
+            heading(tile: t.accentSoft, onTile: t.onAccentSoft),
+            const SizedBox(height: 14),
             const AiModelSetupCard(compact: true),
           ],
         ),
@@ -229,76 +428,175 @@ class RequirementRow extends ConsumerWidget {
     final busy = state.running != null;
     final plans = controller.plansFor(r);
 
-    final (Color dot, String statusText) = switch (status) {
-      _ when running => (t.accent, 'Installing…'),
-      ToolStatus(checked: false) => (t.textMuted, 'Checking…'),
-      ToolStatus(found: true, managedByApp: true) => (t.success, 'Installed by ADB UI${_v(status)}'),
-      ToolStatus(found: true) => (t.success, 'Found${_v(status)}'),
-      _ when error != null => (t.danger, 'Install failed: ${error.title}'),
-      _ => (r.required ? t.danger : t.warning, 'Not found'),
+    final tone = switch (status) {
+      _ when running => _Tone.busy,
+      ToolStatus(checked: false) => _Tone.checking,
+      ToolStatus(found: true) => _Tone.ok,
+      _ when error != null => _Tone.bad,
+      _ => r.required ? _Tone.bad : _Tone.warn,
     };
+    final statusText = switch (status) {
+      _ when running => 'Installing…',
+      ToolStatus(checked: false) => 'Checking…',
+      ToolStatus(found: true, managedByApp: true) => 'Installed by ADB UI${_v(status)}',
+      ToolStatus(found: true) => 'Found${_v(status)}',
+      _ when error != null => 'Install failed: ${error.title}',
+      _ => 'Not found',
+    };
+    final (tile, onTile) = switch (tone) {
+      _Tone.ok => (t.successSoft, t.onSuccessSoft),
+      _Tone.bad => (t.dangerSoft, t.onDangerSoft),
+      _Tone.warn => (t.warningSoft, t.onWarningSoft),
+      _ => (t.accentSoft, t.onAccentSoft),
+    };
+    final showInstall = status.checked && !status.found && plans.isNotEmpty;
 
     return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(padding: const EdgeInsets.only(top: 6), child: StatusDot(color: dot, label: statusText)),
-              const SizedBox(width: 10),
-              Expanded(
+      padding: const EdgeInsets.all(18),
+      child: AnimatedSize(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOutCubic,
+        alignment: Alignment.topCenter,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            heading(
+              tile: tile,
+              onTile: onTile,
+              pill: _StatusPill(tone: tone, label: statusText, progress: running ? state.progress : null),
+            ),
+            if (status.found && status.path != null)
+              Padding(
+                padding: const EdgeInsets.only(left: 58, top: 8),
+                child: SelectableText(status.path!, style: mono),
+              ),
+            if (showInstall)
+              Padding(
+                padding: EdgeInsets.only(left: compact ? 0 : 58, top: 14),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(r.label, style: text.titleSmall),
-                    const SizedBox(height: 2),
-                    Text(r.purpose, style: TextStyle(color: t.textMuted)),
-                    const SizedBox(height: 6),
-                    Text(statusText, style: TextStyle(color: dot == t.textMuted ? t.textMuted : t.text)),
-                    if (status.found && status.path != null) SelectableText(status.path!, style: mono),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                      decoration: BoxDecoration(
+                        color: t.surfaceAlt,
+                        borderRadius: t.borderRadius,
+                        border: Border.all(color: t.borderSubtle),
+                      ),
+                      child: SelectableText('↳ ${describeMethod(plans.first)}', style: mono),
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (final (i, m) in plans.indexed)
+                          if (m is! ManualInstall)
+                            i == 0
+                                ? FilledButton.icon(
+                                    onPressed: busy ? null : () => controller.install(r, m),
+                                    icon: const Icon(Icons.download_rounded, size: 18),
+                                    label: Text(m is PackageManagerInstall && m.needsRoot ? 'Install…' : 'Install'),
+                                  )
+                                : OutlinedButton(
+                                    onPressed: busy ? null : () => controller.install(r, m),
+                                    child: Text(m is DownloadInstall ? 'Download instead' : 'Other way'),
+                                  ),
+                      ],
+                    ),
                   ],
                 ),
               ),
-            ],
-          ),
-          if (status.checked && !status.found && plans.isNotEmpty) ...[
-            const SizedBox(height: 10),
-            Padding(
-              padding: const EdgeInsets.only(left: 18),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SelectableText('↳ ${describeMethod(plans.first)}', style: mono),
-                  const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      for (final (i, m) in plans.indexed)
-                        if (m is! ManualInstall)
-                          i == 0
-                              ? FilledButton.icon(
-                                  onPressed: busy ? null : () => controller.install(r, m),
-                                  icon: const Icon(Icons.download_rounded, size: 18),
-                                  label: Text(m is PackageManagerInstall && m.needsRoot ? 'Install…' : 'Install'),
-                                )
-                              : OutlinedButton(
-                                  onPressed: busy ? null : () => controller.install(r, m),
-                                  child: Text(m is DownloadInstall ? 'Download instead' : 'Other way'),
-                                ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
           ],
-        ],
+        ),
       ),
     );
   }
 
   static String _v(ToolStatus s) => s.version == null ? '' : ' · ${s.version}';
+}
+
+enum _Tone { checking, busy, ok, warn, bad }
+
+/// Rounded status label that cross-fades when the status changes.
+class _StatusPill extends StatelessWidget {
+  const _StatusPill({required this.tone, required this.label, this.progress});
+  final _Tone tone;
+  final String label;
+  final double? progress;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppTokens.of(context);
+    final (bg, fg) = switch (tone) {
+      _Tone.ok => (t.successSoft, t.onSuccessSoft),
+      _Tone.bad => (t.dangerSoft, t.onDangerSoft),
+      _Tone.warn => (t.warningSoft, t.onWarningSoft),
+      _Tone.busy => (t.accentSoft, t.onAccentSoft),
+      _Tone.checking => (t.surfaceAlt, t.textMuted),
+    };
+    final lead = switch (tone) {
+      _Tone.checking || _Tone.busy => SizedBox(
+        width: 12,
+        height: 12,
+        child: CircularProgressIndicator(strokeWidth: 2, value: progress, color: fg),
+      ),
+      _Tone.ok => Icon(Icons.check_circle_rounded, size: 15, color: fg),
+      _Tone.warn => Icon(Icons.info_rounded, size: 15, color: fg),
+      _Tone.bad => Icon(Icons.error_rounded, size: 15, color: fg),
+    };
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 250),
+      transitionBuilder: (child, a) => FadeTransition(
+        opacity: a,
+        child: ScaleTransition(scale: Tween(begin: 0.9, end: 1.0).animate(a), child: child),
+      ),
+      child: Container(
+        key: ValueKey('$tone$label'),
+        constraints: const BoxConstraints(maxWidth: 280),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(999)),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Semantics(label: label, child: lead),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                label,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: fg, fontWeight: FontWeight.w600, fontSize: 12.5),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Tag extends StatelessWidget {
+  const _Tag(this.label, {this.strong = false});
+  final String label;
+  final bool strong;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppTokens.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(4),
+        color: strong ? t.accentSoft : Colors.transparent,
+        border: strong ? null : Border.all(color: t.borderSubtle),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: strong ? t.onAccentSoft : t.textMuted),
+      ),
+    );
+  }
 }
 
 /// One-line description of a method, shown under a missing item.

@@ -1,7 +1,7 @@
 # Feature: Setup & requirements (first-run onboarding)
 
-**Status:** Shipped in 0.0.19 · **Code:** `lib/app/features/setup/`, `test/setup_test.dart`, `test/setup_view_test.dart`
-**Owner / requested by:** owner · **Last updated:** 2026-11-24
+**Status:** Shipped in 0.0.19; Windows PATH fix, redesign and fixed onboarding window built 2026-11-25, not released yet (seen in a macOS preview build with stubbed tool checks; not on Windows) · **Code:** `lib/app/features/setup/`, `test/setup_test.dart`, `test/setup_view_test.dart`
+**Owner / requested by:** owner · **Last updated:** 2026-11-25
 
 ## Problem
 
@@ -29,9 +29,58 @@ own folder instead.
 Other startup errors (for example "Couldn't read your shell environment") still go to the
 startup error screen. The error screen for adb missing is no longer shown at startup.
 
+### Look (redesign 2026-11-25)
+
+First run is a two-step flow in one shared frame, `OnboardingFrame` (`setup/onboarding_frame.dart`):
+
+- **Background:** the canvas with two soft accent glows (radial gradients of `accent` at low
+  alpha, top-left and bottom-right), built from the active style's tokens so every style and
+  light/dark looks right.
+- **Top bar:** logo + "ADB UI" on the left; on the right a step indicator with two steps,
+  **1 Look** and **2 Tools**. The current step is filled with `accent`, a finished step shows a
+  check, a later one is muted. Shown in `firstRun` only (step 1 is the style picker, step 2 is
+  Setup); `adbMissing` has the frame without steps.
+- **Footer:** a bar pinned to the bottom with the step text ("Step 2 of 2") on the left and the
+  buttons on the right.
+- Content fades and slides in on first show (off when the OS asks for reduced motion).
+
+**Onboarding window (2026-11-25).** While the style picker or Setup in `firstRun` /
+`adbMissing` mode is showing (anything before home), the app window is a small fixed
+window: **920 × 640**, centred on the screen, not resizable, not maximisable, and not
+movable. `OnboardingWindow` (`setup/onboarding_window.dart`) does this through
+`window_manager`: on entering it remembers the window's bounds, then `setMinimumSize`,
+`setSize`, `center`, `setResizable(false)`, `setMaximizable(false)`, `setMovable(false)`;
+when home opens it restores the remembered bounds and turns resizing, maximising and moving
+back on (minimum size back to `WindowSize.minimum`). Per platform:
+- macOS: all of the above (`setMovable` is macOS-only in `window_manager`).
+- Windows: the custom 30 px caption shows the logo, title, minimise and close only, with no
+  drag area and no maximise button, so the window can't be dragged.
+- Linux: size and resizing only; the window manager can still move it.
+`manual` mode (Settings / palette) is a page inside the normal window and is unchanged.
+
+The Setup page inside it:
+
+- **Hero:** title "Get your tools ready" (`firstRun`), "ADB UI needs adb" (`adbMissing`), or
+  "Set up ADB UI" (`manual`); the subtitle as before; the installer line as a small pill.
+- **Readiness card:** a ring showing how many required items are ready, with one line:
+  "Checking this computer…", "Everything ADB UI needs is ready" (success colour) or
+  "1 required tool is missing". While something required is missing, **Install required**
+  sits in this card (it moves here from the footer).
+- **Requirement cards:** a 44 px rounded icon tile per item (adb `usb`, scrcpy `cast`, libmpv
+  `movie`, AI model `auto_awesome`), tinted `successSoft` when found, `dangerSoft` when a
+  required item is missing, `accentSoft` otherwise; the name with a small **Required** /
+  **Optional** tag; the purpose line; and a status pill on the right that animates between
+  states (`Checking…` with a small spinner, `Found · <version>` / `Installed by ADB UI ·
+  <version>` in success colours, `Not found`, `Installing…` with progress, `Install failed`).
+  The found path is muted mono under the purpose. A missing item shows its method in a mono
+  chip and the Install buttons. Status texts are unchanged from the list below.
+- **Install output:** the log panel, titled "Installing <name>…" / "Last install", below the cards.
+- `manual` mode uses the same hero (without the frame), readiness card and cards inside the
+  Settings page.
+
 ### The page
 
-Title **"Set up ADB UI"**, subtitle "ADB UI checks what it needs on this computer. Nothing is
+Title **"Set up ADB UI"** (now per mode, see Look), subtitle "ADB UI checks what it needs on this computer. Nothing is
 installed without your OK." In `adbMissing` mode a `warningSoft` `AppBanner` says
 "adb wasn't found. ADB UI needs it to talk to your devices."
 
@@ -58,8 +107,9 @@ Two sections, **Required** and **Optional**. Each row:
 | libmpv | no | Linux only | "Plays the live mirror video inside ADB UI." (The Linux build links libmpv, so in practice the app only starts when it's there and the row shows Found; it stays non-blocking so a failed `ldconfig` check can't lock anyone out.) |
 | AI log-filter model | no | all | The existing `AiModelSetupCard` (compact), unchanged |
 
-Footer: **Check again** (re-detects everything) · **Install required** (only while a
-required item is missing; runs the consent flow for each missing required item in turn) ·
+Footer: **Check again** (re-detects everything) · **Install required** (in the readiness
+card since the redesign; only while a required item is missing; runs the consent flow for
+each missing required item in turn) ·
 **Continue** (`firstRun` / `adbMissing`: enabled only when every required item is found;
 opens home) or **Done** (`manual`: closes the page).
 
@@ -140,8 +190,23 @@ own tools win):
 
 - `<app support>/tools/platform-tools`, `<app support>/tools/scrcpy`;
 - macOS: `/opt/homebrew/bin`, `/usr/local/bin` (Homebrew, when the shell profile lacks it);
-- Windows: `%LOCALAPPDATA%\Microsoft\WinGet\Links` (winget portable packages; the running
-  app's PATH is not refreshed by winget).
+- Windows: `%LOCALAPPDATA%\Microsoft\WinGet\Links` (winget portable packages).
+
+**Fresh PATH on Windows (fix 2026-11-25).** A Windows process keeps the PATH it started
+with. winget adds `Google.PlatformTools` and `Genymobile.scrcpy` to the *user* PATH in the
+registry (or links them in `WinGet\Links`), so right after **Install** the app's own PATH
+didn't have them and Setup said "still can't find adb" until ADB UI was restarted. Now, on
+Windows, `processEnvironment()` also reads the current PATH from the registry
+(`reg query HKCU\Environment /v Path` and
+`reg query "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" /v Path`),
+expands `%VAR%` references from the app's environment, and appends any folder the app's PATH
+doesn't have yet (the app's own entries keep their order and win). The registry PATH is read
+once and cached; `refreshProcessEnvironment()` drops that cache and is called before every
+re-detection: after an install and on
+**Check again**. The macOS/Linux login-shell environment stays cached (reading it runs the
+shell synchronously, and Homebrew/package-manager installs land in folders already on PATH).
+Pure helpers, unit tested: `parseRegQueryValue(output)`,
+`expandWindowsVariables(value, env)` (in `tool_paths.dart`); the merge reuses `withExtraPath` / `appendToPath`.
 
 `appendToPath(path, dirs, separator)` is pure (unit tested): skips dirs already present,
 keeps order, uses `;` on Windows and `:` elsewhere. On Windows the existing `Path`/`PATH`
@@ -237,6 +302,8 @@ their output is shown in the page's log panel and written to the log file.
       Platform-Tools 37.0.3 zip matches its SHA-1, unpacks with execute bits, and its `adb
       version` parses. Not yet checked: the full flow inside the running app.
 - [ ] Works on Windows / macOS / Linux.
+- [ ] Windows: Install adb with winget → the row turns Found without restarting ADB UI.
+- [x] Registry PATH helpers unit-tested.
 
 ## Out of scope
 

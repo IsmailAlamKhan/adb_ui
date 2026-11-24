@@ -43,7 +43,7 @@ macOS menu "About ADB UI" ► AboutView
 | `features/apps/` | `AppIcon`, `AppLetterTile`, `AppInfoController`, `AppInfoService`, `AppInfoDiskCache` |
 | `features/file_preview/` | `FilePreviewPane`, `FilePreviewContent`, `FilePreviewDialog`, `showFilePreview`, `FilePreviewService` |
 | `features/errors/` | `AppError`, `ErrorCatalogue`, `ErrorExplanation`, `ErrorDetailsDialog`, `ErrorPanel` |
-| `features/setup/` | `SetupView`, `RequirementRow`, `InstallConsentDialog`, `SetupController`, `SetupService`, `InstallPlanner`, `ToolPaths` |
+| `features/setup/` | `SetupView`, `RequirementRow`, `InstallConsentDialog`, `SetupController`, `SetupService`, `InstallPlanner`, `ToolPaths`, `OnboardingFrame`, `OnboardingWindow` |
 | `features/style_picker/` | `StylePickerView`, `StyleChooser`, `StylePreview`, `ThemeModeChooser` |
 
 ## Rules

@@ -20,12 +20,16 @@ and changeable later.
    - Workbench — "Sidebar of devices. Each device gets tabs for apps, files and shell."
    - Console — "Dense and keyboard-driven, with a docked activity terminal."
    - Launcher — "Big device cards and a command palette for everything."
-4. Below: **Theme** segmented control System / Light / Dark. The whole picker re-themes live
+4. (2026-11-25) The picker is step **1 Look** of the onboarding flow and uses the shared
+   `OnboardingFrame` (glow background, top bar with the step indicator, footer with "Step 1 of
+   2" and **Continue with <style>**); see [onboarding.md](onboarding.md) "Look". The selected
+   card lifts slightly (shadow + accent border).
+5. Below: **Theme** segmented control System / Light / Dark. The whole picker re-themes live
    to the highlighted style and theme.
-5. **Continue** saves both, sets `setupGateProvider` to `SetupMode.firstRun` and opens
+6. **Continue** saves both, sets `setupGateProvider` to `SetupMode.firstRun` and opens
    Setup ([onboarding.md](onboarding.md)), then home in that style. There is no skip: Continue with the
    default selection (Workbench, System) is the skip.
-6. At compact width the cards stack vertically and the page scrolls.
+7. At compact width the cards stack vertically and the page scrolls.
 
 ### Settings
 - Settings is a page (dialog at medium/expanded, full window at compact) with sections:

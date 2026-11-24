@@ -2,6 +2,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../utils/utils.dart';
 import '../adb/adb_providers.dart';
+import '../adb/adb_service.dart' show refreshProcessEnvironment;
 import '../errors/errors.dart';
 import 'install_planner.dart';
 import 'setup_model.dart';
@@ -38,6 +39,7 @@ class SetupController extends StateNotifier<SetupState> with NavigationControlle
   Future<void> refresh() async {
     if (_refreshing) return;
     _refreshing = true;
+    refreshProcessEnvironment();
     try {
       state = state.copyWith(statuses: {
         for (final r in Requirement.values)
@@ -58,6 +60,7 @@ class SetupController extends StateNotifier<SetupState> with NavigationControlle
   }
 
   Future<void> _redetect(Requirement r) async {
+    refreshProcessEnvironment();
     final status = await service.detect(r);
     if (mounted) state = state.copyWith(statuses: {...state.statuses, r: status});
   }

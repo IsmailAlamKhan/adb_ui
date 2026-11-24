@@ -10,6 +10,13 @@
 | macOS | `CustomMenuBar` (`PlatformMenuBar`): app menu with **About ADB UI**, **Open Application Support** (⌥A, opens the support dir in Finder), Hide/Hide others/Show all, Quit; **View** → full screen; **Window** → bring to front / zoom / minimise. Top padding adjusted for the transparent title bar. |
 | Linux | Plain system window, no custom chrome. |
 
+## Onboarding window
+
+Before home (style picker, Setup in `firstRun` / `adbMissing`), the window is a fixed
+920 × 640 centred window that can't be resized, maximised or (macOS, Windows) moved; on
+Windows the caption has no drag area or maximise button then. Home restores the previous
+bounds. See [onboarding.md](onboarding.md) "Onboarding window".
+
 ## Splash & init error
 
 - `SplashView` — spinner shown while `App.init` runs; light/dark from OS brightness.

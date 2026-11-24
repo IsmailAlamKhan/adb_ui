@@ -264,8 +264,43 @@ Future<Map<String, String>> processEnvironment() async {
     _unixEnvironmentMap ??= await _loadUnixEnvironment();
   }
   final tools = ToolPaths.maybeInstance;
-  final base = _unixEnvironmentMap ?? io.Platform.environment;
-  return tools == null ? Map.of(base) : tools.environment(base);
+  var base = Map.of(_unixEnvironmentMap ?? io.Platform.environment);
+  if (io.Platform.isWindows) {
+    // The app keeps the PATH it started with; winget installs change the registry PATH.
+    _windowsRegistryPath ??= await _loadWindowsRegistryPath();
+    base = withExtraPath(base, _windowsRegistryPath!, windows: true);
+  }
+  return tools == null ? base : tools.environment(base);
+}
+
+/// Forgets the cached Windows registry PATH, so the next [processEnvironment] picks up tools
+/// installed since. Called before Setup re-detects. The macOS/Linux login-shell environment
+/// stays cached: reloading it blocks the UI, and Homebrew / package-manager installs land in
+/// folders already on PATH.
+void refreshProcessEnvironment() {
+  _windowsRegistryPath = null;
+}
+
+List<String>? _windowsRegistryPath;
+
+/// The machine and user PATH as stored in the registry now, `%VAR%`s expanded.
+Future<List<String>> _loadWindowsRegistryPath() async {
+  const keys = [
+    r'HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment',
+    r'HKCU\Environment',
+  ];
+  final dirs = <String>[];
+  for (final key in keys) {
+    try {
+      final r = await io.Process.run('reg', ['query', key, '/v', 'Path']).timeout(const Duration(seconds: 5));
+      final value = r.exitCode == 0 ? parseRegQueryValue('${r.stdout}') : null;
+      if (value == null) continue;
+      dirs.addAll(expandWindowsVariables(value, io.Platform.environment).split(';').where((d) => d.trim().isNotEmpty));
+    } on Object catch (e) {
+      logInfo('[env] reg query $key failed: $e');
+    }
+  }
+  return dirs;
 }
 
 class ProccessAdbServiceImpl implements AdbService {
