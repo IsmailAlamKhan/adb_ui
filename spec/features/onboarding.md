@@ -1,6 +1,6 @@
 # Feature: Setup & requirements (first-run onboarding)
 
-**Status:** Shipped in 0.0.19; Windows PATH fix, redesign and fixed onboarding window built 2026-11-25, not released yet (seen in a macOS preview build with stubbed tool checks; not on Windows) · **Code:** `lib/app/features/setup/`, `test/setup_test.dart`, `test/setup_view_test.dart`
+**Status:** Shipped in 0.0.19; Windows PATH fix, redesign and fixed onboarding window shipped in 0.0.22 (not yet checked on Windows) · **Code:** `lib/app/features/setup/`, `test/setup_test.dart`, `test/setup_view_test.dart`
 **Owner / requested by:** owner · **Last updated:** 2026-11-25
 
 ## Problem
